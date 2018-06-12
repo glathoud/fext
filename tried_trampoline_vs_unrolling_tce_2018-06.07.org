@@ -1,0 +1,1396 @@
+** quick try JS
+
+*** IE11 let?
+
+Yes but:
+let variables are not bound separately to each iteration of for loops
+
+==> good enough for a console.warn
+
+*** this.name to overwrite a function from itself
+
+#+BEGIN_SRC javascript
+  function f() {}
+
+  function g() {
+    var v = 1 + (this.f() | 0);
+    this.f = function () { return v; }
+    return this.f();
+  }
+#+END_SRC
+ 
+
+*** perf vs trampo vs calls (implicit inline?) vs stack overflow
+
+**** summary for FF
+
+test#0 too much recursion
+
+unrolled#0
+dur: 1.274 , speed: 7.849e+8
+dur: 1.274 , speed: 7.849e+8
+dur: 1.273 , speed: 7.855e+8
+
+unrolled#0meth (object method)
+dur: 2.991 , speed: 3.343e+8
+dur: 3.512 , speed: 2.847e+8
+dur: 2.648 , speed: 3.776e+8
+dur: 2.723 , speed: 3.672e+8
+dur: 3.69  , speed: 2.710e+8
+
+tailcatch#0.25 (functional trampoline implementation)
+dur: 3.611 , speed: 2.769e+5
+dur: 1.091 , speed: 2.750e+5
+dur: 1.082 , speed: 2.773e+5
+dur: 1.09  , speed: 2.752e+5 
+dur: 0.988 , speed: 3.036e+5
+
+tailtramp#0.5 (functional trampoline implementation)
+dur: 1.406 , speed: 7.112e+5  <<< Particularly bad compared to Chrome
+dur: 1.417 , speed: 7.057e+5
+dur: 1.384 , speed: 7.225e+5
+dur: 1.39 ,  speed: 7.194e+5 
+dur: 1.4 ,   speed: 7.143e+5
+dur: 1.438 , speed: 6.954e+5
+
+trampoline#1
+dur: 0.743 , speed: 1.346e+7
+dur: 0.631 , speed: 1.585e+7
+dur: 0.64  , speed: 1.562e+7
+
+trampoline#2
+dur: 0.503 , speed: 1.988e+7
+dur: 0.501 , speed: 1.996e+7
+dur: 0.496 , speed: 2.016e+7
+dur: 0.498 , speed: 2.008e+7
+dur: 0.501 , speed: 1.996e+7
+
+trampoline#3 
+dur: 0.509 , speed: 1.965e+7
+dur: 0.507 , speed: 1.972e+7
+dur: 0.554 , speed: 1.805e+7
+dur: 0.511 , speed: 1.957e+7
+
+trampoline#4
+dur: 0.594 , speed: 1.684e+7
+dur: 0.599 , speed: 1.669e+7
+dur: 0.585 , speed: 1.709e+7
+dur: 0.588 , speed: 1.701e+7
+
+trampoline#5
+dur: 0.487 , speed: 2.053e+7
+dur: 0.482 , speed: 2.075e+7
+dur: 0.481 , speed: 2.079e+7
+dur: 0.477 , speed: 2.096e+7
+
+trampoline#6
+dur: 0.494 , speed: 2.024e+7
+dur: 0.491 , speed: 2.037e+7
+dur: 0.485 , speed: 2.062e+7
+dur: 0.498 , speed: 2.008e+7
+
+trampoline#6bis (like #6 but without .call(this,...))
+dur: 0.041 , speed: 2.439e+8
+dur: 0.045 , speed: 2.222e+8
+dur: 0.046 , speed: 2.174e+8
+dur: 0.043 , speed: 2.326e+8
+dur: 0.044 , speed: 2.273e+8
+
+trampoline#6meth (object method)
+dur: 0.044 , speed: 2.273e+8
+dur: 0.045 , speed: 2.222e+8
+dur: 0.044 , speed: 2.273e+8
+dur: 0.047 , speed: 2.128e+8
+dur: 0.05  , speed: 2.000e+8 
+dur: 0.05  , speed: 2.000e+8 
+dur: 0.046 , speed: 2.174e+8
+
+trampoline#7 (optim branching from #6)  (solved graph in this case)
+dur: 0.43  , speed: 2.326e+7
+dur: 0.38  , speed: 2.632e+7
+dur: 0.382 , speed: 2.618e+7
+dur: 0.387 , speed: 2.584e+7
+dur: 0.373 , speed: 2.681e+7
+dur: 0.374 , speed: 2.674e+7
+
+trampoline#8 (like #7 but without call(this,...))
+dur: 0.041 , speed: 2.439e+8
+dur: 0.039 , speed: 2.564e+8
+dur: 0.044 , speed: 2.273e+8
+dur: 0.04  , speed: 2.500e+8
+dur: 0.043 , speed: 2.326e+8
+dur: 0.042 , speed: 2.381e+8
+
+// trampoline #9 (sanity check)
+// like #8 but with additional useless line (e.g. generated...)
+dur: 0.043 , speed: 2.326e+8
+dur: 0.043 , speed: 2.326e+8
+dur: 0.045 , speed: 2.222e+8
+dur: 0.045 , speed: 2.222e+8
+dur: 0.042 , speed: 2.381e+8
+
+trampoline#10 (like #8 and #9 but removed case_i=0|1 since solved)
+dur: 0.026 , speed: 3.846e+8
+dur: 0.029 , speed: 3.448e+8
+dur: 0.029 , speed: 3.448e+8
+dur: 0.031 , speed: 3.226e+8
+dur: 0.038 , speed: 2.632e+8
+dur: 0.028 , speed: 3.571e+8
+
+trampoline#10meth (object method)
+dur: 0.023 , speed: 4.348e+8
+dur: 0.031 , speed: 3.226e+8
+dur: 0.031 , speed: 3.226e+8
+dur: 0.031 , speed: 3.226e+8
+dur: 0.031 , speed: 3.226e+8
+dur: 0.029 , speed: 3.448e+8
+dur: 0.033 , speed: 3.030e+8
+
+trampoline#10Function (calling `new Function`)
+VM111:1 dur: 0.121 , speed: 8.264e+7
+VM113:1 dur: 0.04 , speed: 2.500e+8
+VM115:1 dur: 0.03 , speed: 3.333e+8
+VM117:1 dur: 0.035 , speed: 2.857e+8
+VM119:1 dur: 0.031 , speed: 3.226e+8
+VM121:1 dur: 0.036 , speed: 2.778e+8
+VM123:1 dur: 0.035 , speed: 2.857e+8
+VM124:1 dur: 0.036 , speed: 2.778e+8
+VM125:1 dur: 0.031 , speed: 3.226e+8
+VM126:1 dur: 0.045 , speed: 2.222e+8
+VM127:1 dur: 0.031 , speed: 3.226e+8
+VM128:1 dur: 0.032 , speed: 3.125e+8
+
+trampoline#10FunctionObject (calling on the object)
+dur: 0.018 , speed: 5.556e+8
+dur: 0.021 , speed: 4.762e+8
+dur: 0.023 , speed: 4.348e+8
+dur: 0.02 , speed: 5.000e+8 
+dur: 0.02 , speed: 5.000e+8 
+dur: 0.023 , speed: 4.348e+8
+
+trampoline#10FunctionObject.bind
+dur: 0.034 , speed: 2.941e+8
+dur: 0.056 , speed: 1.786e+8
+dur: 0.049 , speed: 2.041e+8
+dur: 0.053 , speed: 1.887e+8
+dur: 0.052 , speed: 1.923e+8
+dur: 0.051 , speed: 1.961e+8
+dur: 0.052 , speed: 1.923e+8
+dur: 0.052 , speed: 1.923e+8
+
+**** summary for Chrome
+
+test#0 too much recursion
+
+unrolled#0
+// >>> dur: 2.762 , speed: 3.621e+8
+
+unrolled#0meth (object method)
+        dur: 2.744 , speed: 3.644e+8
+VM118:1 dur: 2.409 , speed: 4.151e+8
+VM120:1 dur: 2.394 , speed: 4.177e+8
+VM122:1 dur: 2.386 , speed: 4.191e+8
+VM124:1 dur: 2.419 , speed: 4.134e+8
+
+tailcatch#0.25 (functional trampoline implementation)
+       dur: 0.857 , speed: 1.167e+5
+VM53:1 dur: 0.865 , speed: 1.156e+5
+VM55:1 dur: 0.849 , speed: 1.178e+5
+VM57:1 dur: 0.867 , speed: 1.153e+5
+VM59:1 dur: 0.864 , speed: 1.157e+5
+
+tailtramp#0.5 (functional trampoline implementation)
+       dur: 0.553 , speed: 1.808e+7
+VM64:1 dur: 0.557 , speed: 1.795e+7
+VM65:1 dur: 0.562 , speed: 1.779e+7
+VM66:1 dur: 0.554 , speed: 1.805e+7
+VM67:1 dur: 0.559 , speed: 1.789e+7
+
+trampoline#1
+// >>> dur: 0.693 , speed: 1.443e+7
+
+trampoline#2
+// >>> dur: 0.203 , speed: 4.926e+7
+
+trampoline#3
+// >>> dur: 0.154 , speed: 6.494e+7
+
+trampoline#4
+// >>> dur: 0.457 , speed: 2.188e+7
+
+trampoline#5
+VM97:1 dur: 0.129 , speed: 7.752e+7
+VM99:1 dur: 0.036 , speed: 2.778e+8
+VM101:1 dur: 0.036 , speed: 2.778e+8
+VM103:1 dur: 0.043 , speed: 2.326e+8
+VM105:1 dur: 0.035 , speed: 2.857e+8
+
+trampoline#6
+VM49:1 dur: 0.136 , speed: 7.353e+7
+VM50:1 dur: 0.039 , speed: 2.564e+8
+VM51:1 dur: 0.034 , speed: 2.941e+8
+VM52:1 dur: 0.04 , speed: 2.500e+8
+VM53:1 dur: 0.034 , speed: 2.941e+8
+VM54:1 dur: 0.034 , speed: 2.941e+8
+
+trampoline#6bis (like #6 but without .call(this,...))
+       dur: 0.126 , speed: 7.937e+7
+VM49:1 dur: 0.037 , speed: 2.703e+8
+VM51:1 dur: 0.035 , speed: 2.857e+8
+VM53:1 dur: 0.038 , speed: 2.632e+8
+VM55:1 dur: 0.037 , speed: 2.703e+8
+VM57:1 dur: 0.036 , speed: 2.778e+8
+
+trampoline#6meth (object method, without .call(this,...))
+        dur: 0.13  , speed: 7.692e+7
+VM102:1 dur: 0.037 , speed: 2.703e+8
+VM104:1 dur: 0.036 , speed: 2.778e+8
+VM106:1 dur: 0.032 , speed: 3.125e+8
+VM108:1 dur: 0.034 , speed: 2.941e+8
+VM110:1 dur: 0.035 , speed: 2.857e+8
+VM112:1 dur: 0.034 , speed: 2.941e+8
+VM114:1 dur: 0.034 , speed: 2.941e+8
+
+trampoline#7  (solved graph in this case)
+VM57:1 dur: 0.138 , speed: 7.246e+7
+VM58:1 dur: 0.035 , speed: 2.857e+8
+VM59:1 dur: 0.034 , speed: 2.941e+8
+VM60:1 dur: 0.032 , speed: 3.125e+8
+VM61:1 dur: 0.033 , speed: 3.030e+8
+VM62:1 dur: 0.04 , speed: 2.500e+8
+VM63:1 dur: 0.032 , speed: 3.125e+8
+
+trampoline#8 (like #7 but without call(this,...))
+       dur: 0.132 , speed: 7.576e+7
+VM49:1 dur: 0.035 , speed: 2.857e+8
+VM51:1 dur: 0.034 , speed: 2.941e+8
+VM53:1 dur: 0.032 , speed: 3.125e+8
+VM55:1 dur: 0.031 , speed: 3.226e+8
+VM57:1 dur: 0.035 , speed: 2.857e+8
+VM59:1 dur: 0.032 , speed: 3.125e+8
+
+// trampoline #9 (sanity check)
+// like #8 but with additional useless line (e.g. generated...)
+       dur: 0.129 , speed: 7.752e+7
+VM61:1 dur: 0.041 , speed: 2.439e+8
+VM63:1 dur: 0.034 , speed: 2.941e+8
+VM65:1 dur: 0.032 , speed: 3.125e+8
+VM67:1 dur: 0.031 , speed: 3.226e+8
+VM69:1 dur: 0.034 , speed: 2.941e+8
+
+trampoline#10 (like #8 and #9 but removed case_i=0|1 since solved)
+       dur: 0.131 , speed: 7.634e+7
+VM51:1 dur: 0.037 , speed: 2.703e+8
+VM53:1 dur: 0.041 , speed: 2.439e+8
+VM55:1 dur: 0.033 , speed: 3.030e+8
+VM57:1 dur: 0.03  , speed: 3.333e+8
+VM59:1 dur: 0.035 , speed: 2.857e+8
+VM61:1 dur: 0.034 , speed: 2.941e+8
+VM63:1 dur: 0.033 , speed: 3.030e+8
+
+trampoline#10meth (for methods)
+       dur: 0.124 , speed: 8.065e+7
+VM86:1 dur: 0.035 , speed: 2.857e+8
+VM88:1 dur: 0.032 , speed: 3.125e+8
+VM90:1 dur: 0.032 , speed: 3.125e+8
+VM92:1 dur: 0.03 , speed: 3.333e+8
+VM94:1 dur: 0.035 , speed: 2.857e+8
+
+trampoline#10Function (calling `new Function`)
+       dur: 0.121 , speed: 8.264e+7
+VM113:1 dur: 0.04 , speed: 2.500e+8
+VM115:1 dur: 0.03 , speed: 3.333e+8
+VM117:1 dur: 0.035 , speed: 2.857e+8
+VM119:1 dur: 0.031 , speed: 3.226e+8
+VM121:1 dur: 0.036 , speed: 2.778e+8
+
+trampoline#10FunctionObject (calling on the object)
+VM52:1 dur: 0.025 , speed: 4.000e+8
+VM54:1 dur: 0.028 , speed: 3.571e+8
+VM56:1 dur: 0.027 , speed: 3.704e+8
+VM58:1 dur: 0.027 , speed: 3.704e+8
+VM60:1 dur: 0.026 , speed: 3.846e+8
+
+trampoline#10FunctionObject (binding on this)
+       dur: 0.096 , speed: 1.042e+8
+VM92:1 dur: 0.029 , speed: 3.448e+8
+VM93:1 dur: 0.028 , speed: 3.571e+8
+VM94:1 dur: 0.028 , speed: 3.571e+8
+VM95:1 dur: 0.028 , speed: 3.571e+8
+VM96:1 dur: 0.025 , speed: 4.000e+8
+
+**** code pieces + first run in Chrome
+
+
+#+BEGIN_SRC javascript
+// test#0
+function isOdd( n ) {
+return n < 1 ? false  : isEven( n-1 );
+}
+function isEven( n ){
+return n < 1 ? true :  isOdd( n-1 );
+}
+
+console.log(isOdd( 3 ));
+console.log(isOdd( 4 ));
+console.log(isEven( 3 ));
+console.log(isEven( 4 ));
+
+isOdd(999999999) // >> call stack size
+#+END_SRC
+
+#+BEGIN_SRC javascript
+// unrolled#0
+  function isOdd( n ) {
+      var case_i = 0;
+      while( true ) {
+          switch( case_i ) {
+          case 0:
+              if (n < 1) return false;
+              n--;
+              case_i = 1;
+              continue;
+
+          case 1:
+              if (n < 1) return true;
+              n--;
+              case_i = 0;
+              continue;
+          }
+          null.bug;
+      }
+  }
+  N=999999999;begin=Date.now();isOdd(N);end=Date.now();dur=(end-begin)/1000;speed=N/dur;console.log('dur:',dur, ', speed:',speed.toPrecision(4));
+// >>> dur: 2.762 , speed: 3.621e+8
+#+END_SRC
+
+
+
+
+#+BEGIN_SRC javascript
+// unrolled#0meth (object method)
+
+var o = { isOdd: isOdd};
+  function isOdd( n ) {
+      var case_i = 0;
+      while( true ) {
+          switch( case_i ) {
+          case 0:
+              if (n < 1) return false;
+              n--;
+              case_i = 1;
+              continue;
+
+          case 1:
+              if (n < 1) return true;
+              n--;
+              case_i = 0;
+              continue;
+          }
+          null.bug;
+      }
+  }
+
+console.log(o.isOdd(3));
+console.log(o.isOdd(4));
+  N=999999999;begin=Date.now();o.isOdd(N);end=Date.now();dur=(end-begin)/1000;speed=N/dur;console.log('dur:',dur, ', speed:',speed.toPrecision(4));
+
+#+END_SRC
+
+
+
+
+#+BEGIN_SRC javascript
+// tailcatch#0.25
+// functional tail call trampoline implementation
+// http://glat.info/pub/tailopt-js/tailopt-js-appendices.html
+//
+function tailcatch(g) {
+    return (function (n) {
+
+        return function()
+        {
+            if (n>5) {  // Jump off a small Empire State Building
+                throw {tailCallArgs: arguments, tailCallThis: this};
+            }
+            
+            var args = arguments;
+            var me   = this;
+            var ret;
+            while (true)
+            {
+                if (n<1) {
+                    try
+                    {
+                        n++;
+                        ret = g.apply(me, args);
+                        n--;
+                        return ret;
+                    }
+                    catch(e) // Hit 33rd Street and bounce again
+                    {
+                        if (!e.tailCallArgs) {
+                            throw e;
+                        }
+                        n=0;
+                        args = e.tailCallArgs;
+                        me   = e.tailCallThis;
+                    }
+                } else {
+                    n++;
+                    ret = g.apply(me, args);
+                    n--;
+                    return ret;
+                    
+                }
+            }
+        };
+
+    })(0);
+}
+//
+var isOdd = tailcatch( function( n ) {
+return n < 1 ? false  : isEven( n-1 );
+})
+, isEven = tailcatch( function( n ) {
+return n < 1 ? true :  isOdd( n-1 );
+})
+;
+console.log(isOdd(3))
+console.log(isOdd(4))
+console.log(isEven(3))
+console.log(isEven(4))
+//
+N=99999;begin=Date.now();isOdd(N);end=Date.now();dur=(end-begin)/1000;speed=N/dur;console.log('dur:',dur, ', speed:',speed.toPrecision(4));
+#+END_SRC
+     
+
+
+
+
+#+BEGIN_SRC javascript
+
+// tailtramp#0.5
+// functional tail call trampoline implementation
+// http://glat.info/pub/tailopt-js/tailopt-js-appendices.html
+//
+// Copyright (c) 2010 Guillaume Lathoud
+// MIT License
+//
+// tailtramp.js
+// 
+// Implement full tail-call optimization in Javascript through a
+// trampoline.
+//
+function tailtramp(g) {
+    function TailCall(arr) {
+        this.arr = arr;
+    }
+    return (function (n) {
+
+        return function()
+        {
+            var arr = [g, this, arguments], ret;
+
+            if (n>5) {  // Jump off a small Empire State Building
+                return new TailCall(arr);
+            }
+            
+            while (true)
+            {
+                n++;
+                ret = arr[0].apply(arr[1], arr[2]);
+                n--;
+                
+                if ((n>0) || (!(ret instanceof TailCall))) {
+                    return ret;
+                }
+                
+                // Hit 33rd Street and bounce again
+                arr = ret.arr;
+            }
+        };
+
+    })(0);
+}
+//
+var isOdd = tailtramp( function( n ) {
+return n < 1 ? false  : isEven( n-1 );
+})
+, isEven = tailtramp( function( n ) {
+return n < 1 ? true :  isOdd( n-1 );
+})
+;
+console.log(isOdd(3))
+console.log(isOdd(4))
+console.log(isEven(3))
+console.log(isEven(4))
+//
+N=999999;begin=Date.now();isOdd(N);end=Date.now();dur=(end-begin)/1000;speed=N/dur;console.log('dur:',dur, ', speed:',speed.toPrecision(4));
+#+END_SRC
+     
+
+
+
+#+BEGIN_SRC javascript
+
+// trampoline #1
+//
+  function isOdd(n)
+  {
+    return (this.isOdd = master).call( this, n );
+    
+    function master(n) {
+      var todo = isOdd_impl
+, args = [ n ]
+, ret
+;
+function nothing(){}
+//
+while (todo !== nothing) {
+var one = todo;
+todo = nothing;
+ret = one.apply(this,args);
+}
+//
+return ret;
+    
+//
+function isOdd_impl(n)
+{
+var undef;
+return n < 1 ? false : (todo = isEven_impl, args = [n-1], undef);
+}
+//
+function isEven_impl(n)
+{
+var undef;
+return n < 1 ? true : (todo = isOdd_impl, args = [n-1], undef);
+}
+  }
+}
+//
+console.log(isOdd( 3 ));
+console.log(isOdd( 4 ));
+
+
+N=9999999;begin=Date.now();isOdd(N);end=Date.now();dur=(end-begin)/1000;speed=N/dur;console.log('dur:',dur, ', speed:',speed.toPrecision(4));
+// >>> dur: 0.693 , speed: 1.443e+7
+#+END_SRC
+ 
+ 
+#+BEGIN_SRC javascript
+
+// trampoline #2
+//
+  function isOdd(n)
+  {
+    return (this.isOdd = master).call( this, n );
+    
+    function master(n) {
+      var todo = isOdd_impl
+, arg0 = n
+, ret
+;
+function nothing(){}
+//
+while (todo !== nothing) {
+var one = todo;
+todo = nothing;
+ret = one.call(this,arg0);
+}
+//
+return ret;
+    
+//
+function isOdd_impl(n)
+{
+var undef;
+return n < 1 ? false : (todo = isEven_impl, arg0 = n-1, undef);
+}
+//
+function isEven_impl(n)
+{
+var undef;
+return n < 1 ? true : (todo = isOdd_impl, arg0 = n-1, undef);
+}
+  }
+}
+//
+console.log(isOdd( 3 ));
+console.log(isOdd( 4 ));
+
+
+N=9999999;begin=Date.now();isOdd(N);end=Date.now();dur=(end-begin)/1000;speed=N/dur;console.log('dur:',dur, ', speed:',speed.toPrecision(4));
+// >>> dur: 0.203 , speed: 4.926e+7
+#+END_SRC
+
+#+BEGIN_SRC javascript
+
+// trampoline #3
+//
+  function isOdd(n)
+  {
+    return (this.isOdd = master).call( this, n );
+    
+    function master(n) {
+      var todo = isOdd_impl
+, arg0 = n
+, ret
+;
+//
+while (todo) {
+ret = todo.call(this,arg0);
+}
+//
+return ret;
+    
+//
+function isOdd_impl(n)
+{
+var undef;
+return n < 1 ? (todo = null, false) : (todo = isEven_impl, arg0 = n-1, undef);
+}
+//
+function isEven_impl(n)
+{
+var undef;
+return n < 1 ? (todo = null, true) : (todo = isOdd_impl, arg0 = n-1, undef);
+}
+  }
+}
+//
+console.log(isOdd( 3 ));
+console.log(isOdd( 4 ));
+
+
+N=9999999;begin=Date.now();isOdd(N);end=Date.now();dur=(end-begin)/1000;speed=N/dur;console.log('dur:',dur, ', speed:',speed.toPrecision(4));
+// >>> dur: 0.154 , speed: 6.494e+7
+#+END_SRC
+ 
+
+
+
+
+
+#+BEGIN_SRC javascript
+
+// trampoline #4
+//
+  function isOdd(n)
+  {
+    return (this.isOdd = master).call( this, n );
+    
+    function master(n) {
+      var case_i = 0
+, args = [ n ]
+, ret
+;
+//
+while (true) {
+switch (case_i) {
+case 0: ret = isOdd_impl.apply( this, args ); continue;
+case 1: ret = isEven_impl.apply( this, args ); continue;
+default: return ret;
+}
+}
+//
+null.bug;    
+//
+function isOdd_impl(n)
+{
+var undef;
+return n < 1 ? (case_i=-1, false) : (case_i=1, args = [n-1], undef);
+}
+//
+function isEven_impl(n)
+{
+var undef;
+return n < 1 ? (case_i=-1, true) : (case_i=0, args = [n-1], undef);
+}
+  }
+}
+//
+console.log(isOdd( 3 ));
+console.log(isOdd( 4 ));
+
+
+N=9999999;begin=Date.now();isOdd(N);end=Date.now();dur=(end-begin)/1000;speed=N/dur;console.log('dur:',dur, ', speed:',speed.toPrecision(4));
+// >>> dur: 0.457 , speed: 2.188e+7
+#+END_SRC
+ 
+
+
+#+BEGIN_SRC javascript
+
+// trampoline #5
+//
+  function isOdd(n)
+  {
+    return (this.isOdd = master).call( this, n );
+    
+    function master(n) {
+      var case_i = 0
+, arg0 = n
+, ret
+;
+//
+while (true) {
+switch (case_i) {
+case 0: ret = isOdd_impl.call( this, arg0 ); continue;
+case 1: ret = isEven_impl.call( this, arg0 ); continue;
+default: return ret;
+}
+}
+//
+null.bug;    
+//
+function isOdd_impl(n)
+{
+var undef;
+return n < 1 ? (case_i=-1, false) : (case_i=1, arg0 = n-1, undef);
+}
+//
+function isEven_impl(n)
+{
+var undef;
+return n < 1 ? (case_i=-1, true) : (case_i=0, arg0 = n-1, undef);
+}
+  }
+}
+//
+console.log(isOdd( 3 ));
+console.log(isOdd( 4 ));
+
+
+N=9999999;begin=Date.now();isOdd(N);end=Date.now();dur=(end-begin)/1000;speed=N/dur;console.log('dur:',dur, ', speed:',speed.toPrecision(4));
+VM97:1 dur: 0.129 , speed: 7.752e+7
+VM99:1 dur: 0.036 , speed: 2.778e+8
+VM101:1 dur: 0.036 , speed: 2.778e+8
+VM103:1 dur: 0.043 , speed: 2.326e+8
+VM105:1 dur: 0.035 , speed: 2.857e+8
+#+END_SRC
+ 
+
+
+
+
+#+BEGIN_SRC javascript
+// trampoline #6
+//
+  function isOdd(n)
+  {
+    return (this.isOdd = master).call( this, n );
+    
+    function master(n) {
+      var case_i = 0
+, arg0 = n
+, ret
+;
+//
+while (true) {
+switch (case_i) {
+case 0: isOdd_impl.call( this, arg0 ); continue;
+case 1: isEven_impl.call( this, arg0 ); continue;
+default: return ret;
+}
+}
+//
+null.bug;    
+//
+function isOdd_impl(n)
+{
+var undef;
+n < 1 ? (case_i=-1, ret=false) : (case_i=1, arg0 = n-1);
+return;
+}
+//
+function isEven_impl(n)
+{
+var undef;
+n < 1 ? (case_i=-1, ret=true) : (case_i=0, arg0 = n-1);
+return;
+}
+  }
+}
+//
+console.log(isOdd( 3 ));
+console.log(isOdd( 4 ));
+
+
+N=9999999;begin=Date.now();isOdd(N);end=Date.now();dur=(end-begin)/1000;speed=N/dur;console.log('dur:',dur, ', speed:',speed.toPrecision(4));
+
+#+END_SRC
+ 
+
+
+
+
+#+BEGIN_SRC javascript
+// trampoline #6bis
+// like #6 but without .call(this, ...)
+//
+  function isOdd(n)
+  {
+    return (this.isOdd = master).call( this, n );
+    
+    function master(n) {
+      var case_i = 0
+, arg0 = n
+, ret
+;
+//
+while (true) {
+switch (case_i) {
+case 0: isOdd_impl( arg0 ); continue;
+case 1: isEven_impl( arg0 ); continue;
+default: return ret;
+}
+}
+//
+null.bug;    
+//
+function isOdd_impl(n)
+{
+var undef;
+n < 1 ? (case_i=-1, ret=false) : (case_i=1, arg0 = n-1);
+return;
+}
+//
+function isEven_impl(n)
+{
+var undef;
+n < 1 ? (case_i=-1, ret=true) : (case_i=0, arg0 = n-1);
+return;
+}
+  }
+}
+//
+console.log(isOdd( 3 ));
+console.log(isOdd( 4 ));
+
+
+N=9999999;begin=Date.now();isOdd(N);end=Date.now();dur=(end-begin)/1000;speed=N/dur;console.log('dur:',dur, ', speed:',speed.toPrecision(4));
+
+#+END_SRC
+ 
+
+
+
+
+
+
+
+
+#+BEGIN_SRC javascript
+// trampoline #6meth
+// like #6 but for methods and without .call(this, ...)
+//
+
+var o = { isOdd : isOdd };
+
+  function isOdd(n)
+  {
+    return (this.isOdd = master).call( this, n );
+    
+    function master(n) {
+      var that = this
+,  case_i = 0
+, arg0 = n
+, ret
+;
+//
+while (true) {
+switch (case_i) {
+case 0: isOdd_impl( that, arg0 ); continue;
+case 1: isEven_impl( that, arg0 ); continue;
+default: return ret;
+}
+}
+//
+null.bug;    
+//
+function isOdd_impl(that, n)
+{
+var undef;
+n < 1 ? (case_i=-1, ret=false) : (case_i=1, arg0 = n-1);
+return;
+}
+//
+function isEven_impl(that, n)
+{
+var undef;
+n < 1 ? (case_i=-1, ret=true) : (case_i=0, arg0 = n-1);
+return;
+}
+  }
+}
+//
+console.log(o.isOdd( 3 ));
+console.log(o.isOdd( 4 ));
+
+
+N=9999999;begin=Date.now();o.isOdd(N);end=Date.now();dur=(end-begin)/1000;speed=N/dur;console.log('dur:',dur, ', speed:',speed.toPrecision(4));
+
+#+END_SRC
+ 
+
+
+
+
+
+
+
+
+#+BEGIN_SRC javascript
+// trampoline #7  (solved graph in this case)
+//
+  function isOdd(n)
+  {
+    return (this.isOdd = master).call( this, n );
+    
+    function master(n) {
+      var case_i = 0
+, arg0 = n
+, ret
+;
+//
+while (true) {
+isOdd_impl.call( this, arg0 ); 
+if (case_i === -1) return ret;
+isEven_impl.call( this, arg0 );
+if (case_i === -1) return ret;
+}
+//
+null.bug;    
+//
+function isOdd_impl(n)
+{
+var undef;
+n < 1 ? (case_i=-1, ret=false) : (case_i=1, arg0 = n-1);
+return;
+}
+//
+function isEven_impl(n)
+{
+var undef;
+n < 1 ? (case_i=-1, ret=true) : (case_i=0, arg0 = n-1);
+return;
+}
+  }
+}
+//
+console.log(isOdd( 3 ));
+console.log(isOdd( 4 ));
+
+
+N=9999999;begin=Date.now();isOdd(N);end=Date.now();dur=(end-begin)/1000;speed=N/dur;console.log('dur:',dur, ', speed:',speed.toPrecision(4));
+
+#+END_SRC
+ 
+
+
+
+
+
+
+#+BEGIN_SRC javascript
+// trampoline #8
+// like #7 but without call( this, ... )
+//
+  function isOdd(n)
+  {
+    return (this.isOdd = master).call( this, n );
+    
+    function master(n) {
+      var case_i = 0
+, arg0 = n
+, ret
+;
+//
+while (true) {
+isOdd_impl( arg0 ); 
+if (case_i === -1) return ret;
+isEven_impl( arg0 );
+if (case_i === -1) return ret;
+}
+//
+null.bug;    
+//
+function isOdd_impl(n)
+{
+var undef;
+n < 1 ? (case_i=-1, ret=false) : (case_i=1, arg0 = n-1);
+return;
+}
+//
+function isEven_impl(n)
+{
+var undef;
+n < 1 ? (case_i=-1, ret=true) : (case_i=0, arg0 = n-1);
+return;
+}
+  }
+}
+//
+console.log(isOdd( 3 ));
+console.log(isOdd( 4 ));
+
+
+N=9999999;begin=Date.now();isOdd(N);end=Date.now();dur=(end-begin)/1000;speed=N/dur;console.log('dur:',dur, ', speed:',speed.toPrecision(4));
+
+#+END_SRC
+ 
+
+
+
+
+#+BEGIN_SRC javascript
+// trampoline #9 (sanity check)
+// like #8 but with additional useless line (e.g. generated...)
+//
+  function isOdd(n)
+  {
+    return (this.isOdd = master).call( this, n );
+    
+    function master(n) {
+      var case_i = 0
+, arg0 = n
+, ret
+;
+//
+while (true) {
+isOdd_impl( arg0 ); 
+if (case_i === -1) return ret;
+isEven_impl( arg0 );
+if (case_i === -1) return ret;
+}
+//
+null.bug;    
+//
+function isOdd_impl(n)
+{
+var undef;
+n < 1 ? (case_i=-1, ret=false) : (case_i=1, arg0 = n-1);
+return;
+(case_i=-1, ret=undef);
+}
+//
+function isEven_impl(n)
+{
+var undef;
+n < 1 ? (case_i=-1, ret=true) : (case_i=0, arg0 = n-1);
+return;
+(case_i=-1, ret=undef);
+}
+  }
+}
+//
+console.log(isOdd( 3 ));
+console.log(isOdd( 4 ));
+
+
+N=9999999;begin=Date.now();isOdd(N);end=Date.now();dur=(end-begin)/1000;speed=N/dur;console.log('dur:',dur, ', speed:',speed.toPrecision(4));
+
+#+END_SRC
+
+
+
+
+
+
+#+BEGIN_SRC javascript
+// trampoline #10
+// like #8 and #9 but removed (case_i=0|1) since the graph
+// is fully solved in this case
+//
+  function isOdd(n)
+  {
+    return (this.isOdd = master).call( this, n );
+    
+    function master(n) {
+      var case_i = 0
+, arg0 = n
+, ret
+;
+//
+while (true) {
+isOdd_impl( arg0 ); 
+if (case_i === -1) return ret;
+isEven_impl( arg0 );
+if (case_i === -1) return ret;
+}
+//
+null.bug;    
+//
+function isOdd_impl(n)
+{
+var undef;
+n < 1 ? (case_i=-1, ret=false) : (arg0 = n-1);
+return;
+(case_i=-1, ret=undef);
+}
+//
+function isEven_impl(n)
+{
+var undef;
+n < 1 ? (case_i=-1, ret=true) : (arg0 = n-1);
+return;
+(case_i=-1, ret=undef);
+}
+  }
+}
+//
+console.log(isOdd( 3 ));
+console.log(isOdd( 4 ));
+
+
+N=9999999;begin=Date.now();isOdd(N);end=Date.now();dur=(end-begin)/1000;speed=N/dur;console.log('dur:',dur, ', speed:',speed.toPrecision(4));
+
+#+END_SRC
+ 
+
+
+
+
+
+
+
+
+
+#+BEGIN_SRC javascript
+// trampoline #10meth
+// like #10 but for methods
+//
+var o = { isOdd : isOdd };
+
+  function isOdd(n)
+  {
+    return (this.isOdd = master).call( this, n );
+    
+    function master(n) {
+      var that = this
+, case_i = 0
+, arg0 = n
+, ret
+;
+//
+while (true) {
+isOdd_impl( that, arg0 ); 
+if (case_i === -1) return ret;
+isEven_impl( that, arg0 );
+if (case_i === -1) return ret;
+}
+//
+null.bug;    
+//
+function isOdd_impl(that, n)
+{
+var undef;
+n < 1 ? (case_i=-1, ret=false) : (arg0 = n-1);
+return;
+(case_i=-1, ret=undef);
+}
+//
+function isEven_impl(that, n)
+{
+var undef;
+n < 1 ? (case_i=-1, ret=true) : (arg0 = n-1);
+return;
+(case_i=-1, ret=undef);
+}
+  }
+}
+//
+console.log(o.isOdd( 3 ));
+console.log(o.isOdd( 4 ));
+
+
+N=9999999;begin=Date.now();o.isOdd(N);end=Date.now();dur=(end-begin)/1000;speed=N/dur;console.log('dur:',dur, ', speed:',speed.toPrecision(4));
+
+#+END_SRC
+ 
+
+
+
+
+
+
+
+#+BEGIN_SRC javascript
+// trampoline #10Function
+// like #10 but calling new Function
+//
+  function isOdd(n)
+  {
+var master = new Function('arg0',code_gen());
+    return (this.isOdd = master).call( this, n );
+//
+// --- Details    
+function code_gen() {
+//
+return `var case_i = 0
+, ret
+;
+//
+while (true) {
+isOdd_impl( arg0 ); 
+if (case_i === -1) return ret;
+isEven_impl( arg0 );
+if (case_i === -1) return ret;
+}
+//
+null.bug;    
+//
+function isOdd_impl(n)
+{
+var undef;
+n < 1 ? (case_i=-1, ret=false) : (arg0 = n-1);
+return;
+(case_i=-1, ret=undef);
+}
+//
+function isEven_impl(n)
+{
+var undef;
+n < 1 ? (case_i=-1, ret=true) : (arg0 = n-1);
+return;
+(case_i=-1, ret=undef);
+}
+  `;
+}
+}
+//
+console.log(isOdd( 3 ));
+console.log(isOdd( 4 ));
+
+
+N=9999999;begin=Date.now();isOdd(N);end=Date.now();dur=(end-begin)/1000;speed=N/dur;console.log('dur:',dur, ', speed:',speed.toPrecision(4));
+
+#+END_SRC
+
+
+
+
+
+
+
+
+
+#+BEGIN_SRC javascript
+// trampoline #10FunctionObject
+// like #10 but calling new Function
+//
+  function isOdd(n)
+  {
+var master = new Function('arg0',code_gen());
+    return (this.isOdd = master).call( this, n );
+//
+// --- Details    
+function code_gen() {
+//
+return `var case_i = 0
+, ret
+;
+//
+while (true) {
+isOdd_impl( arg0 ); 
+if (case_i === -1) return ret;
+isEven_impl( arg0 );
+if (case_i === -1) return ret;
+}
+//
+null.bug;    
+//
+function isOdd_impl(n)
+{
+var undef;
+n < 1 ? (case_i=-1, ret=false) : (arg0 = n-1);
+return;
+(case_i=-1, ret=undef);
+}
+//
+function isEven_impl(n)
+{
+var undef;
+n < 1 ? (case_i=-1, ret=true) : (arg0 = n-1);
+return;
+(case_i=-1, ret=undef);
+}
+  `;
+}
+}
+//
+var o = { isOdd : isOdd };
+console.log(o.isOdd( 3 ));
+console.log(o.isOdd( 4 ));
+
+
+N=9999999;begin=Date.now();o.isOdd(N);end=Date.now();dur=(end-begin)/1000;speed=N/dur;console.log('dur:',dur, ', speed:',speed.toPrecision(4));
+
+#+END_SRC
+
+
+
+
+
+
+
+
+
+
+#+BEGIN_SRC javascript
+// trampoline #11FunctionObject.bind
+// like #10FunctionObject
+// but binding to this
+//
+  function isOdd(n)
+  {
+var master = new Function('arg0',code_gen());
+    return (this.isOdd = master).call( this, n );
+//
+// --- Details    
+function code_gen() {
+//
+return `var case_i = 0
+, ret
+, isOdd = isOdd_impl.bind( this )
+, isEven = isEven_impl.bind( this )
+;
+//
+while (true) {
+isOdd( arg0 ); 
+if (case_i === -1) return ret;
+isEven( arg0 );
+if (case_i === -1) return ret;
+}
+//
+null.bug;    
+//
+function isOdd_impl(n)
+{
+var undef;
+n < 1 ? (case_i=-1, ret=false) : (arg0 = n-1);
+return;
+(case_i=-1, ret=undef);
+}
+//
+function isEven_impl(n)
+{
+var undef;
+n < 1 ? (case_i=-1, ret=true) : (arg0 = n-1);
+return;
+(case_i=-1, ret=undef);
+}
+  `;
+}
+}
+//
+var o = { isOdd : isOdd };
+console.log(o.isOdd( 3 ));
+console.log(o.isOdd( 4 ));
+
+
+N=9999999;begin=Date.now();o.isOdd(N);end=Date.now();dur=(end-begin)/1000;speed=N/dur;console.log('dur:',dur, ', speed:',speed.toPrecision(4));
+
+#+END_SRC
