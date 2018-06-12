@@ -1,7 +1,7 @@
 ## fext.js
 Fast explicit tail calls in JavaScript
 
-Classically tail calls are automatically optimized (LISP...) . In JavaScript, 
+Classically, tail calls are automatically optimized (LISP...) . In JavaScript, 
 programmers may well not know which "return" statements are optimized by the engine, and which not.
 This would lead to practical issues when debugging/optimizing ([2009](http://neopythonic.blogspot.de/2009/04/final-words-on-tail-calls.html)).
 
@@ -49,7 +49,7 @@ Self-recursion example:
                   :      mret( isOdd, n-1 )
                 )
 ;
-console.log( isOdd( 84327681 ) );  // true (no call stack issue)
+console.log( isOdd( 84327681 ) );   // true (no call stack issue)
 console.log( isEven( 84327681 ) );  // false (no call stack issue)
 ```
  
@@ -70,7 +70,7 @@ var isOdd = mfun( n => n < 0    ?  mret( self, -n )
                   :      mret( isOdd, n-1 )
                 )
 ;
-console.log( isOdd( 84327681 ) );  // true (no call stack issue)
+console.log( isOdd( 84327681 ) );   // true (no call stack issue)
 console.log( isEven( 84327681 ) );  // false (no call stack issue)
 ```
 
@@ -123,12 +123,12 @@ console.log( o.isEven( 84327681 ) ); // false (no call stack issue)
 Prototype methods:
 ```js
 function A() {}
-A.prototype.isOdd = meth( 'isOdd'
+A.prototype.isOdd = meth( "isOdd"
                           , (that, n) => n < 0  ?  mret( self, -n )
                           :            n === 0  ?  false
                           :            mret( isEven, n-1 )
                         );
-A.prototype.isEven = meth( 'isEven'
+A.prototype.isEven = meth( "isEven"
                            , (that, n) => n < 0  ?  mret( self, -n )
                            :            n === 0  ?  true
                            :            mret( isOdd, n-1 )
