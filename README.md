@@ -22,13 +22,16 @@ Two entry points:
 Wrap the whole function with `mfun(...)` and use `return mret(<expr>)` to mark the tail calls to be optimized.
 
 Self-recursion example:
-```js
+```html
+<script src="fext.js"></script>
+<script>
  var gcd = mfun(
         (a, b) => a > b  ?  mret( self, a-b, b )
             :     a < b  ?  mret( self, b-a, a )
             :     a
  );
  console.log( gcd( 2*3*5*17, 3*5*19 ) );  // 15 (3*5)
+ </script>
  ```
   
  ## Mutual recursion
