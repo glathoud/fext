@@ -54,10 +54,9 @@ You can conveniently omit `namespacekey`:
 ```js
 // The default `namespacekey` is the returned function
 // `var isOdd` in this case
-var isOdd = mfun( namespacekey
-                  , n => n < 0    ?  mret( self, -n )
-                  :      n === 0  ?  false
-                  :      mret( isEven, n-1 )
+var isOdd = mfun( n => n < 0    ?  mret( self, -n )
+                  :    n === 0  ?  false
+                  :    mret( isEven, n-1 )
                 )
 ,  isEven = mfun( isOdd
                   , 'isEven'
