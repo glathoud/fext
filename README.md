@@ -17,9 +17,10 @@ Two entry points:
  * `mfun(...)` returns an optimized function,
  * `meth(...)` returns an optimized method.
  
- In both cases, use `return mret(<expr>)` to mark the tail calls to be optimized, for example:
- 
- ```js
+Use `return mret(<expr>)` to mark the tail calls to be optimized.
+
+Self-recursion example:
+```js
  var gcd = mfun(
         (a, b) => a > b  ?  mret( self, a-b, b )
             :     a < b  ?  mret( self, b-a, a )
@@ -27,7 +28,7 @@ Two entry points:
  );
  console.log( gcd( 2*3*5*17, 3*5*19 ) );  // 15 (3*5)
  ```
- 
+  
  ## Mutual recursion
  
  ```js
@@ -47,6 +48,7 @@ Two entry points:
                 )
 ;
 console.log( isOdd( 84327681 ) );  // true (no call stack issue)
+console.log( isEven( 84327681 ) );  // false (no call stack issue)
 ```
  
 `namespacekey` is only used as a key to determine "groups" of function that know each other.
@@ -66,4 +68,30 @@ var isOdd = mfun( n => n < 0    ?  mret( self, -n )
                   :      mret( isOdd, n-1 )
                 )
 ;
+console.log( isOdd( 84327681 ) );  // true (no call stack issue)
+console.log( isEven( 84327681 ) );  // false (no call stack issue)
+```
+
+## Methods
+
+Instead of `mfun( (a,b,c) => ... )`, use `meth( "methodname", (that,a,b,c) => ... )`.
+
+Differences:
+ * `"methodname"` MUST be the name of the method.
+ *  Inside the method, you MUST use `that` (and not `this`). Reason: performance issue with Firefox `.bind` as of 2018-06-12.
+ * no `namespacekey` parameter.
+
+Unchanged:
+ * `return mret(...)` calls are unchanged (no need to pass `that`).
+ 
+Self-recursion example:
+ ```js
+ var o = {
+    gcd : meth( "gcd"
+                , (that, a, b) => a > b  ?  mret( self, a-b, b )
+                :                 a < b  ?  mret( self, b-a, a )
+                :                 a
+              )
+};
+console.log( o.gcd( 2*3*5*17, 3*5*19 ) );  // 15 (3*5)
 ```
