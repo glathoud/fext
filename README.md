@@ -28,7 +28,8 @@ Two entry points:
  console.log( gcd( 2*3*5*17, 3*5*19 ) );  // 15 (3*5)
  ```
  
- Mutual recursion is supported:
+ ## Mutual recursion
+ 
  ```js
  var namespacekey = {}  // whatever object (won't be modified)
 
