@@ -78,7 +78,7 @@ console.log( isEven( 84327681 ) );  // false (no call stack issue)
 
 No need for `namespacekey`, and instead of `mfun( (a,b,c) => ... )`, use `meth( "methodname", (that,a,b,c) => ... )`.
  * `"methodname"` MUST be the name of the method.
- *  Inside the method, you MUST use `that` (and not `this`). Reason performance issue with Firefox `.bind` (2018-06).
+ *  Inside the method, you MUST use `that` (and not `this`). Reason: `.bind()` slower in Firefox 60.
 
 Unchanged:
  * `return mret(...)` calls are unchanged (no need to pass `that`).
