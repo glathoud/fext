@@ -87,8 +87,9 @@ use:
 ```js
 meth( "methodname", (that,a,b,c) => ... )
 ```
- * `"methodname"` MUST be the name of the method.
- *  Inside the method, you MUST use `that` (and not `this`). Reason: `.bind()` slower in Firefox 60.
+ * `"methodname"` MUST be the name of the method,
+ * The first parameter MUST be `that`,
+ * Inside the method, you MUST use `that` (and not `this`). Reason: `.bind()` slower in Firefox 60.
 
 Unchanged:
  * `return mret(...)` calls are unchanged (no need to pass `that`).
