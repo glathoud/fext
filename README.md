@@ -11,12 +11,14 @@ As of 2018, progress is "slow" and the Chrome team has already *removed* the sel
 
 It turns out that we can do this with today's JavaScript, without extending the language. **fext.js** demonstrates this.
 
-## fext.js: Getting started
+## fext.js: API
 
 Two entry points:
  * `mfun(...)` returns an optimized function,
  * `meth(...)` returns an optimized method.
- 
+
+## fext.js: Getting started
+
 Use `return mret(<expr>)` to mark the tail calls to be optimized.
 
 Self-recursion example:
