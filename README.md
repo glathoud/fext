@@ -76,8 +76,7 @@ console.log( isEven( 84327681 ) );  // false (no call stack issue)
 
 ## Methods
 
-No need for `namespacekey`, and:
- * instead of:
+No need for `namespacekey`. Moreover, instead of:
 ```js
 mfun( (a,b,c) => ... )
 ```
