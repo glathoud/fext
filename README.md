@@ -121,3 +121,20 @@ console.log( o.isOdd( 84327681 ) );  // true (no call stack issue)
 console.log( o.isEven( 84327681 ) ); // false (no call stack issue)
 ```
 
+Prototype methods:
+```js
+function A() {}
+A.prototype.isOdd = meth( 'isOdd'
+                          , (that, n) => n < 0  ?  mret( self, -n )
+                          :            n === 0  ?  false
+                          :            mret( isEven, n-1 )
+                        );
+A.prototype.isEven = meth( 'isEven'
+                           , (that, n) => n < 0  ?  mret( self, -n )
+                           :            n === 0  ?  true
+                           :            mret( isOdd, n-1 )
+                         );
+var o = new A;
+console.log( o.isOdd( 84327681 ) );  // true (no call stack issue)
+console.log( o.isEven( 84327681 ) ); // false (no call stack issue)
+```
