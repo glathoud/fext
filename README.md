@@ -20,8 +20,31 @@ Two entry points:
  In both cases, use `return mret(<expr>)` to mark the tail calls to be optimized, for example:
  
  ```js
- 
+ var gcd = mfun(
+        (a, b) => a > b  ?  mret( self, a-b, b )
+            :     a < b  ?  mret( self, b-a, a )
+            :     a
+ );
+ console.log( gcd( 2*3*5*17, 3*5*19 ) );  // 15 (3*5)
  ```
  
- Mutual recursion is supported.
+ Mutual recursion is supported:
+ ```js
+ var namespacekey = {}  // whatever object
+
+,   isOdd = mfun( namespacekey
+                  , 'isOdd'
+                  , n => n < 0    ?  mret( self, -n )
+                  :      n === 0  ?  false
+                  :      mret( isEven, n-1 )
+                )
+,  isEven = mfun( namespacekey
+                  , 'isEven'
+                  , n => n < 0    ?  mret( self, -n )
+                  :      n === 0  ?  true
+                  :      mret( isOdd, n-1 )
+                )
+;
+console.log( isOdd( 84327681 ) );  // true (no call stack issue)
+```
  
