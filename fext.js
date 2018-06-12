@@ -37,16 +37,6 @@
   ES6's backticks come in handy here.
 */
 
-/* main TODOS  xxx
-
-   beautify a bit the generated code (the indentations that we can
-   control)
-
-   sortsearch example
-   add overhead measurement = speed measurement on cheap function
-   mention "cheap trampoline" (integer value) in the source code
-*/
-
 var global, exports;
 (function (global) {
 
