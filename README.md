@@ -30,7 +30,7 @@ Two entry points:
  
  Mutual recursion is supported:
  ```js
- var namespacekey = {}  // whatever object
+ var namespacekey = {}  // whatever object (won't be modified)
 
 ,   isOdd = mfun( namespacekey
                   , 'isOdd'
