@@ -2,14 +2,16 @@
 <html>
   <head>
     <meta charset=utf-8/>
-    <title>Fast Explicit Tail Calls</title>
+    <title>fext.js: Fast Explicit Tail Calls</title>
     <link rel="stylesheet" type="text/css" href="prettify.css">
     <style type="text/css">
       body {
-      padding: 1em;
+      padding: 0 1em 0 1em;
       font-family: helvetica; 
       font-family: Verdana,Arial,'Lucida Grande',Sans-Serif;
       }
+      .title { margin-bottom: 1em; }
+      .right { float: right; }
       .hidden { display: none; }
       .code_cont { 
       float: left;
@@ -38,15 +40,15 @@
     </style>
     </head>
   <body>
-    <h1>Fast Explicit Tail Calls</h1>
+    <h1 class="title"><code>fext.js</code>: Fast Explicit Tail Calls</h1>
 
-    <h3>Documentation</h3>
+    <div class="right">by <a href="../">G. Lathoud</a>, June 2018.</div>
 
-    Currently on <a href="https://github.com/glathoud/fext/blob/master/README.md">GitHub</a>.
+    <p>...using today&#39;s JavaScript!</p>
+    <p>Documentation on <a href="https://github.com/glathoud/fext/blob/master/README.md">GitHub</a>.</p>
 
     <h3>Unit tests</h3>
-    <pre>fext_unittest_output:
-<code id="unittest_output"></code></pre>
+    <pre><code id="unittest_output">Running...</code></pre>
 
     <div id="source_code_0" class="code_cont"></div>
     <div id="source_code_1" class="code_cont"></div>
@@ -60,12 +62,14 @@
     <script type="text/javascript" src="fext_unittest.js"></script>
     <script type="text/javascript" src="fext_unittest_es6.js"></script>
     <script type="text/javascript">
-    fext_unittest(
-        function ( result )
-        {
-            unittest_output.innerHTML = result.text;
-        }
-    );
+    setTimeout( function () {
+        fext_unittest(
+            function ( result )
+            {
+                unittest_output.innerHTML = result.text.replace( /^\s+/, '' );
+            }
+        )
+    }, 100 );
     </script>
 
     <script type="text/javascript" src="prettify.js"></script>
