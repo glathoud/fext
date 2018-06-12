@@ -19,7 +19,7 @@ Two entry points:
 
 ## Getting started
 
-Use `return mret(<expr>)` to mark the tail calls to be optimized.
+Wrap the whole function with `mfun(...)` and use `return mret(<expr>)` to mark the tail calls to be optimized.
 
 Self-recursion example:
 ```js
