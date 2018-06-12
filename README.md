@@ -9,4 +9,19 @@ Another possibility is to **explicitly mark the tail calls that will be optimize
 
 As of 2018, progress is "slow" and the Chrome team has already *removed* the self-recursion optimization from its JavaScript engine.
 
-Can we do this without having to extend the language?
+It turns out that we can do this with today's JavaScript, without extending the language. **fext.js** demonstrates this.
+
+## fext.js: Getting started
+
+Two entry points:
+ * `mfun(...)` returns an optimized function,
+ * `meth(...)` returns an optimized method.
+ 
+ In both cases, use `return mret(<expr>)` to mark the tail calls to be optimized, for example:
+ 
+ ```js
+ 
+ ```
+ 
+ Mutual recursion is supported.
+ 
