@@ -1,7 +1,7 @@
 ## fext.js
 Fast explicit tail calls in JavaScript
 
-Classically (LISP etc.) tail calls are automatically optimized. In JavaScript, 
+Classically tail calls are automatically optimized (LISP...) . In JavaScript, 
 programmers may well not know which "return" statements are optimized by the engine, and which not.
 This would lead to practical issues when debugging/optimizing ([2009](http://neopythonic.blogspot.de/2009/04/final-words-on-tail-calls.html)).
 
