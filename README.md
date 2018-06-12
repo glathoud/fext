@@ -11,13 +11,13 @@ As of 2018, progress is "slow" and the Chrome team has already *removed* the sel
 
 It turns out that we can do this with today's JavaScript, without extending the language. **fext.js** demonstrates this.
 
-## fext.js: API
+## API
 
 Two entry points:
  * `mfun(...)` returns an optimized function,
  * `meth(...)` returns an optimized method.
 
-## fext.js: Getting started
+## Getting started
 
 Use `return mret(<expr>)` to mark the tail calls to be optimized.
 
@@ -37,13 +37,13 @@ Self-recursion example:
  var namespacekey = {}  // whatever object (won't be modified)
 
 ,   isOdd = mfun( namespacekey
-                  , 'isOdd'
+                  , "isOdd"
                   , n => n < 0    ?  mret( self, -n )
                   :      n === 0  ?  false
                   :      mret( isEven, n-1 )
                 )
 ,  isEven = mfun( namespacekey
-                  , 'isEven'
+                  , "isEven"
                   , n => n < 0    ?  mret( self, -n )
                   :      n === 0  ?  true
                   :      mret( isOdd, n-1 )
@@ -64,7 +64,7 @@ var isOdd = mfun( n => n < 0    ?  mret( self, -n )
                   :    mret( isEven, n-1 )
                 )
 ,  isEven = mfun( isOdd
-                  , 'isEven'
+                  , "isEven"
                   , n => n < 0    ?  mret( self, -n )
                   :      n === 0  ?  true
                   :      mret( isOdd, n-1 )
@@ -97,3 +97,22 @@ Self-recursion example:
 };
 console.log( o.gcd( 2*3*5*17, 3*5*19 ) );  // 15 (3*5)
 ```
+
+Mutual recursion example:
+```js
+var o = {
+    isOdd : meth( "isOdd"
+                  , (that, n) => n < 0  ?  mret( self, -n )
+                  :            n === 0  ?  false
+                  :            mret( isEven, n-1 )
+                )
+    , isEven : meth( "isEven"
+                     , (that, n) => n < 0  ?  mret( self, -n )
+                     :            n === 0  ?  true
+                     :            mret( isOdd, n-1 )
+                   )
+};
+console.log( o.isOdd( 84327681 ) );  // true (no call stack issue)
+console.log( o.isEven( 84327681 ) ); // false (no call stack issue)
+```
+
