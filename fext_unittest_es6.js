@@ -9,7 +9,33 @@ var global, exports;
 
     function get_test_arr_es6() { return [
 
-        function self_recursion_anonymous_backtick()
+        function arrow_self_recursion_anonymous_gcd()
+        {
+            var gcd = mfun(
+                (a, b) => a > b  ?  mret( self, a-b, b )
+                    :     a < b  ?  mret( self, b-a, a )
+                    :     a
+            )
+            , isOk_arr = [
+                [1, 1, 1]
+                , [2, 2, 2]
+                , [2, 3, 1]
+                , [2*3, 2, 2]
+                , [2*3, 3, 3]
+                , [2*5*17, 3*5*19, 5]
+                , [2*3*5*17, 3*5*19, 3*5]
+            ]
+                .map( function( abc ) {
+                    return gcd( abc[ 0 ], abc[ 1 ] ) === abc[ 2 ];
+                })
+            , isOk = isOk_arr
+                .every( function ( x ) { return x; } )
+            ;
+            return isOk;
+            
+        }
+        
+        , function self_recursion_anonymous_backtick()
         {
             var factorial = mfun( `function ( n, acc ) {
                 return acc == null  ?  mret( self, n, 1 )
