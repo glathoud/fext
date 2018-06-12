@@ -48,3 +48,22 @@ Two entry points:
 console.log( isOdd( 84327681 ) );  // true (no call stack issue)
 ```
  
+`namespacekey` is only used as a key to determine "groups" of function that know each other.
+
+You can conveniently omit `namespacekey`:
+```js
+// The default `namespacekey` is the returned function
+// `var isOdd` in this case
+var isOdd = mfun( namespacekey
+                  , n => n < 0    ?  mret( self, -n )
+                  :      n === 0  ?  false
+                  :      mret( isEven, n-1 )
+                )
+,  isEven = mfun( isOdd
+                  , 'isEven'
+                  , n => n < 0    ?  mret( self, -n )
+                  :      n === 0  ?  true
+                  :      mret( isOdd, n-1 )
+                )
+;
+```
