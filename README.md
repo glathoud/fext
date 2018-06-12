@@ -138,3 +138,7 @@ var o = new A;
 console.log( o.isOdd( 84327681 ) );  // true (no call stack issue)
 console.log( o.isEven( 84327681 ) ); // false (no call stack issue)
 ```
+
+## Unit tests
+
+Either in the browser ([live instance](http://glat.info/fext/)) or in the command-line (e.g. [Nashorn](https://github.com/glathoud/fext/tree/master/nashorn)).
