@@ -12,7 +12,15 @@
       }
       .title { margin-bottom: 1em; }
       .right { float: right; }
+      .text-center { text-align: center; }
+
+      .top-img { text-align: center; }
+      @media screen and (min-width: 1200px) {
+      .top-img { float: left; }
+      }
+      
       .hidden { display: none; }
+      .small_img { max-width: 6em; margin: 0.5em; }
       .code_cont { 
       float: left;
       position: relative;
@@ -40,11 +48,15 @@
     </style>
     </head>
   <body>
+    <div class="top-img"><img class="small_img" src="serpent-mord-queue-2.jpg"/></div>
+
     <h1 class="title"><code>fext.js</code>: Fast Explicit Tail Calls</h1>
+
 
     <div class="right">by <a href="../">G. Lathoud</a>, June 2018.</div>
 
     <p>...using today&#39;s JavaScript!</p>
+
     <p>Documentation on <a href="https://github.com/glathoud/fext/blob/master/README.md">GitHub</a>.</p>
 
     <h3>Unit tests</h3>
@@ -61,17 +73,6 @@
     <script type="text/javascript" src="fext.js"></script>
     <script type="text/javascript" src="fext_unittest.js"></script>
     <script type="text/javascript" src="fext_unittest_es6.js"></script>
-    <script type="text/javascript">
-    setTimeout( function () {
-        fext_unittest(
-            function ( result )
-            {
-                unittest_output.innerHTML = result.text.replace( /^\s+/, '' );
-            }
-        )
-    }, 100 );
-    </script>
-
     <script type="text/javascript" src="prettify.js"></script>
     <script type="text/javascript">
     (function () {
@@ -138,8 +139,20 @@
                             )
                 ;
                 if (--write_source_code.n < 1)
+                {
                     prettyPrint();
+                    setTimeout( do_the_unittests, 2000 );
+                }
             }
+        }
+        function do_the_unittests()
+        {
+            fext_unittest(
+                function ( result )
+                {
+                    unittest_output.innerHTML = result.text.replace( /^\s+/, '' );
+                }
+            );
         }
     })();
     </script>
