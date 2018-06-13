@@ -14,7 +14,7 @@
   Use `mfun` to declare a function, `meth` to declare a method, and
   wrap the inner tail calls with `mret`.
 
-  Examples: see ./fext_unittest_es6.js and ./fext_unittest.js
+  Examples: ./test/fext_unittest_es6.js and ./test/fext_unittest.js
   
   Write-up: see ./index.html
 
@@ -183,6 +183,10 @@ var global, exports;
         name  ||  (name = '__fext_anonymous_' + (
             mfun.__fext_anon_id__ = 1 + (mfun.__fext_anon_id__ | 0)
         ) + '__');
+
+        // Option, number of expansion levels
+
+        var expansion = this  &&  this.expansion; // ?integer>0?
         
         // Option, mostly for internal use, see `meth()`.
 
@@ -366,7 +370,9 @@ var global, exports;
                             ||  null.bug;
                         
                         return 'case ' + i + ': '
-                            + space[ a_name ].callcode_gen()
+                            + space[ a_name ].callcode_gen( 
+                                piece_i_of_name
+                            )
                             + ' continue;\n';
                     }
                 ) )
@@ -446,14 +452,69 @@ var global, exports;
             }
         }
         
-        function callcode_gen()
+        function callcode_gen( piece_i_of_name, remaining_ex )
         {
+            remaining_ex == null  &&  (remaining_ex = expansion);
+            
             var arr = [];
 
             for (var i = 0; i < narg; ++i)
                 arr.push( argstring( i ) );
+
+            var ret_arr = [
+                name + '_fext( ' + arr.join( ', ' ) + ' );'
+            ];
+
+            callcode_gen_expand( remaining_ex );
             
-            return name + '_fext( ' + arr.join( ', ' ) + ' );';
+            return ret_arr.join( '\n' );
+
+            function callcode_gen_expand( ex )
+            {
+                if (ex-- > 0)
+                {
+                    ret_arr.push(
+                        'if (' + V_CASE_I + ' === '
+                            + V_CASE_I_RETURN
+                            + ') return ' + V_RET + ';'
+                    );
+
+                    piece_arr[ 0 ] === name  ||  null.bug;
+                    
+                    var only_self = piece_arr.length === 1;
+
+                    for (var j_begin = 0, j_end = piece_arr.length
+                         , j = j_begin;
+                         j < j_end;
+                         j++
+                        )
+                    {
+                        var a_name = piece_arr[ j ]
+                        ,   a_pi   = piece_i_of_name[ a_name ]
+                        ;
+                        if (!only_self)
+                        {
+                            tmp = j === j_end - 1
+                                ? 'else {'
+                                :
+                                ((j_begin < j ?  'else if'  :  'if')
+                                 + ' ('
+                                 + V_CASE_I + ' === ' + a_pi
+                                 + ') {'
+                                )
+                            ;
+                            ret_arr.push( tmp );
+                        }
+                        ret_arr.push(
+                            space[ a_name ].callcode_gen(
+                                piece_i_of_name, ex
+                            )
+                        );
+                        if (!only_self)
+                            ret_arr.push( '}' );
+                    }
+                }
+            }
         }
         
         function piececode_gen( /*uint[string]*/piece_i_of_name )
@@ -588,11 +649,11 @@ var global, exports;
         
         function meth_wrapper2()
         {
-            if (this[ name ] !== meth_wrapper1)
+            if (this[ name ] === meth_wrapper2)
             {
                 // We support both method definitions: prototype-based
                 // and direct object assignment. See meth_* examples:
-                // ./fext_unittest_es6.js
+                // ./test/fext_unittest_es6.js
 
                 setup_all_mfuns( Object.getPrototypeOf( this ) );
                 setup_all_mfuns( this );
@@ -601,7 +662,7 @@ var global, exports;
                 this[ name ] === meth_wrapper1  ||  null.bug;
             }
             
-            return meth_wrapper1.apply( this, arguments );
+            return this[ name ].apply( this, arguments );
         }
 
         function setup_all_mfuns( o )
@@ -749,6 +810,7 @@ var global, exports;
             , tmp
             ;
             sf_tmpl_arr.push( commented( s_0 ) + '\n' )
+            sf_tmpl_arr.push( '{' );
             
             if (tmp = s_0.match( simple_rx ))
             {
@@ -786,7 +848,8 @@ var global, exports;
                 log_to( 'error', s_0 );
                 null.tail_form_not_supported;
             }
-
+            sf_tmpl_arr.push( '}' );
+                        
             var change_body = tc_change_body
                 .bind( null, sf_tmpl_arr, begin, end )
             ;
@@ -861,8 +924,11 @@ var global, exports;
             var i = piece_i_of_name[ a_name ];
             i.toPrecision.call.a;
             
-            return '  (' + V_CASE_I + '=' + i
-                + ', '
+            return '  ('
+                + (name === a_name
+                   ?  ''
+                   :  V_CASE_I + '=' + i + ', '
+                  )
                 + rest_args.map( set_one_arg ).join( ', ' )
                 + ')  ';
 

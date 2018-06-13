@@ -486,7 +486,6 @@ var global, exports;
             , isOk = isOk_arr
                 .every( function ( x ) { return x; } )
             ;
-            console.log('xxx ____ o.factorial: ' + o.factorial);
             return isOk;  
         }
 

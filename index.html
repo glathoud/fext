@@ -3,7 +3,7 @@
   <head>
     <meta charset=utf-8/>
     <title>fext.js: Fast Explicit Tail Calls</title>
-    <link rel="stylesheet" type="text/css" href="prettify.css">
+    <link rel="stylesheet" type="text/css" href="web/prettify.css">
     <style type="text/css">
       body {
       padding: 0 1em 0 1em;
@@ -45,10 +45,14 @@
 
       .success { color: darkgreen; }
       .failure { color: darkred; font-weight: bold;}
+
+      .speedtest_patience { display: none; }
+      .speedtest_running .speedtest_patience { display: inherit; }
+      .speedtest_running button { display: none; }
     </style>
     </head>
   <body>
-    <div class="top-img"><img class="small_img" src="serpent-mord-queue-2.jpg"/></div>
+    <div class="top-img"><img class="small_img" src="web/serpent-mord-queue-2.jpg"/></div>
 
     <h1 class="title"><code>fext.js</code>: Fast Explicit Tail Calls</h1>
 
@@ -59,6 +63,20 @@
 
     <p>Documentation on <a href="https://github.com/glathoud/fext/blob/master/README.md">GitHub</a>.</p>
 
+    <h3>Speed test</h3>
+
+    <section id="speedtest_section">
+      
+      <pre><code id="speedtest_output"></code></pre>
+      
+      <p>
+        <button onclick="fext_speedtest(speedtest_section,speedtest_output)">Run</button>
+        <span class="speedtest_patience">Running (please be patient...)</span>
+
+      </p>
+
+    </section>
+    
     <h3>Unit tests</h3>
     <pre><code id="unittest_output">Running...</code></pre>
 
@@ -71,9 +89,9 @@
     </script>
     
     <script type="text/javascript" src="fext.js"></script>
-    <script type="text/javascript" src="fext_unittest.js"></script>
-    <script type="text/javascript" src="fext_unittest_es6.js"></script>
-    <script type="text/javascript" src="prettify.js"></script>
+    <script type="text/javascript" src="test/fext_unittest.js"></script>
+    <script type="text/javascript" src="test/fext_unittest_es6.js"></script>
+    <script type="text/javascript" src="web/prettify.js"></script>
     <script type="text/javascript">
     (function () {
         
@@ -156,6 +174,8 @@
         }
     })();
     </script>
-    
+
+    <script type="text/javascript" src="test/fext_speedtest.js"></script>
+      
   </body>
-    </html>
+</html>

@@ -5,6 +5,8 @@ var global, exports;
 
     'use strict';
 
+    var mfun = global.mfun;
+    
     global.fext_unittest = fext_unittest;
     global.get_test_arr_es5 = get_test_arr_es5;
     
