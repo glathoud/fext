@@ -21,8 +21,6 @@
 
   Implementation notes: 
 
-  (0) `mret` is an undefined symbol that will be replaced.
-
   (1) fext.js *itself* is implemented with mostly "old-fashioned"
   syntax to fit old build systems. Arrow functions are supported,
   on older JavaScript engines put them in a string.
@@ -44,15 +42,31 @@ var global, exports;
     
     // ---------- API
 
+    global.mret = mret;
     global.mfun = mfun;
     global.meth = meth;
 
+    // Debugging tools
+
+    global.mfunD = mfun.bind( { debug : true } );
+    global.methD = meth.bind( { debug : true } );
+    
     // ---------- API: convenience tool
 
     mfun.log_to = log_to;
     
     // ---------- API implementation
 
+    var _debugging = false;
+
+    function mret()
+    {
+        if (_debugging)
+            return arguments[ 0 ].apply( null, [].slice.call( arguments, 1 ) );
+        else
+            throw new Error( 'fext: put your `mret` tail calls in a function WRAPPED with `mfun`. See https://github.com/glathoud/fext and http://glat.info/fext for examples.' );
+    }
+    
     function mfun( a, b, c )
     /*
       Returns a function that will lazily create the optimized
@@ -191,6 +205,11 @@ var global, exports;
             return x != null  ?  x  :  fallback;
         }
         
+        // ?boolean? 
+        var debug = dflt( this  &&  this.debug
+                          , false
+                        );
+        
         // ?boolean?
         var inline_body = dflt( this  &&  this.inline_body
                                 , true
@@ -204,7 +223,7 @@ var global, exports;
         // ?function?: Mostly for internal use, see `meth()`
         var prepro_arg_arr = this  &&  this.preprocess_argname_arr
             ||  null;
-        
+
         // --- Check
         
         (f_or_s  &&  name  &&  namespacekey)  ||  null.missing_arg;
@@ -212,6 +231,38 @@ var global, exports;
         (f_or_s.bind  ||  f_or_s.substring).call.a;
         name.substring.call.a;
 
+        if (debug)
+        {
+            // Leave the source code untouched for easier debugging.
+
+            var dbg_f = 'string' === typeof f_or_s
+                ?  (new Function( 'return (' + f_or_s + ');' ))()
+                : f_or_s
+            ;
+            dbg_wrap.getImpl = dbg_getImpl;
+            return dbg_wrap;
+        }
+
+        function dbg_getImpl()
+        {
+            return dbg_f;
+        }
+        
+        function dbg_wrap()
+        {
+            _debugging = true;
+
+            var old_self = global.self;
+            global.self = dbg_f;
+            
+            var ret = dbg_f.apply( this, arguments );
+
+            global.self = old_self;
+            
+            _debugging = false;
+            return ret;
+        }
+        
         // --- Extract the code
 
         // if a function, this calls decompilation (sin!)
