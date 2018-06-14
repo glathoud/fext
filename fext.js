@@ -731,6 +731,8 @@ var global, exports;
         ;
         (name  ||  null).required;
         name.substring.call.a;
+
+        var debug = this  &&  this.debug;
         
         // Use case: mutual recursion (or named self-recursion)
         
@@ -756,7 +758,7 @@ var global, exports;
         var _MSM = '__meth_setup_mfun__';
 
         meth_wrapper2[ _MSM ] = meth_setup_mfun;
-        
+
         return meth_wrapper2;
 
         // --- Details
@@ -768,17 +770,17 @@ var global, exports;
                 // We support both method definitions: prototype-based
                 // and direct object assignment. See meth_* examples:
                 // ./test/fext_unittest_es6.js
-
+                
                 setup_all_mfuns( Object.getPrototypeOf( this ) );
                 setup_all_mfuns( this );
-
+                
                 // "all" include myself, therefore:
                 this[ name ] === meth_wrapper1  ||  null.bug;
             }
             
             return this[ name ].apply( this, arguments );
         }
-
+        
         function setup_all_mfuns( o )
         {
             for (var k in o)
@@ -799,10 +801,12 @@ var global, exports;
             meth_mfun = mfun.call(
                 {
                     preprocess_argname_arr : meth_preprocess_argname_arr
+                    , debug : debug
                 }
                 , namespacekey, a, b );
 
             o[ name ] = meth_wrapper1;
+            o[ name ].getImpl = meth_mfun.getImpl;
         }
 
         function meth_preprocess_argname_arr( argname_arr )

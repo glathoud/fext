@@ -1290,6 +1290,11 @@ acc == null  ?  mret( self, n, 1 )\
             return funct_ok  &&  isOdd_body_ok  &&  isEven_body_ok;
         }
 
+
+
+
+
+        
         , function debugging_tool_self_rec()
         {
             /* Test implementation: we need to check gcd.getImpl(),
@@ -1329,6 +1334,31 @@ acc == null  ?  mret( self, n, 1 )\
             
         }
 
+        , function debugging_tool_self_rec_real_life_use_case()
+        {
+            var gcd = mfunD( function (a, b) {
+                return a > b  ?  mret( self, a-b, b )
+                    :  a < b  ?  mret( self, b-a, a )
+                    :  a;
+            })
+            , isOk_arr = [
+                [1, 1, 1]
+                , [2, 2, 2]
+                , [2, 3, 1]
+                , [2*3, 2, 2]
+                , [2*3, 3, 3]
+                , [2*5*17, 3*5*19, 5]
+                , [2*3*5*17, 3*5*19, 3*5]
+            ]
+                .map( function( abc ) {
+                    return gcd( abc[ 0 ], abc[ 1 ] ) === abc[ 2 ];
+                })
+            , isOk_result = isOk_arr
+                .every( function ( x ) { return x; } )
+            ;
+            
+            return isOk_result;
+        }
 
         , function debugging_tool_mutual_recursion()
         {
@@ -1369,32 +1399,6 @@ acc == null  ?  mret( self, n, 1 )\
             return isOk_result  &&  isOk_impl;
         }
         
-        , function debugging_tool_self_rec_real_life_use_case()
-        {
-            var gcd = mfunD( function (a, b) {
-                return a > b  ?  mret( self, a-b, b )
-                    :  a < b  ?  mret( self, b-a, a )
-                    :  a;
-            })
-            , isOk_arr = [
-                [1, 1, 1]
-                , [2, 2, 2]
-                , [2, 3, 1]
-                , [2*3, 2, 2]
-                , [2*3, 3, 3]
-                , [2*5*17, 3*5*19, 5]
-                , [2*3*5*17, 3*5*19, 3*5]
-            ]
-                .map( function( abc ) {
-                    return gcd( abc[ 0 ], abc[ 1 ] ) === abc[ 2 ];
-                })
-            , isOk_result = isOk_arr
-                .every( function ( x ) { return x; } )
-            ;
-            
-            return isOk_result;
-        }
-
         , function debugging_tool_mutual_recursion_real_live_use_case()
         {
             // The default `namespacekey` is the returned function
@@ -1417,6 +1421,86 @@ acc == null  ?  mret( self, n, 1 )\
         }
 
 
+
+        
+        
+        , function meth_debugging_tool_self_rec()
+        {
+            /* Test implementation: we need to check gcd.getImpl(),
+               hence the need for a separate function.
+               
+               In a real-life use case one would simply append a "D"
+               as in "methD".
+            */
+
+            function gcd_input_fun(that, a, b) {
+                return a > b  ?  mret( self, a-b, b )
+                    :  a < b  ?  mret( self, b-a, a )
+                    :  a;
+            }
+            var o = { gcd : methD( 'gcd', gcd_input_fun ) }
+            
+            , isOk_arr = [
+                [1, 1, 1]
+                , [2, 2, 2]
+                , [2, 3, 1]
+                , [2*3, 2, 2]
+                , [2*3, 3, 3]
+                , [2*5*17, 3*5*19, 5]
+                , [2*3*5*17, 3*5*19, 3*5]
+            ]
+                .map( function( abc ) {
+                    return o.gcd( abc[ 0 ], abc[ 1 ] ) === abc[ 2 ];
+                })
+            , isOk_result = isOk_arr
+                .every( function ( x ) { return x; } )
+
+            , isOk_impl = o.gcd === gcd_input_fun
+            ;
+            debugger;
+            return isOk_result  &&  isOk_impl;
+            
+        }
+
+        , function meth_debugging_tool_mutual_recursion()
+        {
+            /* Test implementation: we need to check isOdd.getImpl()
+               and isEven.getImpl(), hence the need for separate
+               functions.
+               
+               In a real-life use case one would simply append a "D"
+               as in "methD".
+               ;
+            */
+
+            function isOdd_input_fun( that, n ) {
+                return n < 0  ?  mret( isOdd, -n )
+                    :  n === 0  ?  false
+                    :  mret( isEven, n-1 );
+            }
+            function isEven_input_fun( that, n ) {
+                return n < 0  ?  mret( isEven, -n )
+                    :  n === 0  ?  true
+                    :  mret( isOdd, n-1 );
+            }
+
+            // The default `namespacekey` is the returned function
+            // `var isOdd` in this case.
+            var o = {
+                isOdd    : methD( 'isOdd',  isOdd_input_fun )
+                , isEven : methD( 'isEven', isEven_input_fun )
+            }
+            
+            ,   isOk_result = [-7, -1, 1, 3, 5, 37 ].every( o.isOdd.bind( o ) )
+                && [-8, -2, 0, 2, 4, 6, 48 ].every( o.isEven.bind( o ) )
+            ;
+            return isOk_result;
+        }
+        
+
+
+
+        
         
     ];} // end of function `get_test_arr()`
 
