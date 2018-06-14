@@ -174,9 +174,11 @@ var global, exports;
             null.invalid_argument;
         }
 
+        var ret = debug  ?  fext_wrapper_dbg  :  fext_wrapper;
+        
         // Defaults
 
-        namespacekey  ||  (namespacekey = fext_wrapper);
+        namespacekey  ||  (namespacekey = ret);
 
         if (!name)
         {
@@ -231,38 +233,6 @@ var global, exports;
         (f_or_s.bind  ||  f_or_s.substring).call.a;
         name.substring.call.a;
 
-        if (debug)
-        {
-            // Leave the source code untouched for easier debugging.
-
-            var dbg_f = 'string' === typeof f_or_s
-                ?  (new Function( 'return (' + f_or_s + ');' ))()
-                : f_or_s
-            ;
-            dbg_wrap.getImpl = dbg_getImpl;
-            return dbg_wrap;
-        }
-
-        function dbg_getImpl()
-        {
-            return dbg_f;
-        }
-        
-        function dbg_wrap()
-        {
-            _debugging = true;
-
-            var old_self = global.self;
-            global.self = dbg_f;
-            
-            var ret = dbg_f.apply( this, arguments );
-
-            global.self = old_self;
-            
-            _debugging = false;
-            return ret;
-        }
-        
         // --- Extract the code
 
         // if a function, this calls decompilation (sin!)
@@ -363,10 +333,20 @@ var global, exports;
             , new_body_gen : new_body_gen
         } );
 
-        // Convenience (esp. for `meth`)
-        fext_wrapper.getImpl = getImpl;
+        if (debug)
+        {
+            // Leave the source code untouched for easier debugging.
+
+            var dbg_f = 'string' === typeof f_or_s
+                ?  (new Function( 'return (' + f_or_s + ');' ))()
+                : f_or_s
+            ;
+        }
         
-        return fext_wrapper;
+        // Convenience (esp. for `meth`)
+        ret.getImpl = debug  ?  getImpl_dbg  :  getImpl;
+        
+        return ret;
         
         // --- Details
         
@@ -390,6 +370,31 @@ var global, exports;
                                         )
                     );
         }
+
+
+        function fext_wrapper_dbg()
+        {
+            _debugging = true;
+
+            var old_self = global.self;
+            global.self = dbg_f;
+            
+            var ret = dbg_f.apply( this, arguments );
+
+            global.self = old_self;
+            
+            _debugging = false;
+            return ret;
+        }
+        
+        function getImpl_dbg()
+        {
+            return dbg_f;
+        }
+        
+
+
+
         
         function master_argmax_string()
         {
