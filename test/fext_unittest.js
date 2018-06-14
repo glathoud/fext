@@ -230,7 +230,7 @@ n > 1  ?  mret( self, n-1, acc*n )\
 mret( factsub, n, 1 )'
                                 )
             ,   factsub   = mfun( namespacekey, 'factsub', '(n, acc) =>\
-return n > 1  ?  mret( self, n-1, acc*n )\
+n > 1  ?  mret( self, n-1, acc*n )\
 : acc')
             , isOk_arr = [
                 [0, 1]
@@ -1196,7 +1196,101 @@ acc == null  ?  mret( self, n, 1 )\
                 && [-8, -2, 0, 2, 4, 6, 48].every( function (x) { return o.isEven(x); })
             ;    
         }        
-        
+
+        , function inline_body_with_var_throws_error()
+        {
+            try
+            {
+                var a = mfun( function a( x ) {
+                    var y = x + 1;
+                    return y;
+                })
+                ;
+                a( 100 );
+            }
+            catch (e)
+            {
+                var msg = '' + e;
+                return /\bvar\b/.test( msg )
+                    &&  /\bforbidden\b/.test( msg )
+                    &&  /\blet\b/.test( msg )
+                    &&  /\bconst\b/.test( msg )
+                ;
+            }
+            return false;
+        }
+
+
+        , function
+        isOdd_isEven_functionality_default_namespacekey_inline_body_false()
+        {
+            // The default `namespacekey` is the returned function
+            // `var isOdd` in this case.
+            var isOdd = mfun.call(
+                { inline_body : false }
+                , function isOdd( n ) {
+                    return n < 0  ?  mret( isOdd, -n )
+                        :  n === 0  ?  false
+                        :  mret( isEven, n-1 );
+                })
+            ,  isEven = mfun.call(
+                { inline_body : false }
+                , isOdd, function isEven( n ) {
+                    return n < 0  ?  mret( isEven, -n )
+                    :  n === 0  ?  true
+                        :  mret( isOdd, n-1 );
+                })
+
+            , funct_ok = [-7, -1, 1, 3, 5, 37 ].every( isOdd )
+                && [-8, -2, 0, 2, 4, 6, 48 ].every( isEven )
+
+            , isOdd_body_ok = (isOdd.getImpl() + '')
+                .match( /\bfunction\b/g )
+                .length >= 3
+
+            , isEven_body_ok = (isEven.getImpl() + '')
+                .match( /\bfunction\b/g )
+                .length >= 3
+            ;
+
+            return funct_ok  &&  isOdd_body_ok  &&  isEven_body_ok;
+        }
+                
+        , function
+        isOdd_isEven_functionality_default_namespacekey_inline_body_true()
+        {
+            // The default `namespacekey` is the returned function
+            // `var isOdd` in this case.
+            var isOdd = mfun.call(
+                { inline_body : true }
+                , function isOdd( n ) {
+                    return n < 0  ?  mret( isOdd, -n )
+                        :  n === 0  ?  false
+                        :  mret( isEven, n-1 );
+                })
+            ,  isEven = mfun.call(
+                { inline_body : true }
+                , isOdd, function isEven( n ) {
+                    return n < 0  ?  mret( isEven, -n )
+                    :  n === 0  ?  true
+                        :  mret( isOdd, n-1 );
+                })
+
+            , funct_ok = [-7, -1, 1, 3, 5, 37 ].every( isOdd )
+                && [-8, -2, 0, 2, 4, 6, 48 ].every( isEven )
+
+            , isOdd_body_ok = (isOdd.getImpl() + '')
+                .match( /\bfunction\b/g )
+                .length == 1
+
+            , isEven_body_ok = (isEven.getImpl() + '')
+                .match( /\bfunction\b/g )
+                .length == 1
+            ;
+
+            return funct_ok  &&  isOdd_body_ok  &&  isEven_body_ok;
+        }
+                
     ];} // end of function `get_test_arr()`
 
 

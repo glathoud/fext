@@ -109,11 +109,6 @@ var global, exports;
 
             {
                 niter_init : 1e5
-                , runner   : isOdd_metaret
-            }
-            
-            , {
-                niter_init : 1e5
                 , runner   : isOdd_mfun
             }
 
@@ -123,6 +118,11 @@ var global, exports;
             }
                        
             , {
+                niter_init : 1e5
+                , runner   : isOdd_metaret
+            }
+            
+            , {
                 niter_init : 1e3
                 , runner   : isOdd_tailtramp
             }
@@ -131,13 +131,10 @@ var global, exports;
                 niter_init : 1e2
                 , runner   : isOdd_tailcatch
             }
-            
-            // --- mfun variants
-            
-            , {
-                niter_init : 1e5
-                , runner   : isOdd_mfun_if
-            }
+
+            /*
+
+              To test other parameters
 
             , {
                 niter_init : 1e5
@@ -154,6 +151,18 @@ var global, exports;
                 , runner   : isOdd_mfun_ex1
             }
 
+            , {
+                niter_init : 1e5
+                , runner   : isOdd_mfun_ex0
+            }
+
+            , {
+                niter_init : 1e5
+                , runner   : isOdd_mfun_if
+            }
+
+            */
+            
         ];
     }
 
@@ -262,6 +271,36 @@ var global, exports;
         // Sanity check
         isOdd_isEven_check( isOdd, isEven );
 
+        var result = isOdd( niter ); // <<< speedtest
+
+        // Sanity check
+        result === (niter % 2 !== 0)  ||  null.bug;
+    }
+
+
+
+    function isOdd_mfun_ex0( niter )
+    {
+        // The default `namespacekey` is the returned
+        // function `var isOdd` in this case.
+        var opt = { expansion : 0 }
+
+        ,   isOdd = mfun.call( opt, function isOdd( n ) {
+            return n > 0  ?  mret( isEven, n-1 )
+                :  n < 0  ?  mret( self, -n )
+                :  false
+            ;
+        })
+        ,  isEven = mfun.call( opt, isOdd, function isEven( n ) {
+            return n > 0  ?  mret( isOdd, n-1 )
+                :  n < 0  ?  mret( self, -n )
+                :  true
+            ;
+        })
+        ;
+        // Sanity check
+        isOdd_isEven_check( isOdd, isEven );
+            
         var result = isOdd( niter ); // <<< speedtest
 
         // Sanity check

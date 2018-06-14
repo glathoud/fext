@@ -184,27 +184,40 @@ var global, exports;
             mfun.__fext_anon_id__ = 1 + (mfun.__fext_anon_id__ | 0)
         ) + '__');
 
-        // Option, number of expansion levels
+        // -- Options
 
-        var expansion = this  &&  this.expansion; // ?integer>0?
+        function dflt( x, fallback )
+        {
+            return x != null  ?  x  :  fallback;
+        }
         
-        // Option, mostly for internal use, see `meth()`.
+        // ?boolean?
+        var inline_body = dflt( this  &&  this.inline_body
+                                , true
+                              ); 
+        
+        // ?integer>0?: number of expansion levels
+        var expansion = dflt( this  &&  this.expansion
+                              , 1
+                            );
 
-        var prepro_arg_arr = this  &&  this.preprocess_argname_arr;
+        // ?function?: Mostly for internal use, see `meth()`
+        var prepro_arg_arr = this  &&  this.preprocess_argname_arr
+            ||  null;
         
-        // Check
+        // --- Check
         
         (f_or_s  &&  name  &&  namespacekey)  ||  null.missing_arg;
         
         (f_or_s.bind  ||  f_or_s.substring).call.a;
         name.substring.call.a;
 
-        // Extract the code
+        // --- Extract the code
 
         // if a function, this calls decompilation (sin!)
         var f_code    = '' + f_or_s;
         
-        // Rock it
+        // --- Rock it
         
         var mo_fun   = f_code.match(
                 /^\s*function[^\(]*\(([^\)]*)\)([\s\S]*)$/
@@ -218,6 +231,9 @@ var global, exports;
         ,   s_body    = (mo_fun  ?  mo_fun[ 2 ]
                          :  'return ' + mo_arrow[ 2 ] + ';'
                         ).trim()
+
+        // Prevent issues in the `inline_body` context
+        ,  has_var = /\bvar\s/.test( s_body )
         
         // Scan the head
         
@@ -291,6 +307,9 @@ var global, exports;
             ,  callcode_gen :  callcode_gen
             , piececode_gen : piececode_gen
             , piece_arr_0   : piece_arr.slice()
+
+            // Used by `inline_body`
+            , new_body_gen : new_body_gen
         } );
 
         // Convenience (esp. for `meth`)
@@ -372,6 +391,8 @@ var global, exports;
                         return 'case ' + i + ': '
                             + space[ a_name ].callcode_gen( 
                                 piece_i_of_name
+                                , null
+                                , { inline_body : inline_body }
                             )
                             + ' continue;\n';
                     }
@@ -382,17 +403,23 @@ var global, exports;
                     , '}'
                     , ''
                 ])
-                .concat( piece_arr.map(
-                    function ( a_name, i )
-                    {
-                        (a_name === name) === (i === 0)
-                            ||  null.bug;
-                        
-                        return space[ a_name ].piececode_gen(
-                            piece_i_of_name
-                        );
-                    }
-                ))
+                .concat( 
+                    inline_body
+
+                        ?  []
+
+                        :  piece_arr.map(
+                            function ( a_name, i )
+                            {
+                                (a_name === name) === (i === 0)
+                                    ||  null.bug;
+                                
+                                return space[ a_name ].piececode_gen(
+                                    piece_i_of_name
+                                );
+                            }
+                        )
+                )
                 .join( '\n' )
         }
 
@@ -452,7 +479,7 @@ var global, exports;
             }
         }
         
-        function callcode_gen( piece_i_of_name, remaining_ex )
+        function callcode_gen( piece_i_of_name, remaining_ex, opt )
         {
             remaining_ex == null  &&  (remaining_ex = expansion);
             
@@ -461,9 +488,21 @@ var global, exports;
             for (var i = 0; i < narg; ++i)
                 arr.push( argstring( i ) );
 
-            var ret_arr = [
-                name + '_fext( ' + arr.join( ', ' ) + ' );'
-            ];
+            var ret_arr = (opt  &&  opt.inline_body)
+
+                ?  argname_arr.map(
+                    function (arg, i) {
+                        return arg + ' = ' + argstring( i ) + ';'
+                    }
+                )
+                .concat([
+                    new_body_gen( piece_i_of_name, opt )
+                ])
+
+                :  [
+                    name + '_fext( ' + arr.join( ', ' ) + ' );'
+                ]
+            ;
 
             callcode_gen_expand( remaining_ex );
             
@@ -507,7 +546,7 @@ var global, exports;
                         }
                         ret_arr.push(
                             space[ a_name ].callcode_gen(
-                                piece_i_of_name, ex
+                                piece_i_of_name, ex, opt
                             )
                         );
                         if (!only_self)
@@ -525,15 +564,8 @@ var global, exports;
             ,   p_head = 'function ' + name + '_fext( '
                 + p_h_arr.join( ', ' ) + ' )'
 
-            ,   new_body = s_body
+            ,   new_body = new_body_gen( piece_i_of_name )
             ;
-            // Decreasing order important here
-            for (var i = tc_len; i--;) 
-            {
-                new_body = tc_arr[ i ]
-                    .change_body( new_body, piece_i_of_name );
-            }
-            
             return [
                 p_head
                 , '{'
@@ -547,6 +579,32 @@ var global, exports;
                 , '}'
             ].join( '\n' );
         }        
+
+
+        function new_body_gen( /*uint[string]*/piece_i_of_name, /*?object?*/opt )
+        {
+            var inline_body = opt  &&  opt.inline_body;
+
+            if (inline_body  &&  has_var)
+            {
+                throw new Error( 'fext (inline_body: true): function "' + name + '" contains `var`, which are forbidden.'
+                                 + ' Please use `let` or `const` instead.'
+                               );
+            }
+            
+            var new_body = s_body;
+            
+            // Decreasing order important here
+            for (var i = tc_len; i--;) 
+            {
+                new_body = tc_arr[ i ]
+                    .change_body( new_body, piece_i_of_name, opt );
+            }
+
+            return inline_body
+                ?  'while(true) {\n' + new_body + '\n}\n'
+                :  new_body;
+        }
     }
 
     // ---------- API implementation: Variant to declare methods.
@@ -819,7 +877,9 @@ var global, exports;
                 sf_tmpl_arr.push(
                     sf_tmpl_gen( name, tc_name_set, tc_name_arr
                                  , s_call )
-                    , ';\nreturn;\n'
+                    , ';\n'
+                    , tc_return
+                    , '\n'
                 );
             }
             else if (tmp = s_0.match( cond_rx ))
@@ -841,7 +901,11 @@ var global, exports;
                         , s_colon  ?  '\n' + s_colon  :  ''
                     );
                 }
-                sf_tmpl_arr.push( ';\nreturn;\n' );
+                sf_tmpl_arr.push(
+                    ';\n'
+                    , tc_return
+                    , '\n'
+                );
             }
             else
             {
@@ -965,7 +1029,7 @@ var global, exports;
     }
 
     function tc_change_body( sf_tmpl_arr, begin, end
-                             , body, piece_i_of_name )
+                             , body, piece_i_of_name, opt )
     {
         return body.substring( 0, begin )
             + sf_tmpl_arr.map( sf_one ).join( '' )
@@ -974,10 +1038,19 @@ var global, exports;
         function sf_one( sf )
         {
             return 'string' === typeof sf  ? sf
-                :  sf( piece_i_of_name )
+                :  sf( piece_i_of_name, opt )
             ;
         }
     }
 
+    function tc_return( /*object*/piece_i_of_name, /*?object?*/opt )
+    {
+        var inline_body = opt  &&  opt.inline_body;
+        return inline_body
+            ?  'break'
+            :  'return'
+        ;
+    }
+    
     
 })(global  ||  exports  ||  this);
