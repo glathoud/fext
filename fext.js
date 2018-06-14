@@ -49,7 +49,7 @@ var global, exports;
     // Debugging tools
 
     global.mfunD = mfun.bind( { debug : true } );
-    global.methD = meth.bind( { debug : true } );
+    global.methD = meth.bind( { debug : 'method' } );
     
     // ---------- API: convenience tool
 
@@ -62,9 +62,17 @@ var global, exports;
     function mret()
     {
         if (_debugging)
-            return arguments[ 0 ].apply( null, [].slice.call( arguments, 1 ) );
+        {
+            return arguments[ 0 ]
+                .apply( null
+                        , (_debugging === 'method'  ?  [ this ] : [])
+                        .concat( [].slice.call( arguments, 1 ) )
+                      );
+        }
         else
+        {
             throw new Error( 'fext: put your `mret` tail calls in a function WRAPPED with `mfun`. See https://github.com/glathoud/fext and http://glat.info/fext for examples.' );
+        }
     }
     
     function mfun( a, b, c )
@@ -374,7 +382,7 @@ var global, exports;
 
         function fext_wrapper_dbg()
         {
-            _debugging = true;
+            _debugging = debug;
 
             var old_self = global.self;
             global.self = dbg_f;
@@ -828,14 +836,29 @@ var global, exports;
             // Optimizations: (1) create the implementation only once
             // and (2) replace the method with its implementation.
 
-            return (
-                impl  ||  (impl
-                           = get_owner( this, name )[ name ]
-                           = meth_mfun.getImpl()
-                          )
-            )
-                .apply( this, arguments )
-            ;
+            if (!impl)
+            {
+                impl = meth_mfun.getImpl();
+
+                if (debug)
+                    impl = impl.bind( this, this );
+                else
+                    get_owner( this, name )[ name ] = impl;
+            }
+            if (!debug)
+            {
+                return impl.apply( this, arguments );
+            }
+            else
+            {
+                _debugging = debug;
+                
+                var ret = impl.apply( this, arguments );
+                
+                _debugging = false;
+                
+                return ret;
+            }
         }
         
     }

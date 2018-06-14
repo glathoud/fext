@@ -1399,7 +1399,7 @@ acc == null  ?  mret( self, n, 1 )\
             return isOk_result  &&  isOk_impl;
         }
         
-        , function debugging_tool_mutual_recursion_real_live_use_case()
+        , function debugging_tool_mutual_recursion_real_life_use_case()
         {
             // The default `namespacekey` is the returned function
             // `var isOdd` in this case.
@@ -1434,6 +1434,8 @@ acc == null  ?  mret( self, n, 1 )\
             */
 
             function gcd_input_fun(that, a, b) {
+
+                console.log('xxx gcd a b',a,b)
                 return a > b  ?  mret( self, a-b, b )
                     :  a < b  ?  mret( self, b-a, a )
                     :  a;
