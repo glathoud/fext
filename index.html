@@ -74,12 +74,12 @@
       
       <p>It turns out that we can do this explicit approach using today's JavaScript, without extending the language.
         
-      <code>fext.js</code> demonstrates this. Mutual recursion is supported</p>
+      <code>fext.js</code> demonstrates this. Mutual recursion is supported.</p>
 
       <h3>Quick example</h3>
 
-      <pre><code class="prettyprint lang-js">&lt;script src="fext.js"&gt;&lt;/script&gt
-&lt;script&gt;
+      <pre><code class="prettyprint lang-js">&lt;script type="text/javascript" src="fext.js"&gt;&lt;/script&gt
+&lt;script type="text/javascript"&gt;
   var gcd = mfun(
          (a, b) => a > b  ?  mret( self, a-b, b )
              :     a < b  ?  mret( self, b-a, a )
