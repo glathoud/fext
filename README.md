@@ -9,7 +9,9 @@ As of 2018, progress is "slow" and the Chrome team has already *removed* the aut
 
 Another possibility is to **explicitly mark the tail calls that will be optimized**. Several JavaScript extensions were proposed that add new keywords to the language ([2014](http://glat.info/mlocjs2014/index.html#7), [2016](https://github.com/tc39/proposal-ptc-syntax)).
 
-It turns out that we can do this with today's JavaScript, without extending the language. **fext.js** demonstrates this.
+It turns out that we can do this with today's JavaScript, without extending the language.
+
+**fext.js** demonstrates this.
 
 ## API
 
