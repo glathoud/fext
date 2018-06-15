@@ -24,7 +24,6 @@ var global, exports;
             :  []
 
         , result = es6_tests.concat( get_test_arr_es5() )
-            // .filter( x => x.name === 'sorted_search_test' )
             .map( run_one_test )
         ;
         result.global = result_all;
