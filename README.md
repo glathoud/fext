@@ -121,9 +121,8 @@ or
 return mret( that.otherMethod, ... )
 ```
 
-This method call syntax:
- * makes clear we are "mret'ing" another *method*
- * AND permits easy debugging through `methD`.
+This `mreat( that.<methodName> )` call syntax makes clear we are "mret'ing" a *method*, not a simple function,
+ AND permits easy debugging through `methD`.
  
 ## Methods: Mutual recursion example
 ```js
