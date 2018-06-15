@@ -391,11 +391,23 @@ var global, exports
 
         function getImpl()
         {
-            return impl
-                ||  (impl = new Function( master_argmax_string()
-                                          , master_bodycode_gen()
-                                        )
-                    );
+            if (!impl)
+            {
+                var head = master_argmax_string()
+                ,   body = master_bodycode_gen()
+                ;
+                try
+                {
+                    impl = new Function( head, body );
+                }
+                catch( e )
+                {
+                    console.error( 'fext: caught error while compiling the implementation: ' + e );
+                    throw e;
+                }
+            }
+
+            return impl;
         }
 
 
@@ -965,17 +977,18 @@ var global, exports
         var tc_arr = []
         ,   rx = /\breturn\b[^;]*/g
         ,   mo
+        ,   white_code = white_out_comments( code )
         ;
-        while (mo = rx.exec( code ))
+        while (mo = rx.exec( white_code ))
             tc_arr.push( tc_of_mo( mo ) );
         
         return tc_arr;
 
         function tc_of_mo( mo )
         {
-            var   s_0 = mo[ 0 ]
-            ,   begin = mo.index
+            var begin = mo.index
             ,     end = rx.lastIndex
+            ,     s_0 = code.substring( begin, end )
             ;
             begin.toPrecision.call.a;
             end.toPrecision.call.a;
@@ -1224,6 +1237,15 @@ var global, exports
             ?  'break'
             :  'return'
         ;
+    }
+
+    function white_out_comments( code )
+    {
+        return code.replace( /\/\*[\s\S]*?\*\/|\/\/.*?(?=[\r\n])/g, w );
+        function w( s )
+        {
+            return ' '.repeat( s.length );
+        }
     }
     
     
