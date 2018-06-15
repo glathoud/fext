@@ -82,6 +82,19 @@ var global, exports
             throw new Error( 'fext: wrap your function with `mfun`. See https://github.com/glathoud/fext and http://glat.info/fext for examples.' );
         }
     }
+
+    // Various constants
+    
+    var LABEL_MAIN_LOOP   = '__fext_main_loop__'
+    ,   LABEL_INLINE_LOOP = function (i) { (isFinite(i)  &&  i).toPrecision.call.a; return '__fext_inline_loop_' + i + '__'; }
+        
+    ,   V_CASE_I        = '__fext_case_i__'
+    ,   V_CASE_I_RETURN = '-1'
+    ,   V_RET           = '__fext_ret__'
+    ,   V_UNDEFINED     = '__fext_undefined__'
+    ,   V_THAT          = 'that'
+    ;
+
     
     function mfun( a, b, c )
     /*
@@ -472,7 +485,7 @@ var global, exports
                 , ', ' + V_CASE_I + ' = 0'
                 , ', ' + V_RET
                 , ';'
-                , 'while (true)'
+                , LABEL_MAIN_LOOP + ': while (true)'
                 , '{'
                 , '  switch( ' + V_CASE_I + ')'
                 , '  {'
@@ -489,7 +502,7 @@ var global, exports
                                 , null
                                 , { inline_body : inline_body }
                             )
-                            + ' continue;\n';
+                            + ' continue ' + LABEL_MAIN_LOOP + ';\n';
                     }
                 ) )
                 .concat([
@@ -697,7 +710,7 @@ var global, exports
             }
 
             return inline_body
-                ?  'while(true) {\n' + new_body + '\n}\n'
+                ?  'while (true) {\n' + new_body + '\n}\n'
                 :  new_body;
         }
     }
@@ -946,17 +959,7 @@ var global, exports
     }
 
     // ---------- Private details ----------
-    
-    // Various constants
-    
-    var V_CASE_I        = '__fext_case_i__'
-    ,   V_CASE_I_RETURN = '-1'
-    ,   V_RET           = '__fext_ret__'
-    ,   V_UNDEFINED     = '__fext_undefined__'
-
-    ,   V_THAT          = 'that'
-    ;
-    
+        
     function argstring( i ) { return '__fext_arg' + i + '__'; }
     
     function commented( s )
