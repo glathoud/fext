@@ -83,8 +83,11 @@
     <section>
       <h3>Code</h3>
 
-      Table of contents:
-      <ul id="toc"></ul>
+      <div id="toccont">
+        Table of contents:
+        <ul id="toc"></ul>
+      </div>
+      
     </section>
 
     <div id="source_code_0" class="code_cont"></div>
@@ -112,12 +115,13 @@
         
         var cstmpl = source_code_tmpl;
         cstmpl.parentNode.removeChild( cstmpl );
-        
+
+        toccont.style.display = 'none';
         write_source_code( source_code_0, get_test_arr_es6, "ES6 unit tests" );
         write_source_code( source_code_0, get_test_arr_es5, "ES5 unit tests" );
-        write_source_code( source_code_0, get_test_arr_sorted_search, "sorted_search unit tests" );
         write_source_code( source_code_1, "fext.js" )
         write_source_code( source_code_1, "lib/sorted_search.js" )
+        write_source_code( source_code_1, get_test_arr_sorted_search, "lib/sorted_search.js: unit tests" );
 
         function write_source_code( contnode, x, opt )
         {
@@ -152,6 +156,13 @@
                 }
             }
 
+            if (toc  &&  toctmpl)
+            {
+                toc.innerHTML += format(
+                    toctmpl.innerHTML, filename
+                );
+            }
+            
             function unindent( f )
             {
                 var   s = '' + f
@@ -174,16 +185,10 @@
                     cstmpl.innerHTML, filename, etr
                 );
 
-                if (toc  &&  toctmpl)
-                {
-                    toc.innerHTML += format(
-                        toctmpl.innerHTML, filename
-                    );
-                }
-                    
                 if (--write_source_code.n < 1)
                 {
                     prettyPrint();
+                    toccont.style.display = '';
                     setTimeout( do_the_unittests, 2000 );
                 }
             }
