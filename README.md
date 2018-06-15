@@ -121,9 +121,10 @@ or
 return mret( that.otherMethod, ... )
 ```
 
-Reason: this permits easy debugging through `methD`.
+This method call syntax:
+ * makes clear we are "mret'ing" another *method*
+ * AND permits easy debugging through `methD`.
  
-
 ## Methods: Mutual recursion example
 ```js
 var o = {
