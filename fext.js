@@ -16,7 +16,8 @@
 
   Examples: ./test/fext_unittest_es6.js and ./test/fext_unittest.js
   
-  Write-up: see ./index.html
+  Documentation: see ./README.md (on GitHub:
+  https://github.com/glathoud)
 
 
   Implementation notes: 
