@@ -90,16 +90,22 @@ meth( "methodname", (that,a,b,c) => ... )
  * `"methodname"` MUST be the name of the method,
  * The first parameter MUST be `that`,
  * Inside the method, you MUST use `that` (and not `this`). Reason: `.bind()` slower in Firefox 60.
-
-Unchanged:
- * `return mret(...)` calls are unchanged (no need to pass `that`).
+ * Use `that.` in the `mret` calls, as in:
+```js
+return mret( that.self, ...)
+```
+or
+```
+return mret( that.otherMethod, ... )
+```
+    * Reason: this permits easy debugging through `methD`.
  
 Self-recursion example:
  ```js
  var o = {
     gcd : meth( "gcd"
-                , (that, a, b) => a > b  ?  mret( self, a-b, b )
-                :                 a < b  ?  mret( self, b-a, a )
+                , (that, a, b) => a > b  ?  mret( that.self, a-b, b )
+                :                 a < b  ?  mret( that.self, b-a, a )
                 :                 a
               )
 };
@@ -110,14 +116,14 @@ Mutual recursion example:
 ```js
 var o = {
     isOdd : meth( "isOdd"
-                  , (that, n) => n < 0  ?  mret( self, -n )
+                  , (that, n) => n < 0  ?  mret( that.self, -n )
                   :            n === 0  ?  false
-                  :            mret( isEven, n-1 )
+                  :            mret( that.isEven, n-1 )
                 )
     , isEven : meth( "isEven"
-                     , (that, n) => n < 0  ?  mret( self, -n )
+                     , (that, n) => n < 0  ?  mret( that.self, -n )
                      :            n === 0  ?  true
-                     :            mret( isOdd, n-1 )
+                     :            mret( that.isOdd, n-1 )
                    )
 };
 console.log( o.isOdd( 84327681 ) );  // true (no call stack issue)
@@ -128,19 +134,29 @@ Prototype methods:
 ```js
 function A() {}
 A.prototype.isOdd = meth( "isOdd"
-                          , (that, n) => n < 0  ?  mret( self, -n )
+                          , (that, n) => n < 0  ?  mret( that.self, -n )
                           :            n === 0  ?  false
-                          :            mret( isEven, n-1 )
+                          :            mret( that.isEven, n-1 )
                         );
 A.prototype.isEven = meth( "isEven"
-                           , (that, n) => n < 0  ?  mret( self, -n )
+                           , (that, n) => n < 0  ?  mret( that.self, -n )
                            :            n === 0  ?  true
-                           :            mret( isOdd, n-1 )
+                           :            mret( that.isOdd, n-1 )
                          );
 var o = new A;
 console.log( o.isOdd( 84327681 ) );  // true (no call stack issue)
 console.log( o.isEven( 84327681 ) ); // false (no call stack issue)
 ```
+
+## Debugging
+
+Just append a "D" character:
+
+ * turn `mfun()` into `mfunD()`.
+ * turn `mret()` into `mretD()`.
+
+...to turn off the optimizations. You can then use logging and
+breakpoints.
 
 ## Unit tests
 

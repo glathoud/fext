@@ -13,6 +13,7 @@ var global, exports;
     function fext_unittest( /*?function?*/callback )
     {
         var result_all = true
+        ,   n_passed   = 0
         ,   log_to = mfun.log_to
 
         // Nashorn 1.8.0_171 does not support ES6 (backticks, arrow
@@ -21,7 +22,7 @@ var global, exports;
             ?  get_test_arr_es6().concat([,]) // with extra newline
             :  []
         
-        , result = es6_tests.concat( get_test_arr_es5() )
+        , result = es6_tests.concat( get_test_arr_es5() ).slice()
             .map( run_one_test )
         ;
         result.global = result_all;
@@ -34,11 +35,12 @@ var global, exports;
         log_to( 'log' );
         log_to( 'log', 'Done with ' + result.length + ' tests'
                 + ', global result: ' + result.global
+                + ' (' + n_passed + ' passed, ' + (result.length - n_passed) + ' failed)'
               );
         
         return result;
 
-        function run_one_test( f )
+        function run_one_test( f, test_ind )
         {
             if (!f)
                 return '';
@@ -54,12 +56,17 @@ var global, exports;
             
             result_all = result_all  &&  passed;
 
-            var name = f.name;
+            if (passed)
+                n_passed++;
+            
+            var name = f.name
+            ,   pre_s = '#' + test_ind + ' '
+            ;
 
             if (passed)
-                log_to( 'log', 'passed ' + name );
+                log_to( 'log', pre_s + 'passed ' + name );
             else
-                log_to( 'error', 'failed on ' + name + ': ' + isOk );
+                log_to( 'error', pre_s + 'failed on ' + name + ': ' + isOk );
             
             var extra_output = f.extra_output  ||  '';
 
@@ -776,7 +783,7 @@ return n < 0  ?  mret( isEven, -n )\
                                               (that._acc = (n  ||  1) * (that._acc || 1))
                                               , 
                                               n > 1
-                                                  ? mret( self, n-1 )
+                                                  ? mret( that.self, n-1 )
                                                   : (that._tmp = that._acc
                                                      , that._acc = 0
                                                      , that._tmp
@@ -810,8 +817,8 @@ return n < 0  ?  mret( isEven, -n )\
                 factorial : meth( 'factorial'
                                   , function (that, n, acc) {
                                       return
-                                      acc == null  ?  mret( self, n, 1 )
-                                          : n > 1  ?  mret( self, n-1, acc*n )
+                                      acc == null  ?  mret( that.self, n, 1 )
+                                          : n > 1  ?  mret( that.self, n-1, acc*n )
                                           : acc;
                                   }
                                 )
@@ -841,8 +848,8 @@ return n < 0  ?  mret( isEven, -n )\
 
             A.prototype.factorial = meth( 'factorial'
                                           , function (that, n, acc ) {
-                                              return acc == null  ?  mret( self, n, 1 )
-                                                  : n > 1  ?  mret( self, n-1, acc*n )
+                                              return acc == null  ?  mret( that.self, n, 1 )
+                                                  : n > 1  ?  mret( that.self, n-1, acc*n )
                                                   : acc;
                                           }
                                         );
@@ -875,8 +882,8 @@ return n < 0  ?  mret( isEven, -n )\
                 factorial : meth( 'factorial'
                                   , 'function (that, n, acc ) {\
 return \
-acc == null  ?  mret( self, n, 1 )\
-: n > 1  ?  mret( self, n-1, acc*n )\
+acc == null  ?  mret( that.self, n, 1 )\
+: n > 1  ?  mret( that.self, n-1, acc*n )\
 : acc;}'
                                 )
             }
@@ -906,8 +913,8 @@ acc == null  ?  mret( self, n, 1 )\
 
             A.prototype.factorial = meth( 'factorial'
                                           , '( that, n, acc ) => \
-acc == null  ?  mret( self, n, 1 ) \
-: n > 1  ?  mret( self, n-1, acc*n ) \
+acc == null  ?  mret( that.self, n, 1 ) \
+: n > 1  ?  mret( that.self, n-1, acc*n ) \
 : acc'
                                         );
 
@@ -936,10 +943,10 @@ acc == null  ?  mret( self, n, 1 ) \
         , function meth_arrow_helper_function_string()
         {
             var o = {
-                factorial : meth( 'factorial', '(that, n) => mret( factsub, n, 1 )' )
+                factorial : meth( 'factorial', '(that, n) => mret( that.factsub, n, 1 )' )
                 , factsub : meth( 'factsub'
                                   , 'function (that, n, acc) { return \
-n > 1  ?  mret( self, n-1, acc*n )\
+n > 1  ?  mret( that.self, n-1, acc*n )\
 : acc;}'
                                 )
             }
@@ -967,14 +974,14 @@ n > 1  ?  mret( self, n-1, acc*n )\
         {
             var o = {
                 isOdd : meth( 'isOdd', function (that, n) {
-                    return n < 0  ?  mret( self, -n )
+                    return n < 0  ?  mret( that.self, -n )
                         :  n === 0  ?  false
-                        :  mret( isEven, n-1 );
+                        :  mret( that.isEven, n-1 );
                 })
                 , isEven : meth( 'isEven', function (that, n) {
-                    return n < 0  ?  mret( self, -n )
+                    return n < 0  ?  mret( that.self, -n )
                         :  n === 0  ?  true
-                        :  mret( isOdd, n-1 );
+                        :  mret( that.isOdd, n-1 );
                 })
             };
             return [-7, -1, 1, 3, 5, 37 ].every( function (x) { return o.isOdd(x); } )
@@ -987,15 +994,15 @@ n > 1  ?  mret( self, n-1, acc*n )\
             function A() {}
             A.prototype.isOdd =
                 meth( 'isOdd' , function (that, n) {
-                    return n < 0  ?  mret( self, -n )
+                    return n < 0  ?  mret( that.self, -n )
                         :  n === 0  ?  false
-                        :  mret( isEven, n-1 );
+                        :  mret( that.isEven, n-1 );
                 });
             A.prototype.isEven =
                 meth( 'isEven', function (that, n) {
-                    return n < 0  ?  mret( self, -n )
+                    return n < 0  ?  mret( that.self, -n )
                         :  n === 0  ?  true
-                        :  mret( isOdd, n-1 );
+                        :  mret( that.isOdd, n-1 );
                 });
             
             var o = new A;
@@ -1032,7 +1039,7 @@ n > 1  ?  mret( self, n-1, acc*n )\
                                                       (that._acc = (n  ||  1) * (that._acc || 1))
                                                       , 
                                                       n > 1
-                                                          ? mret( self, n-1 )
+                                                          ? mret( that.self, n-1 )
                                                           : (that._tmp = that._acc
                                                              , that._acc = 0
                                                              , that._tmp
@@ -1065,8 +1072,8 @@ n > 1  ?  mret( self, n-1, acc*n )\
             var o = {
                 factorial : meth( function factorial(that, n, acc) {
                     return
-                    acc == null  ?  mret( self, n, 1 )
-                        : n > 1  ?  mret( self, n-1, acc*n )
+                    acc == null  ?  mret( that.self, n, 1 )
+                        : n > 1  ?  mret( that.self, n-1, acc*n )
                         : acc;
                 }
                                 )
@@ -1095,8 +1102,8 @@ n > 1  ?  mret( self, n-1, acc*n )\
             function A() {}
 
             A.prototype.factorial = meth( function factorial(that, n, acc ) {
-                return acc == null  ?  mret( self, n, 1 )
-                    : n > 1  ?  mret( self, n-1, acc*n )
+                return acc == null  ?  mret( that.self, n, 1 )
+                    : n > 1  ?  mret( that.self, n-1, acc*n )
                     : acc;
             }
                                         );
@@ -1128,8 +1135,8 @@ n > 1  ?  mret( self, n-1, acc*n )\
             var o = {
                 factorial : meth( 'function factorial(that, n, acc ) {\
 return \
-acc == null  ?  mret( self, n, 1 )\
-: n > 1  ?  mret( self, n-1, acc*n )\
+acc == null  ?  mret( that.self, n, 1 )\
+: n > 1  ?  mret( that.self, n-1, acc*n )\
 : acc;}'
                                 )
             }
@@ -1158,15 +1165,15 @@ acc == null  ?  mret( self, n, 1 )\
             var o = {
                 isOdd : meth( function isOdd(that, n) {
                     return
-                    n < 0  ?  mret( self, -n )
+                    n < 0  ?  mret( that.self, -n )
                         :  n === 0  ?  false
-                        :  mret( isEven, n-1 );
+                        :  mret( that.isEven, n-1 );
                 })
                 , isEven : meth( function isEven(that, n) {
                     return 
-                    n < 0  ?  mret( self, -n )
+                    n < 0  ?  mret( that.self, -n )
                         :  n === 0  ?  true
-                        :  mret( isOdd, n-1 );
+                        :  mret( that.isOdd, n-1 );
                 })
             };
             return [-7, -1, 1, 3, 5, 37 ].every( function (x) { return o.isOdd(x); } )
@@ -1179,15 +1186,15 @@ acc == null  ?  mret( self, n, 1 )\
             function A() {}
             A.prototype.isOdd =
                 meth( function isOdd(that, n) {
-                    return n < 0  ?  mret( self, -n )
+                    return n < 0  ?  mret( that.self, -n )
                         :  n === 0  ?  false
-                        :  mret( isEven, n-1 );
+                        :  mret( that.isEven, n-1 );
                 });
             A.prototype.isEven =
                 meth( function isEven(that, n) {
-                    return n < 0  ?  mret( self, -n )
+                    return n < 0  ?  mret( that.self, -n )
                         :  n === 0  ?  true
-                        :  mret( isOdd, n-1 );
+                        :  mret( that.isOdd, n-1 );
                 });
             
             var o = new A;
@@ -1435,9 +1442,8 @@ acc == null  ?  mret( self, n, 1 )\
 
             function gcd_input_fun(that, a, b) {
 
-                console.log('xxx gcd a b',a,b)
-                return a > b  ?  mret( self, a-b, b )
-                    :  a < b  ?  mret( self, b-a, a )
+                return a > b  ?  mret( that.self, a-b, b )
+                    :  a < b  ?  mret( that.self, b-a, a )
                     :  a;
             }
             var o = { gcd : methD( 'gcd', gcd_input_fun ) }
@@ -1457,9 +1463,8 @@ acc == null  ?  mret( self, n, 1 )\
             , isOk_result = isOk_arr
                 .every( function ( x ) { return x; } )
 
-            , isOk_impl = o.gcd === gcd_input_fun
+            , isOk_impl = o.gcd.getImpl() === gcd_input_fun
             ;
-            debugger;
             return isOk_result  &&  isOk_impl;
             
         }
@@ -1476,14 +1481,14 @@ acc == null  ?  mret( self, n, 1 )\
             */
 
             function isOdd_input_fun( that, n ) {
-                return n < 0  ?  mret( isOdd, -n )
+                return n < 0  ?  mret( that.self, -n )
                     :  n === 0  ?  false
-                    :  mret( isEven, n-1 );
+                    :  mret( that.isEven, n-1 );
             }
             function isEven_input_fun( that, n ) {
-                return n < 0  ?  mret( isEven, -n )
+                return n < 0  ?  mret( that.self, -n )
                     :  n === 0  ?  true
-                    :  mret( isOdd, n-1 );
+                    :  mret( that.isOdd, n-1 );
             }
 
             // The default `namespacekey` is the returned function
@@ -1495,12 +1500,82 @@ acc == null  ?  mret( self, n, 1 )\
             
             ,   isOk_result = [-7, -1, 1, 3, 5, 37 ].every( o.isOdd.bind( o ) )
                 && [-8, -2, 0, 2, 4, 6, 48 ].every( o.isEven.bind( o ) )
+
+            ,   isOk_impl = o.isOdd.getImpl() === isOdd_input_fun
+                &&  o.isEven.getImpl() === isEven_input_fun
             ;
             return isOk_result;
         }
         
 
 
+
+
+
+
+        , function meth_that_dot_forgotten()
+        {
+            var o = {
+                isOdd : meth( function isOdd(that, n) {
+                    return
+                    n < 0  ?  mret( self, -n )
+                        :  n === 0  ?  false
+                        :  mret( isEven, n-1 );
+                })
+                , isEven : meth( function isEven(that, n) {
+                    return 
+                    n < 0  ?  mret( self, -n )
+                        :  n === 0  ?  true
+                        :  mret( isOdd, n-1 );
+                })
+            };
+            try
+            {
+                o.isOdd( 123 );
+            }
+            catch( e )
+            {
+                var s = '' + e;
+                return /\bfext\b/.test( s )
+                    &&  /\bmeth\b/.test( s )
+                    &&  /\bmethD\b/.test( s )
+                    &&  /\bthat\./.test( s );
+            }
+            return false;
+        }
+
+        
+        
+        , function mfun_that_dot_forbidden()
+        {
+            try
+            {
+                var isOdd = mfun( function isOdd(n) {
+                    return
+                    n < 0  ?  mret( self, -n )
+                        :  n === 0  ?  false
+                        :  mret( that.isEven, n-1 );
+                })
+                , isEven = mfun( isOdd, function isEven(n) {
+                    return 
+                    n < 0  ?  mret( self, -n )
+                        :  n === 0  ?  true
+                        :  mret( isOdd, n-1 );
+                })
+                ;
+                isOdd( 123 );
+            }
+            catch( e )
+            {
+                var s = '' + e;
+                return /\bfext\b/.test( s )
+                    &&  /\bmfun\b/.test( s )
+                    &&  /\bmfunD\b/.test( s )
+                    &&  /\bwithout\b/i.test( s )
+                    &&  /\bthat\./.test( s );
+            }
+            return false;
+        }
 
         
         

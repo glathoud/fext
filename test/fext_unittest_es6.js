@@ -431,7 +431,7 @@ var global, exports;
                             (that._acc = (n  ||  1) * (that._acc || 1))
                             , 
                             n > 1
-                                ? mret( self, n-1 )
+                                ? mret( that.self, n-1 )
                                 : (that._tmp = that._acc
                                    , that._acc = 0
                                    , that._tmp
@@ -466,8 +466,8 @@ var global, exports;
             var o = {
                 factorial : meth( 'factorial'
                                   , (that, n, acc) =>
-                                  acc == null  ?  mret( self, n, 1 )
-                                  : n > 1  ?  mret( self, n-1, acc*n )
+                                  acc == null  ?  mret( that.self, n, 1 )
+                                  : n > 1  ?  mret( that.self, n-1, acc*n )
                                   : acc)
             }
             , isOk_arr = [
@@ -495,8 +495,8 @@ var global, exports;
 
             A.prototype.factorial = meth( 'factorial'
                                           , (that, n, acc ) =>
-                                          acc == null  ?  mret( self, n, 1 )
-                                          : n > 1  ?  mret( self, n-1, acc*n )
+                                          acc == null  ?  mret( that.self, n, 1 )
+                                          : n > 1  ?  mret( that.self, n-1, acc*n )
                                           : acc
                                         );
 
@@ -531,8 +531,8 @@ var global, exports;
             var o = {
                 factorial : meth( 'factorial'
                                   , `(that, n, acc ) =>
-                                  acc == null  ?  mret( self, n, 1 )
-                                  : n > 1  ?  mret( self, n-1, acc*n )
+                                  acc == null  ?  mret( that.self, n, 1 )
+                                  : n > 1  ?  mret( that.self, n-1, acc*n )
                                   : acc
                                   `)
             }
@@ -562,8 +562,8 @@ var global, exports;
 
             A.prototype.factorial = meth( 'factorial'
                                           , `( that, n, acc ) =>
-                                          acc == null  ?  mret( self, n, 1 )
-                                          : n > 1  ?  mret( self, n-1, acc*n )
+                                          acc == null  ?  mret( that.self, n, 1 )
+                                          : n > 1  ?  mret( that.self, n-1, acc*n )
                                           : acc`
                                         );
 
@@ -597,10 +597,10 @@ var global, exports;
         , function meth_arrow_helper_function()
         {
             var o = {
-                factorial : meth( 'factorial', (that, n) => mret( factsub, n, 1 ) )
+                factorial : meth( 'factorial', (that, n) => mret( that.factsub, n, 1 ) )
                 , factsub : meth( 'factsub'
                                   , (that, n, acc) =>
-                                  n > 1  ?  mret( self, n-1, acc*n )
+                                  n > 1  ?  mret( that.self, n-1, acc*n )
                                   : acc
                                 )
             }
@@ -637,14 +637,14 @@ var global, exports;
         {
             var o = {
                 isOdd : meth( 'isOdd', (that, n) =>
-                              n < 0  ?  mret( self, -n )
+                              n < 0  ?  mret( that.self, -n )
                               :  n === 0  ?  false
-                              :  mret( isEven, n-1 )
+                              :  mret( that.isEven, n-1 )
                             )
                 , isEven : meth( 'isEven', (that, n) =>
-                                 n < 0  ?  mret( self, -n )
+                                 n < 0  ?  mret( that.self, -n )
                                  :  n === 0  ?  true
-                                 :  mret( isOdd, n-1 )
+                                 :  mret( that.isOdd, n-1 )
                                )
             };
             return [-7, -1, 1, 3, 5, 37 ].every( x => o.isOdd(x) )
@@ -657,15 +657,15 @@ var global, exports;
             function A() {}
             A.prototype.isOdd =
                 meth( 'isOdd' , (that, n) =>
-                      n < 0  ?  mret( self, -n )
+                      n < 0  ?  mret( that.self, -n )
                       :  n === 0  ?  false
-                      :  mret( isEven, n-1 )
+                      :  mret( that.isEven, n-1 )
                     );
             A.prototype.isEven =
                 meth( 'isEven', (that, n) =>
-                      n < 0  ?  mret( self, -n )
+                      n < 0  ?  mret( that.self, -n )
                       :  n === 0  ?  true
-                      :  mret( isOdd, n-1 )
+                      :  mret( that.isOdd, n-1 )
                     );
             
             var o = new A;

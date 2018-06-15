@@ -35,7 +35,9 @@
   ES6's backticks come in handy here.
 */
 
-var global, exports;
+var global, exports
+,   __fext_debug_all  // ?boolean?
+;
 (function (global) {
 
     'use strict';
@@ -63,15 +65,21 @@ var global, exports;
     {
         if (_debugging)
         {
+            var this_ = 'object' === typeof _debugging  &&  _debugging  ||  null;
+            
             return arguments[ 0 ]
-                .apply( null
-                        , (_debugging === 'method'  ?  [ this ] : [])
+                .apply( this_  // methD case
+                        , ( this_
+                            , this_
+                            ?  [ this_ ]  // methD case
+                            :  []         // mfunD case
+                          )
                         .concat( [].slice.call( arguments, 1 ) )
                       );
         }
         else
         {
-            throw new Error( 'fext: put your `mret` tail calls in a function WRAPPED with `mfun`. See https://github.com/glathoud/fext and http://glat.info/fext for examples.' );
+            throw new Error( 'fext: wrap your function with `mfun`. See https://github.com/glathoud/fext and http://glat.info/fext for examples.' );
         }
     }
     
@@ -182,9 +190,42 @@ var global, exports;
             null.invalid_argument;
         }
 
+        // -- Options
+
+        function dflt( x, fallback )
+        {
+            return x != null  ?  x  :  fallback;
+        }
+        
+        // ?boolean? 
+        var debug = dflt( this  &&  this.debug
+                          , !!__fext_debug_all
+                        );
+        
+        // ?boolean?
+        var inline_body = dflt( this  &&  this.inline_body
+                                , true
+                              ); 
+        
+        // ?integer>0?: number of expansion levels
+        var expansion = dflt( this  &&  this.expansion
+                              , 1
+                            );
+
+        // ?function?: Mostly for internal use (e.g. `meth()`)
+        var prepro_arg_arr = this  &&  this.preprocess_argname_arr
+            ||  null;
+
+        // ?boolean?: Mostly for internal use (e.g. `meth()`)
+        var mret_that_dot = dflt( this  &&  this.mret_that_dot
+                                  , false
+                                );
+
+        // --- Debug support
+        
         var ret = debug  ?  fext_wrapper_dbg  :  fext_wrapper;
         
-        // Defaults
+        // --- Defaults parameters
 
         namespacekey  ||  (namespacekey = ret);
 
@@ -207,32 +248,6 @@ var global, exports;
         name  ||  (name = '__fext_anonymous_' + (
             mfun.__fext_anon_id__ = 1 + (mfun.__fext_anon_id__ | 0)
         ) + '__');
-
-        // -- Options
-
-        function dflt( x, fallback )
-        {
-            return x != null  ?  x  :  fallback;
-        }
-        
-        // ?boolean? 
-        var debug = dflt( this  &&  this.debug
-                          , false
-                        );
-        
-        // ?boolean?
-        var inline_body = dflt( this  &&  this.inline_body
-                                , true
-                              ); 
-        
-        // ?integer>0?: number of expansion levels
-        var expansion = dflt( this  &&  this.expansion
-                              , 1
-                            );
-
-        // ?function?: Mostly for internal use, see `meth()`
-        var prepro_arg_arr = this  &&  this.preprocess_argname_arr
-            ||  null;
 
         // --- Check
         
@@ -276,7 +291,11 @@ var global, exports;
         
         // Scan the body for tail calls
         
-        ,   tc_arr = find_tail_calls( name, s_body )
+        ,   tc_arr = find_tail_calls
+            .call(
+                { mret_that_dot : mret_that_dot }
+                , name, s_body
+            )
         ,   tc_len = tc_arr.length
         ;
         if (tc_len < 1  &&  'function' === typeof f_or_s)
@@ -740,7 +759,21 @@ var global, exports;
         (name  ||  null).required;
         name.substring.call.a;
 
-        var debug = this  &&  this.debug;
+        var debug = __fext_debug_all  ||  this  &&  this.debug;
+
+        if (debug)
+        {
+            var f_or_s = b  ||  a
+            ,   dbg_f = 'string' === typeof f_or_s
+                ?  (new Function( 'return (' + f_or_s + ');' ))()
+                : f_or_s
+            ;
+            meth_wrapper_dbg.getImpl = function () {
+                return dbg_f;
+            };
+            return meth_wrapper_dbg;
+        }
+
         
         // Use case: mutual recursion (or named self-recursion)
         
@@ -770,6 +803,35 @@ var global, exports;
         return meth_wrapper2;
 
         // --- Details
+
+        function meth_wrapper_dbg()
+        {
+            var already_debugging = !!_debugging;
+
+            if (!already_debugging)
+            {
+                // Top call (begin)
+                
+                _debugging = this;
+
+                var old_self = this.self;
+                this.self = dbg_f;
+            }
+            
+            var ret = dbg_f.apply( this, already_debugging
+                                   ?  arguments
+                                   :  [ this ].concat( [].slice.call( arguments ) ) );
+            
+            if (!already_debugging)
+            {
+                // Top call (end)
+
+                this.self = old_self;
+                _debugging = false;
+            }
+
+            return ret;
+        }
         
         function meth_wrapper2()
         {
@@ -809,7 +871,7 @@ var global, exports;
             meth_mfun = mfun.call(
                 {
                     preprocess_argname_arr : meth_preprocess_argname_arr
-                    , debug : debug
+                    , mret_that_dot : true
                 }
                 , namespacekey, a, b );
 
@@ -836,29 +898,14 @@ var global, exports;
             // Optimizations: (1) create the implementation only once
             // and (2) replace the method with its implementation.
 
-            if (!impl)
-            {
-                impl = meth_mfun.getImpl();
-
-                if (debug)
-                    impl = impl.bind( this, this );
-                else
-                    get_owner( this, name )[ name ] = impl;
-            }
-            if (!debug)
-            {
-                return impl.apply( this, arguments );
-            }
-            else
-            {
-                _debugging = debug;
-                
-                var ret = impl.apply( this, arguments );
-                
-                _debugging = false;
-                
-                return ret;
-            }
+            return (impl
+                    ||  (impl
+                         = get_owner( this, name )[ name ]
+                         = meth_mfun.getImpl()
+                        )
+                   )
+                .apply( this, arguments )
+            ;
         }
         
     }
@@ -907,6 +954,8 @@ var global, exports;
 
     function find_tail_calls( /*string*/name, /*string*/code )
     {
+        var opt = this;
+
         /*
           Implementation note: lousy regexps, no parser. The most
           common cases are covered. Throws an error in the remaining
@@ -958,8 +1007,11 @@ var global, exports;
                 var s_call = tmp[ 1 ];
                 
                 sf_tmpl_arr.push(
-                    sf_tmpl_gen( name, tc_name_set, tc_name_arr
-                                 , s_call )
+                    sf_tmpl_gen.call(
+                        opt
+                        , name, tc_name_set, tc_name_arr
+                        , s_call
+                    )
                     , ';\n'
                     , tc_return
                     , '\n'
@@ -979,8 +1031,11 @@ var global, exports;
                     ;
                     sf_tmpl_arr.push(
                         s_cond 
-                        , sf_tmpl_gen(name, tc_name_set, tc_name_arr
-                                      , s_call )
+                        , sf_tmpl_gen.call(
+                            opt
+                            , name, tc_name_set, tc_name_arr
+                            , s_call
+                        )
                         , s_colon  ?  '\n' + s_colon  :  ''
                     );
                 }
@@ -1015,6 +1070,10 @@ var global, exports;
     // Returns: string | function( piece_i_of_name )
     // Updates: `tc_name_set` and `tc_name_arr`
     {
+        var opt = this
+        , mret_that_dot = opt  &&  opt.mret_that_dot
+        ;
+        
         s = s.trim();
         if (/^mret\b/.test( s ))
         {
@@ -1030,11 +1089,43 @@ var global, exports;
             // metacomposition (just a general remark).
 
             var mret_args = split_args( mo[ 1 ] )
-
-            // Support anonymous self-recursion
             ,    a_name_0 = mret_args[ 0 ]
-            ,    a_name   =
-                a_name_0 === 'self'  ?  name  :  a_name_0
+            
+            ,    mtd_mo = /^\s*that\s*\.\s*(\S+)\s*$/
+                .exec( a_name_0 )
+
+            ,    a_name_1
+            ;
+            if (mret_that_dot)
+            {
+                // Support debugging of methods (methD) => make
+                // `that.<methodName>` mandatory
+                if (!mtd_mo)
+                {
+                    throw new Error( 'fext(meth/methD): issue with `' + s + '`:'
+                                     + ' within a method, start all your `mret` calls using `that.`:'
+                                     + ' `mret( that.self, ... ) or mret( that.otherMethod, ... )`'
+                                   );
+                }
+                a_name_1 = mtd_mo[ 1 ];
+            }
+            else
+            {
+                if (mtd_mo)
+                {
+                    throw new Error( 'fext(mfun/mfunD): issue with `' + s + '`:'
+                                     + ' a simple function may only have `mret` calls WITHOUT `that.`.'
+                                     + ' Do not write `mret( that.methodName, ... )` within a simple function.'
+                                     + ' Only use `mret( functionName, ... )` within a simple function.'
+                                     + ' If you really need the method of an object here, then call it directly, without `mret`.'
+                                   );
+                }
+                a_name_1 = a_name_0;
+            }
+            
+            // Support anonymous self-recursion
+            var a_name   =
+                a_name_1 === 'self'  ?  name  :  a_name_1
             
             ,   rest_args = mret_args.slice( 1 )
             ; 

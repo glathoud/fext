@@ -111,22 +111,28 @@
                 var filename = opt  ||  x.name
                 ,   c_arr    = x().map( unindent )
                 ;
-                receive_source_code(
-                    {
-                        target : {
-                            responseText : c_arr.join( '\n\n\n' )
+                setTimeout( function () {
+                    receive_source_code(
+                        {
+                            target : {
+                                responseText : c_arr.join( '\n\n\n' )
+                            }
                         }
-                    }
-                );
+                    );
+                }, 100 );
             }
             else
             {
                 var filename = x
                 ,   xhr = new XMLHttpRequest()
                 ;
-                xhr.addEventListener( "load", receive_source_code );
-                xhr.open( "GET", filename, /*async:*/true );
-                xhr.send();
+                try {
+                    xhr.addEventListener( "load", receive_source_code );
+                    xhr.open( "GET", filename, /*async:*/true );
+                    xhr.send();
+                } finally {
+                    write_source_code.n--;
+                }
             }
 
             function unindent( f )

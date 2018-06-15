@@ -439,15 +439,15 @@ var global, exports;
             // The default `namespacekey` is the returned
             // function `var isOdd` in this case.
             isOdd : meth( 'isOdd', function( that, n ) {
-                return n > 0  ?  mret( isEven, n-1 )
-                    :  n < 0  ?  mret( self, -n )
+                return n > 0  ?  mret( that.isEven, n-1 )
+                    :  n < 0  ?  mret( that.self, -n )
                     :  false
                 ;
             })
             
             , isEven : meth( 'isEven', function( that, n ) {
-                return n > 0  ?  mret( isOdd, n-1 )
-                    :  n < 0  ?  mret( self, -n )
+                return n > 0  ?  mret( that.isOdd, n-1 )
+                    :  n < 0  ?  mret( that.self, -n )
                     :  true
                 ;
             })
