@@ -80,12 +80,23 @@
     <h3>Unit tests</h3>
     <pre><code id="unittest_output">Running...</code></pre>
 
+    <section>
+      <h3>Code</h3>
+
+      Table of contents:
+      <ul id="toc"></ul>
+    </section>
+
     <div id="source_code_0" class="code_cont"></div>
     <div id="source_code_1" class="code_cont"></div>
     
     <script type="text/html" id="source_code_tmpl">
-    <p class="code_cont_header">$filename:</p>
+    <p class="code_cont_header" id="$domid">$filename:</p>
     <pre><code class="prettyprint lang-js">$sourcecode</code></pre>
+    </script>
+    
+    <script type="text/html" id="toctmpl">
+    <li><a href="#$domid">$filename</a></li>
     </script>
     
     <script type="text/javascript" src="fext.js"></script>
@@ -157,17 +168,19 @@
             {
                 var et = a  &&  a.target
                 ,   etr = et  &&  (et.response || et.responseText)
+                ,   domid = filename.replace(/\W/g,'_')
                 ;
-                contnode.innerHTML +=
-                    cstmpl.innerHTML
-                    .replace( /\$filename\b/g, filename)
-                    .replace( /\$cssname\b/g, filename.replace(/\W/g,'_') )
-                    .replace( /\$sourcecode\b/g
-                              , etr
-                              .replace( /</g, '&lt;' )
-                              .replace( />/g, '&gt;' )
-                            )
-                ;
+                contnode.innerHTML += format( 
+                    cstmpl.innerHTML, filename, etr
+                );
+
+                if (toc  &&  toctmpl)
+                {
+                    toc.innerHTML += format(
+                        toctmpl.innerHTML, filename
+                    );
+                }
+                    
                 if (--write_source_code.n < 1)
                 {
                     prettyPrint();
@@ -175,6 +188,25 @@
                 }
             }
         }
+
+        function format( tmpl, filename, sourcecode )
+        {
+            var domid = filename.replace(/\W/g,'_')
+            ,   ret   = tmpl
+                .replace( /\$filename\b/g, filename)
+                .replace( /\$domid\b/g, domid )
+            ;
+            if (sourcecode)
+            {
+                ret = ret.replace( /\$sourcecode\b/g
+                                   , sourcecode
+                                   .replace( /</g, '&lt;' )
+                                   .replace( />/g, '&gt;' )
+                                 );
+            }
+            return ret;
+        }
+
         function do_the_unittests()
         {
             fext_unittest(
