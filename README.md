@@ -121,7 +121,7 @@ or
 return mret( that.otherMethod, ... )
 ```
 
-This `mreat( that.<methodName> )` call syntax
+This `mret( that.<methodName> )` call syntax
  * makes clear we are calling a *method*, not just a simple function,
  * AND permits easy debugging through `methD`.
  
