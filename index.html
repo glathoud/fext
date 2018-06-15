@@ -144,12 +144,15 @@
 
     <script type="text/javascript" src="web/prettify.js"></script>
     <script type="text/javascript">
+//'
     (function () {
         
         var cstmpl = source_code_tmpl;
         cstmpl.parentNode.removeChild( cstmpl );
 
         toccont.style.display = 'none';
+        
+        var to_write = [];
         write_source_code( source_code_0, get_test_arr_es6, "ES6 unit tests" );
         write_source_code( source_code_0, get_test_arr_es5, "ES5 unit tests" );
         write_source_code( source_code_1, "fext.js" )
@@ -158,7 +161,10 @@
 
         function write_source_code( contnode, x, opt )
         {
-            write_source_code.n = 1 + (write_source_code.n | 0);
+            var i_write = write_source_code.n | 0;
+
+            write_source_code.n = 1 + i_write;
+            
 
             if ('function' === typeof x)
             {
@@ -184,7 +190,7 @@
                     xhr.addEventListener( "load", receive_source_code );
                     xhr.open( "GET", filename, /*async:*/true );
                     xhr.send();
-                } finally {
+                } catch( e ) {
                     write_source_code.n--;
                 }
             }
@@ -214,12 +220,15 @@
                 ,   etr = et  &&  (et.response || et.responseText)
                 ,   domid = filename.replace(/\W/g,'_')
                 ;
-                contnode.innerHTML += format( 
-                    cstmpl.innerHTML, filename, etr
-                );
+                to_write[ i_write ] = function () {
+                    contnode.innerHTML += format( 
+                        cstmpl.innerHTML, filename, etr
+                    );
+                };
 
                 if (--write_source_code.n < 1)
                 {
+                    to_write.forEach( function( f ) { f(); } );
                     prettyPrint();
                     toccont.style.display = '';
                     setTimeout( do_the_unittests, 2000 );
