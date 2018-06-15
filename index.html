@@ -14,6 +14,8 @@
       .right { float: right; }
       .text-center { text-align: center; }
 
+      .intro { margin: auto; max-width: 600px; text-align: justify;}
+
       .top-img { text-align: center; }
       @media screen and (min-width: 1200px) {
       .top-img { float: left; }
@@ -52,6 +54,9 @@
     </style>
     </head>
   <body>
+
+    <div class="intro">
+      
     <div class="top-img"><img class="small_img" src="web/serpent-mord-queue-2.jpg"/></div>
 
     <h1 class="title"><code>fext.js</code>: Fast Explicit Tail Calls</h1>
@@ -61,7 +66,19 @@
 
     <p>...using today&#39;s JavaScript!</p>
 
-    <p>Documentation on <a href="https://github.com/glathoud/fext/blob/master/README.md">GitHub</a>.</p>
+      <p>Usually, tail calls are automatically optimized (LISP...).</p> <p>In JavaScript, programmers may well not know which "return" statements are optimized by the engine, and which not. This would lead to practical issues when debugging/optimizing (<a href="http://neopythonic.blogspot.de/2009/04/final-words-on-tail-calls.html">2009</a>).</p>
+      
+      <p>As of 2018, progress is "slow" and the Chrome team has already <em>removed</em> the automatic self-recursion optimization from its JavaScript engine.</p>
+      
+      <p>Another possibility is to <strong>explicitly mark the tail calls that will be optimized</strong>.  JavaScript extensions were proposed that add new keywords to the language (<a href="http://glat.info/js.metaret/">2013</a>,&nbsp;<a href="https://github.com/tc39/proposal-ptc-syntax">2016</a>).</p>
+      
+      <p>It turns out that we can do this explicit approach using today's JavaScript, without extending the language.
+        
+      <code>fext.js</code> demonstrates this.</p>
+
+      <h3>API Documentation</h3>
+
+    <p>README.md on <a href="https://github.com/glathoud/fext/blob/master/README.md">GitHub</a> (formatted), or directly <a href="README.md">here</a> (unformatted).</p>
 
     <h3>Speed test</h3>
 
@@ -80,16 +97,20 @@
     <h3>Unit tests</h3>
     <pre><code id="unittest_output">Running...</code></pre>
 
+    
     <section>
       <h3>Code</h3>
 
+      <p>On <a href="https://github.com/glathoud/fext/">GitHub</a> and here below:</p>
       <div id="toccont">
-        Table of contents:
         <ul id="toc"></ul>
       </div>
       
     </section>
 
+    </div>
+
+    
     <div id="source_code_0" class="code_cont"></div>
     <div id="source_code_1" class="code_cont"></div>
     
