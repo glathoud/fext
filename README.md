@@ -121,10 +121,10 @@ or
 return mret( that.otherMethod, ... )
 ```
 
-    * Reason: this permits easy debugging through `methD`.
+Reason: this permits easy debugging through `methD`.
  
 
-Mutual recursion example:
+## Methods: Mutual recursion example
 ```js
 var o = {
     isOdd : meth( "isOdd"
