@@ -17,6 +17,16 @@ Two entry points:
  * `mfun(...)` returns an optimized function,
  * `meth(...)` returns an optimized method.
 
+## Debugging
+
+Just append a "D" character:
+
+ * turn `mfun()` into `mfunD()`.
+ * turn `mret()` into `mretD()`.
+
+...to turn off the optimizations. You can then use logging and
+breakpoints.
+
 ## Getting started
 
 Wrap the whole function with `mfun(...)` and use `return mret(<expr>)` to mark the tail calls to be optimized.
@@ -79,6 +89,18 @@ console.log( isEven( 84327681 ) );  // false (no call stack issue)
 
 ## Methods
 
+Self-recursion example:
+ ```js
+ var o = {
+    gcd : meth( "gcd"
+                , (that, a, b) => a > b  ?  mret( that.self, a-b, b )
+                :                 a < b  ?  mret( that.self, b-a, a )
+                :                 a
+              )
+};
+console.log( o.gcd( 2*3*5*17, 3*5*19 ) );  // 15 (3*5)
+```
+
 No need for `namespacekey` here. Moreover, instead of:
 ```js
 mfun( (a,b,c) => ... )
@@ -95,22 +117,12 @@ meth( "methodname", (that,a,b,c) => ... )
 return mret( that.self, ...)
 ```
 or
-```
+```js
 return mret( that.otherMethod, ... )
 ```
+
     * Reason: this permits easy debugging through `methD`.
  
-Self-recursion example:
- ```js
- var o = {
-    gcd : meth( "gcd"
-                , (that, a, b) => a > b  ?  mret( that.self, a-b, b )
-                :                 a < b  ?  mret( that.self, b-a, a )
-                :                 a
-              )
-};
-console.log( o.gcd( 2*3*5*17, 3*5*19 ) );  // 15 (3*5)
-```
 
 Mutual recursion example:
 ```js
@@ -130,7 +142,10 @@ console.log( o.isOdd( 84327681 ) );  // true (no call stack issue)
 console.log( o.isEven( 84327681 ) ); // false (no call stack issue)
 ```
 
-Prototype methods:
+## Prototype methods
+
+Pretty much the same as above.
+
 ```js
 function A() {}
 A.prototype.isOdd = meth( "isOdd"
@@ -148,16 +163,16 @@ console.log( o.isOdd( 84327681 ) );  // true (no call stack issue)
 console.log( o.isEven( 84327681 ) ); // false (no call stack issue)
 ```
 
-## Debugging
+## Speed test
 
-Just append a "D" character:
-
- * turn `mfun()` into `mfunD()`.
- * turn `mret()` into `mretD()`.
-
-...to turn off the optimizations. You can then use logging and
-breakpoints.
+In the browser: http://glat.info/fext/
 
 ## Unit tests
 
 Either in the browser ([live instance](http://glat.info/fext/)) or in the command-line (e.g. [Nashorn](https://github.com/glathoud/fext/tree/master/nashorn)).
+
+## An example: `sortedSearch`
+
+Code: [lib/sorted_search.js](lib/sorted_search.js)
+
+Tests: [lib/sorted_search_unittest.js](lib/sorted_search_unittest.js)
