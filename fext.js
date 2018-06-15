@@ -975,10 +975,22 @@ var global, exports
         */
 
         var tc_arr = []
-        ,   rx = /\breturn\b[^;]*/g
+        ,   rx = /\breturn\b[^;]*;?/g
         ,   mo
         ,   white_code = white_out_comments( code )
+
+        ,   inner_fun = code.match( /\bfunction\s+\S[\S\s]{0,20}/ )
         ;
+        if (inner_fun )
+        {
+            throw new Error(
+                'fext: Inner functions not allowed,'
+                    + ' please move them to the outside,'
+                    + ' e.g. using function declarations.'
+                    + ' Have a look at `' + inner_fun[ 0 ] + '...`'
+                    + ' in the code.'
+            );
+        }
         while (mo = rx.exec( white_code ))
             tc_arr.push( tc_of_mo( mo ) );
         
@@ -1094,7 +1106,7 @@ var global, exports
             // depends on `piece_i_of_name`, that is why
             // we need a function here.
 
-            var mo = /^mret\s*\(([\s\S]*)\)\s*$/.exec( s );
+            var mo = /^mret\s*\(([\s\S]*)\)\s*;?$/.exec( s );
             mo  ||  (log_to( 'error', s )
                      , null.mret_form_not_supported);
             
@@ -1126,12 +1138,13 @@ var global, exports
             {
                 if (mtd_mo)
                 {
-                    throw new Error( 'fext(mfun/mfunD): issue with `' + s + '`:'
-                                     + ' a simple function may only have `mret` calls WITHOUT `that.`.'
-                                     + ' Do not write `mret( that.methodName, ... )` within a simple function.'
-                                     + ' Only use `mret( functionName, ... )` within a simple function.'
-                                     + ' If you really need the method of an object here, then call it directly, without `mret`.'
-                                   );
+                    throw new Error(
+                        'fext(mfun/mfunD): issue with `' + s + '`:'
+                            + ' a simple function may only have `mret` calls WITHOUT `that.`.'
+                            + ' Do not write `mret( that.methodName, ... )` within a simple function.'
+                            + ' Only use `mret( functionName, ... )` within a simple function.'
+                            + ' If you really need the method of an object here, then call it directly, without `mret`.'
+                    );
                 }
                 a_name_1 = a_name_0;
             }
@@ -1162,7 +1175,7 @@ var global, exports
             // No variable left here, all values known.
             // We can already produce the string.
             return '  (' + V_CASE_I + '=' + V_CASE_I_RETURN
-                + ', ' + V_RET + ' = ' + s + ')  ';
+                + ', ' + V_RET + ' = ' + s.replace( /;$/, '' ) + ')  ';
         }
 
         function f( /*object*/piece_i_of_name )
@@ -1176,11 +1189,14 @@ var global, exports
             i.toPrecision.call.a;
             
             return '  ('
+
                 + (name === a_name
-                   ?  ''
-                   :  V_CASE_I + '=' + i + ', '
+                   ?  []
+                   :  [ V_CASE_I + '=' + i ]
                   )
-                + rest_args.map( set_one_arg ).join( ', ' )
+                .concat( rest_args.map( set_one_arg ) )
+                .join( ', ' )
+
                 + ')  ';
 
             function set_one_arg( v, i )
@@ -1234,8 +1250,8 @@ var global, exports
     {
         var inline_body = opt  &&  opt.inline_body;
         return inline_body
-            ?  'break'
-            :  'return'
+            ?  'break;'
+            :  'return;'
         ;
     }
 
