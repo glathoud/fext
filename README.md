@@ -78,7 +78,7 @@ var isOdd = mfun( n => n < 0    ?  mret( self, -n )
                   :    n === 0  ?  false
                   :    mret( isEven, n-1 )
                 )
-,  isEven = mfun( isOdd
+,  isEven = mfun( isOdd  // <<< `isOdd` is used here as `namespacekey`
                   , "isEven"
                   , n => n < 0    ?  mret( self, -n )
                   :      n === 0  ?  true
