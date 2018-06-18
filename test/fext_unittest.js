@@ -1584,9 +1584,54 @@ acc == null  ?  mret( that.self, n, 1 )\
                 return false;
             }
 
+
+
+
+
+            , function
+            partial_call_must_set_undefined_automatically_on_remaining_args()
+            {
+                var f = mfun(
+                    function f(a, b) {
+                        return a > 1  ?  mret( f, a - 1, b )
+                            :  a > 0  ?  mret( f, a - 1 )
+                            :  b
+                        ;
+                    }
+                )
+                , isOk = f(2,4) === undefined
+                ;
+                return isOk;
+            }           
             
-            
+
+            , function fext_namespace()
+            {
+                var gcd = fext.mfun( function (a, b) {
+                    return a > b  ?  fext.mret( self, a-b, b )
+                        :  a < b  ?  fext.mret( self, b-a, a )
+                        :  a;
+                })
+                , isOk_arr = [
+                    [1, 1, 1]
+                    , [2, 2, 2]
+                    , [2, 3, 1]
+                    , [2*3, 2, 2]
+                    , [2*3, 3, 3]
+                    , [2*5*17, 3*5*19, 5]
+                    , [2*3*5*17, 3*5*19, 3*5]
+                ]
+                    .map( function( abc ) {
+                        return gcd( abc[ 0 ], abc[ 1 ] ) === abc[ 2 ];
+                    })
+                , isOk = isOk_arr
+                    .every( function ( x ) { return x; } )
+                ;
+                return isOk;            
+            }
+
         ]);
+
     } // end of function `get_test_arr()`
 
 

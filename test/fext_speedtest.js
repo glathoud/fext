@@ -8,7 +8,8 @@ var global, exports;
     var mfun   = global.mfun
     ,   log_to = mfun.log_to
 
-    , DEBUG = false
+    , DEBUG_RX = /[\?&]debug=1(?:&|$)/
+    , DEBUG = DEBUG_RX.test( location.search )
     
     , N_RESULT    = DEBUG ? 3    : 10
     , MIN_DUR_SEC = DEBUG ? 0.03 : 1.0

@@ -53,6 +53,18 @@ var global, exports
 
     global.mfunD = mfun.bind( { debug : true } );
     global.methD = meth.bind( { debug : 'method' } );
+
+    // Alternative: single namespace
+
+    global.fext = {
+        mret    : mret
+        , mfun  : mfun
+        , meth  : meth
+        , mfunD : mfunD
+        , methD : methD
+    };
+
+    Object.freeze  &&  Object.freeze( global.fext );
     
     // ---------- API: convenience tool
 
@@ -482,8 +494,10 @@ var global, exports
             ensure_depgraph_complete();
 
             return [
-                'var ' + V_THAT + ' = this'
+                , '"use strict";'
+                , 'var ' + V_THAT + ' = this'
                 , ', ' + V_CASE_I + ' = 0'
+                , ', ' + V_UNDEFINED
                 , ', ' + V_RET
                 , ';'
                 , LABEL_MAIN_LOOP + ': while (true)'
@@ -601,7 +615,7 @@ var global, exports
 
                 ?  argname_arr.map(
                     function (arg, i) {
-                        return arg + ' = ' + argstring( i ) + ';'
+                        return 'var ' + arg + ' = ' + argstring( i ) + ';'
                     }
                 )
                 .concat([
@@ -690,6 +704,7 @@ var global, exports
         }        
 
 
+        var _inline_loop_ind;
         function new_body_gen( /*uint[string]*/piece_i_of_name, /*?object?*/opt )
         {
             var inline_body = opt  &&  opt.inline_body;
@@ -700,18 +715,30 @@ var global, exports
                                  + ' Please use `let` or `const` instead.'
                                );
             }
+
+            if (inline_body)
+            {
+                
+                opt = Object.create( opt );
+                opt.inline_loop_ind
+                    = _inline_loop_ind
+                    = _inline_loop_ind == null
+                    ?  0
+                    :  1 + _inline_loop_ind
+                ;
+            }
             
             var new_body = s_body;
-            
+
             // Decreasing order important here
             for (var i = tc_len; i--;) 
             {
                 new_body = tc_arr[ i ]
-                    .change_body( new_body, piece_i_of_name, opt );
+                    .change_body( new_body, piece_i_of_name, space, opt );
             }
-
+            
             return inline_body
-                ?  'while (true) {\n' + new_body + '\n}\n'
+                ?  LABEL_INLINE_LOOP( opt.inline_loop_ind ) + ': while (true) {\n' + new_body + '\n}\n'
                 :  new_body;
         }
     }
@@ -1021,7 +1048,7 @@ var global, exports
 
             // --- Try two relatively common forms, else throw error
             
-            , simple_rx = /^return\s+(mret\s*\([\s\S]+?\))\s*$/
+            , simple_rx = /^return\s+((?:\w+\.)?mret\s*\([\s\S]+?\))\s*$/
                 
             , cond_rx =
                 /^return\s+((?:[^\?]+(?:\?[^\:]+:)?)+)$/
@@ -1104,13 +1131,13 @@ var global, exports
         ;
         
         s = s.trim();
-        if (/^mret\b/.test( s ))
+        if (/^(?:\w+\.)?mret\b/.test( s ))
         {
             // We'll need the `case_i` value, which itself
             // depends on `piece_i_of_name`, that is why
             // we need a function here.
 
-            var mo = /^mret\s*\(([\s\S]*)\)\s*;?$/.exec( s );
+            var mo = /^(?:\w+\.)?mret\s*\(([\s\S]*)\)\s*;?$/.exec( s );
             mo  ||  (log_to( 'error', s )
                      , null.mret_form_not_supported);
             
@@ -1182,7 +1209,7 @@ var global, exports
                 + ', ' + V_RET + ' = ' + s.replace( /;$/, '' ) + ')  ';
         }
 
-        function f( /*object*/piece_i_of_name )
+        function f( /*object*/piece_i_of_name, /*object*/space )
         // Returns a string
         {
             a_name in piece_i_of_name
@@ -1191,6 +1218,20 @@ var global, exports
 
             var i = piece_i_of_name[ a_name ];
             i.toPrecision.call.a;
+
+            var rest_args_2 = rest_args.slice()
+            ,   argname_arr = space[ a_name ].argname_arr
+            ;
+            // Support partial calls: set the remaining
+            // parameters to `undefined`.
+            var n_required = argname_arr.length
+            ,   n_sofar    = rest_args_2.length
+            if (n_sofar < n_required)
+            {
+                rest_args_2.length = n_required;
+                for (var z = n_sofar; z < n_required; ++z)
+                    rest_args_2[ z ] = V_UNDEFINED;
+            }
             
             return '  ('
 
@@ -1198,13 +1239,14 @@ var global, exports
                    ?  []
                    :  [ V_CASE_I + '=' + i ]
                   )
-                .concat( rest_args.map( set_one_arg ) )
+                .concat( rest_args_2.map( set_one_arg ) )
                 .join( ', ' )
 
                 + ')  ';
 
             function set_one_arg( v, i )
             {
+                (v  ||  null).substring.call.a;
                 return argstring( i ) + '=' + v;
             }
         }
@@ -1236,7 +1278,7 @@ var global, exports
     }
 
     function tc_change_body( sf_tmpl_arr, begin, end
-                             , body, piece_i_of_name, opt )
+                             , body, piece_i_of_name, space, opt )
     {
         return body.substring( 0, begin )
             + sf_tmpl_arr.map( sf_one ).join( '' )
@@ -1245,16 +1287,16 @@ var global, exports
         function sf_one( sf )
         {
             return 'string' === typeof sf  ? sf
-                :  sf( piece_i_of_name, opt )
+                :  sf( piece_i_of_name, space, opt )
             ;
         }
     }
 
-    function tc_return( /*object*/piece_i_of_name, /*?object?*/opt )
+    function tc_return( /*object*/piece_i_of_name, /*object*/space, /*?object?*/opt )
     {
         var inline_body = opt  &&  opt.inline_body;
         return inline_body
-            ?  'break;'
+            ?  'break ' + LABEL_INLINE_LOOP( opt.inline_loop_ind ) + ';'
             :  'return;'
         ;
     }
@@ -1264,8 +1306,27 @@ var global, exports
         return code.replace( /\/\*[\s\S]*?\*\/|\/\/.*?(?=[\r\n])/g, w );
         function w( s )
         {
-            return ' '.repeat( s.length );
+            return ' '
+                ?  ' '.repeat( s.length )
+                :  sRepeat( ' ', s.length )  // IE
+            
         }
+    }
+
+    function sRepeat( s, n )
+    {
+        var buf = [];
+        for(;;)
+        {
+	    if(n & 1)
+	        buf.push( s );
+            
+            if(!(n >>= 1))
+                break; 
+            
+            s += s;
+        }
+        return buf.join("");	// String
     }
     
     
