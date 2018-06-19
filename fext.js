@@ -1076,6 +1076,7 @@ var global, exports
 
         var tc_arr = []
         ,   rx = /\breturn\b([^;]*);?/g
+        ,   mret_rx = /\bmret\b\s*\(/
         ,   mo
         ,   white_code = white_out_comments( code )
 
@@ -1118,8 +1119,7 @@ var global, exports
 
             // --- Try two relatively common forms, else throw error
 
-            , has_mret = /\bmret\b\s*\(/
-                .test( s_1 )
+            , has_mret = mret_rx.test( s_1 )
             
             , simple_rx =
                 /^\s+((?:\w+\.)?\bmret\s*\([\s\S]+?\))\s*$/
