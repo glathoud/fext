@@ -1,4 +1,4 @@
-/*global mret mdecl meth mfun console Map print global exports */
+/*global mret mdecl meth mfun methD mfunD console Map print global exports __fext_debug_all*/
 
 /*
   fext.js: Fast Explicit Tail Calls
@@ -99,7 +99,11 @@ var global, exports
     // Various constants
     
     var LABEL_MAIN_LOOP   = '__fext_main_loop__'
-    ,   LABEL_INLINE_LOOP = function (i) { (isFinite(i)  &&  i).toPrecision.call.a; return '__fext_inline_loop_' + i + '__'; }
+    ,   LABEL_INLINE_LOOP = function ( i )
+    {
+        (isFinite(i)  &&  i).toPrecision.call.a;
+        return '__fext_inline_loop_' + i + '__';
+    }
         
     ,   V_CASE_I        = '__fext_case_i__'
     ,   V_CASE_I_RETURN = '-1'
@@ -235,7 +239,7 @@ var global, exports
         
         // ?integer>0?: number of expansion levels
         var expansion = dflt( this  &&  this.expansion
-                              , 1
+                              , 4
                             );
 
         // ?function?: Mostly for internal use (e.g. `meth()`)
@@ -270,7 +274,7 @@ var global, exports
         }
 
         // Support anonymous functions: `return mret( self, ...)`
-        
+
         name  ||  (name = '__fext_anonymous_' + (
             mfun.__fext_anon_id__ = 1 + (mfun.__fext_anon_id__ | 0)
         ) + '__');
@@ -286,7 +290,7 @@ var global, exports
 
         // if a function, this calls decompilation (sin!)
         var f_code    = '' + f_or_s;
-        
+       
         // --- Rock it
         
         var mo_fun   = f_code.match(
@@ -314,10 +318,18 @@ var global, exports
             :  argname_arr_0
         
         ,   narg        = argname_arr.length
+
+        // `argname_csv` might include comments like `/*string*/`
+        ,   argname_csv = argname_arr.join( ', ' )
+        ;
+        // `argname_arr` does not include comments anymore
+        argname_arr = argname_arr.map( function ( s ) {
+            return white_out_comments( s ).trim();
+        })
         
         // Scan the body for tail calls
         
-        ,   tc_arr = find_tail_calls
+        var tc_arr = find_tail_calls
             .call(
                 { mret_that_dot : mret_that_dot }
                 , name, s_body
@@ -340,7 +352,18 @@ var global, exports
         var piece_arr = [ name ]
         ,   piece_i_of_name = {}
         ,   tmp = {}
+
+        // Things we'll do later (when all `mfun` declared)
         ,   depgraph_complete = false
+        ,   all_argname_arr = argname_arr.slice() // finished later
+        ,   all_argname_set = argname_arr.reduce(
+            function ( o, s ) {
+                o[ s ] = true;
+                return o;
+            }
+            , {}
+        )
+        ,   other_argname_arr = [] // built later
         ;
         piece_i_of_name[ name ] = 0;
         tc_arr.forEach(
@@ -419,12 +442,23 @@ var global, exports
         {
             if (!impl)
             {
-                var head = master_argmax_string()
+                var head = argname_csv
                 ,   body = master_bodycode_gen()
                 ;
                 try
                 {
-                    impl = new Function( head, body );
+                    // Nicety: make sure the returned function has a
+                    // meaningful name. Reason: simply doing `new
+                    // Function(head,body)` would return an
+                    // anonymous function).
+                    
+                    impl = new Function(
+                        'return ' + name + ';\n'
+                            + 'function ' + name + '( ' + head + ' )\n'
+                            + '{\n'
+                            + body
+                            + '}\n'
+                    )()
                 }
                 catch( e )
                 {
@@ -457,29 +491,6 @@ var global, exports
             return dbg_f;
         }
         
-
-
-
-        
-        function master_argmax_string()
-        {
-            ensure_depgraph_complete();
-            
-            var argmax = piece_arr.reduce( argmax, 0 );
-            function argmax( am, a_name )
-            {
-                return Math.max( am, space[ a_name ].narg );
-            }
-
-            argmax.toPrecision.call.a;
-
-            return Array
-                .apply( null, { length : argmax } )
-                .map( function ( _, i ) { return argstring( i ); } )
-                .join( ',' )
-            ;        
-        }
-
         function master_bodycode_gen()
         /*
           A cheap trampoline implementation that replaces tail calls
@@ -494,13 +505,22 @@ var global, exports
             ensure_depgraph_complete();
 
             return [
-                , '"use strict";'
-                , 'var ' + V_THAT + ' = this'
-                , ', ' + V_CASE_I + ' = 0'
-                , ', ' + V_UNDEFINED
-                , ', ' + V_RET
+                '"use strict";'
+                , 'var ' +
+                    (
+                        [
+                            V_THAT + ' = this'
+                            , V_CASE_I + ' = 0'
+                            ,  V_UNDEFINED
+                            ,  V_RET
+                        ]
+                            .concat( other_argname_arr )
+                            .concat( all_argname_arr
+                                     .map( _fext_argname )
+                                   )
+                    ).join( ', ' )
                 , ';'
-                , LABEL_MAIN_LOOP + ': while (true)'
+                , LABEL_MAIN_LOOP + ': for (;;)'
                 , '{'
                 , '  switch( ' + V_CASE_I + ')'
                 , '  {'
@@ -510,12 +530,16 @@ var global, exports
                     {
                         (a_name === name) === (i === 0)
                             ||  null.bug;
+
+                        var is_last_inline = inline_body
+                            &&  !expansion;
                         
                         return 'case ' + i + ': '
                             + space[ a_name ].callcode_gen( 
                                 piece_i_of_name
                                 , null
-                                , { inline_body : inline_body }
+                                , { inline_body      : inline_body
+                                    , is_last_inline : is_last_inline                                  }
                             )
                             + ' continue ' + LABEL_MAIN_LOOP + ';\n';
                     }
@@ -537,9 +561,10 @@ var global, exports
                                 (a_name === name) === (i === 0)
                                     ||  null.bug;
                                 
-                                return space[ a_name ].piececode_gen(
-                                    piece_i_of_name
-                                );
+                                return space[ a_name ]
+                                    .piececode_gen(
+                                        piece_i_of_name
+                                    );
                             }
                         )
                 )
@@ -556,6 +581,9 @@ var global, exports
                   namespacekey. 
 
                   We can now complete the graph of dependencies.
+
+                  And we use that opportunity to build
+                  `other_argname_arr`.
                 */
                 for (var added = true, n_last = 1; added; )
                 {
@@ -593,6 +621,21 @@ var global, exports
                                 added = true;
                             }
                         }
+
+                        // We use that opportunity to build
+                        // `other_argname_arr`
+
+                        var o_argname_arr = i_o.argname_arr;
+                        for (var j = o_argname_arr.length; j--;)
+                        {
+                            var an = o_argname_arr[ j ];
+                            if (!(an in all_argname_set))
+                            {
+                                all_argname_set[ an ] = true;
+                                all_argname_arr  .push( an );
+                                other_argname_arr.push( an );
+                            }
+                        }
                     }
 
                     n_last = new_n_last;
@@ -606,26 +649,13 @@ var global, exports
         {
             remaining_ex == null  &&  (remaining_ex = expansion);
             
-            var arr = [];
-
-            for (var i = 0; i < narg; ++i)
-                arr.push( argstring( i ) );
-
-            var ret_arr = (opt  &&  opt.inline_body)
-
-                ?  argname_arr.map(
-                    function (arg, i) {
-                        return 'var ' + arg + ' = ' + argstring( i ) + ';'
-                    }
-                )
-                .concat([
-                    new_body_gen( piece_i_of_name, opt )
-                ])
-
-                :  [
-                    name + '_fext( ' + arr.join( ', ' ) + ' );'
-                ]
-            ;
+            var ret_arr = [
+                inline_body
+                
+                    ?   new_body_gen( piece_i_of_name, opt )
+                
+                    :  name + '_fext();'
+            ];
 
             callcode_gen_expand( remaining_ex );
             
@@ -645,7 +675,10 @@ var global, exports
                     
                     var only_self = piece_arr.length === 1;
 
-                    for (var j_begin = 0, j_end = piece_arr.length
+                    for (var j_begin = 0
+                         , j_end = piece_arr.length
+                         , j_last = j_end - 1
+                         
                          , j = j_begin;
                          j < j_end;
                          j++
@@ -667,6 +700,13 @@ var global, exports
                             ;
                             ret_arr.push( tmp );
                         }
+
+                        if (inline_body)
+                        {
+                            opt = Object.create( opt );
+                            opt.is_last_inline = ex === 0;
+                        }
+                        
                         ret_arr.push(
                             space[ a_name ].callcode_gen(
                                 piece_i_of_name, ex, opt
@@ -681,12 +721,7 @@ var global, exports
         
         function piececode_gen( /*uint[string]*/piece_i_of_name )
         {
-            var p_h_arr = []
-                .concat( argname_arr )
-
-            ,   p_head = 'function ' + name + '_fext( '
-                + p_h_arr.join( ', ' ) + ' )'
-
+            var p_head   = 'function ' + name + '_fext()'
             ,   new_body = new_body_gen( piece_i_of_name )
             ;
             return [
@@ -697,35 +732,51 @@ var global, exports
                 ,  new_body
 
                 ,  '  ;'
-                ,  '  ' + V_CASE_I + ' = ' + V_CASE_I_RETURN + ';'
-                ,  '  ' + V_RET  + ' = ' + V_UNDEFINED + ';'
-                , '}'
-            ].join( '\n' );
-        }        
+            ]
+                .concat(
+                    inline_body
+                        ?  [ 'return;' ]
+                        : [ '  ' + V_CASE_I + ' = ' + V_CASE_I_RETURN + ';'
+                            ,  '  ' + V_RET  + ' = ' + V_UNDEFINED + ';'
+                          ]
+                )
+                .concat( [ '}' ] )
+                .join( '\n' );
+        }
 
 
         var _inline_loop_ind;
-        function new_body_gen( /*uint[string]*/piece_i_of_name, /*?object?*/opt )
+        function new_body_gen( /*uint[string]*/piece_i_of_name
+            , /*?object?*/opt )
         {
-            var inline_body = opt  &&  opt.inline_body;
+            var is_last_inline = opt  &&  opt.is_last_inline;
 
             if (inline_body  &&  has_var)
             {
-                throw new Error( 'fext (inline_body: true): function "' + name + '" contains `var`, which are forbidden.'
-                                 + ' Please use `let` or `const` instead.'
-                               );
+                throw new Error(
+                    'fext (inline_body: true): function "' + name
+                        + '" contains `var`, which is forbidden.'
+                        + ' Please use `let` or `const` instead.'
+                );
             }
 
             if (inline_body)
             {
                 
                 opt = Object.create( opt );
-                opt.inline_loop_ind
-                    = _inline_loop_ind
-                    = _inline_loop_ind == null
-                    ?  0
-                    :  1 + _inline_loop_ind
-                ;
+                if (is_last_inline)
+                {
+                    opt.inline_loop_ind = null;
+                }
+                else
+                {
+                    opt.inline_loop_ind
+                        = _inline_loop_ind
+                        = _inline_loop_ind == null
+                        ?  0
+                        :  1 + _inline_loop_ind
+                    ;
+                }
             }
             
             var new_body = s_body;
@@ -734,11 +785,15 @@ var global, exports
             for (var i = tc_len; i--;) 
             {
                 new_body = tc_arr[ i ]
-                    .change_body( new_body, piece_i_of_name, space, opt );
+                    .change_body( new_body, piece_i_of_name, space
+                                  , opt );
             }
             
-            return inline_body
-                ?  LABEL_INLINE_LOOP( opt.inline_loop_ind ) + ': while (true) {\n' + new_body + '\n}\n'
+            return inline_body  &&  !is_last_inline
+
+                ?  LABEL_INLINE_LOOP( opt.inline_loop_ind )
+                + ': for(;;) {\n' + new_body + '\n}\n'
+
                 :  new_body;
         }
     }
@@ -831,22 +886,25 @@ var global, exports
         // Use case: mutual recursion (or named self-recursion)
         
         /*
-          3-step strategy required to support mutual recursion between
-          methods:
+          3-step strategy required to support mutual recursion
+          between methods:
 
           (1) the API user declares all methods: ==> `meth_wrapper2`
           created.
 
-          (2) the API user calls *one* such method (`meth_wrapper2`),
-          which setups *all* methods.
+          (2) the API user calls *one* such method
+          (`meth_wrapper2`), which setups *all* methods.
 
-          For *each* method: call `mfun()`, `meth_wrapper1` now ready.
+          For *each* method: call `mfun()`, `meth_wrapper1` now
+          ready.
 
-          (3) the *one* targetted method is called (`meth_wrapper1`),
-          which in turns creates the actual implementation and runs it.
+          (3) the *one* targetted method is called
+          (`meth_wrapper1`), which in turns creates the actual
+          implementation and runs it.
 
-          Optimization: the method is replaced with its implementation.
-          In any case, the implementation is cached: created once only.
+          Optimization: the method is replaced with its
+          implementation.  In any case, the implementation is
+          cached: created once only.
         */
 
         var _MSM = '__meth_setup_mfun__';
@@ -871,9 +929,12 @@ var global, exports
                 this.self = dbg_f;
             }
             
-            var ret = dbg_f.apply( this, already_debugging
-                                   ?  arguments
-                                   :  [ this ].concat( [].slice.call( arguments ) ) );
+            var ret = dbg_f.apply(
+                this
+                , already_debugging
+                    ?  arguments
+                    :  [ this ].concat( [].slice.call( arguments ) )
+            );
             
             if (!already_debugging)
             {
@@ -890,9 +951,9 @@ var global, exports
         {
             if (this[ name ] === meth_wrapper2)
             {
-                // We support both method definitions: prototype-based
-                // and direct object assignment. See meth_* examples:
-                // ./test/fext_unittest_es6.js
+                // We support both method definitions:
+                // prototype-based and direct object assignment. See
+                // meth_* examples: ./test/fext_unittest_es6.js
                 
                 setup_all_mfuns( Object.getPrototypeOf( this ) );
                 setup_all_mfuns( this );
@@ -923,7 +984,9 @@ var global, exports
 
             meth_mfun = mfun.call(
                 {
-                    preprocess_argname_arr : meth_preprocess_argname_arr
+                    preprocess_argname_arr :
+                    meth_preprocess_argname_arr
+                    
                     , mret_that_dot : true
                 }
                 , namespacekey, a, b );
@@ -948,8 +1011,9 @@ var global, exports
         var impl;
         function meth_wrapper1()
         {
-            // Optimizations: (1) create the implementation only once
-            // and (2) replace the method with its implementation.
+            // Optimizations: (1) create the implementation only
+            // once and (2) replace the method with its
+            // implementation.
 
             return (impl
                     ||  (impl
@@ -987,14 +1051,19 @@ var global, exports
     }
 
     // ---------- Private details ----------
-        
-    function argstring( i ) { return '__fext_arg' + i + '__'; }
     
     function commented( s )
     {
         return '/*' + s.replace( /\/\*|\*\//g, '  ' ).trim() + '*/';
     }
 
+    function _fext_argname( s )
+    // Temporary variables used (as little as possible) to prepare a
+    // call.
+    {
+        return '__fext_arg_' + s + '__';
+    }
+    
     function find_tail_calls( /*string*/name, /*string*/code )
     {
         var opt = this;
@@ -1006,7 +1075,7 @@ var global, exports
         */
 
         var tc_arr = []
-        ,   rx = /\breturn\b[^;]*;?/g
+        ,   rx = /\breturn\b([^;]*);?/g
         ,   mo
         ,   white_code = white_out_comments( code )
 
@@ -1027,11 +1096,12 @@ var global, exports
         
         return tc_arr;
 
-        function tc_of_mo( mo )
+        function tc_of_mo( mo_0 )
         {
-            var begin = mo.index
+            var begin = mo_0.index
             ,     end = rx.lastIndex
-            ,     s_0 = code.substring( begin, end )
+            ,     s_0 = mo_0[ 0 ]
+            ,     s_1 = mo_0[ 1 ]
             ;
             begin.toPrecision.call.a;
             end.toPrecision.call.a;
@@ -1047,21 +1117,87 @@ var global, exports
             ,  tc_name_set = {}
 
             // --- Try two relatively common forms, else throw error
+
+            , has_mret = /\bmret\b\s*\(/
+                .test( s_1 )
             
-            , simple_rx = /^return\s+((?:\w+\.)?mret\s*\([\s\S]+?\))\s*$/
+            , simple_rx =
+                /^\s+((?:\w+\.)?\bmret\s*\([\s\S]+?\))\s*$/
                 
             , cond_rx =
-                /^return\s+((?:[^\?]+(?:\?[^\:]+:)?)+)$/
+                /^\s+((?:[^\?:,]+\?[^\?:]+:)*?[^\?:,]+\?[^\?:]+:[^\?:]+)\s*$/
                 
             , tmp
             ;
             sf_tmpl_arr.push( commented( s_0 ) + '\n' )
             sf_tmpl_arr.push( '{' );
             
-            if (tmp = s_0.match( simple_rx ))
+            if (tmp = has_mret  &&  s_1.match( simple_rx ))
             {
-                var s_call = tmp[ 1 ];
+                var s_call   = tmp[ 1 ]
+                ,   s_call_2 = sf_tmpl_gen.call(
+                    opt
+                    , name, tc_name_set, tc_name_arr
+                    , s_call
+                )
+                ;
+                sf_tmpl_arr.push( s_call_2, ';\n' );
+
+                sf_tmpl_arr.push( tc_return, '\n' );
                 
+            }
+            else if (tmp = has_mret  &&  s_1.match( cond_rx ))
+            {
+                var cond_expr = tmp[ 1 ]
+                ,   cond_rx_2 = /(?:([^\?,]+)\?)?([^\:]+)($|:)/g
+                ,   tmp2
+                ;
+                while (tmp2 = cond_rx_2.exec( cond_expr ))
+                {
+                    var s_cond  = (tmp2[ 1 ]  ||  '').trim()
+                    ,   s_call  = (tmp2[ 2 ]).trim()
+                    ,   s_colon = tmp2[ 3 ]  ||  ''
+                    ;
+
+                    // We "unbox" the
+                    // return_<conditional_expression> into:
+                    // <if..else..> for performance reasons.
+                    
+                    if (s_cond)
+                    {
+                        sf_tmpl_arr.push(
+                            'if (' + s_cond  + ')\n'
+                        );
+                    }
+
+                    var s_call_2 = sf_tmpl_gen.call(
+                        opt
+                        , name, tc_name_set, tc_name_arr
+                        , s_call
+                    ); 
+                    
+                    sf_tmpl_arr.push( '{\n{\n', s_call_2, '\n}\n' );
+
+                    sf_tmpl_arr.push( tc_return, '\n' );
+
+                    sf_tmpl_arr.push( '\n}\n' );
+                }
+            }
+            else if (has_mret)
+            {
+                var msg = 'mret form not supported:\n' + s_1 + '\n'
+                    + 'If a conditional expression, '
+                    + 'try NOT to put any comma '
+                    + 'in the condition parts.'
+                ;
+                throw new Error( msg );
+            }
+            else
+            {
+                // return a non-mret expression
+                
+                var s_call = s_1;
+                s_call.substring.call.a;
                 sf_tmpl_arr.push(
                     sf_tmpl_gen.call(
                         opt
@@ -1069,43 +1205,11 @@ var global, exports
                         , s_call
                     )
                     , ';\n'
-                    , tc_return
+                    , tc_return_non_mret
                     , '\n'
                 );
             }
-            else if (tmp = s_0.match( cond_rx ))
-            {
-                var cond_expr = tmp[ 1 ]
-                ,   cond_rx_2 = /(?:([^\?]+\?))?([^\:]+)($|:)/g
-                ,   tmp2
-                ;
-                while (tmp2 = cond_rx_2.exec( cond_expr ))
-                {
-                    var s_cond  = tmp2[ 1 ]  ||  ''
-                    ,   s_call  = tmp2[ 2 ]
-                    ,   s_colon = tmp2[ 3 ]  ||  ''
-                    ;
-                    sf_tmpl_arr.push(
-                        s_cond 
-                        , sf_tmpl_gen.call(
-                            opt
-                            , name, tc_name_set, tc_name_arr
-                            , s_call
-                        )
-                        , s_colon  ?  '\n' + s_colon  :  ''
-                    );
-                }
-                sf_tmpl_arr.push(
-                    ';\n'
-                    , tc_return
-                    , '\n'
-                );
-            }
-            else
-            {
-                log_to( 'error', s_0 );
-                null.tail_form_not_supported;
-            }
+
             sf_tmpl_arr.push( '}' );
                         
             var change_body = tc_change_body
@@ -1127,7 +1231,7 @@ var global, exports
     // Updates: `tc_name_set` and `tc_name_arr`
     {
         var opt = this
-        , mret_that_dot = opt  &&  opt.mret_that_dot
+        ,   mret_that_dot = opt  &&  opt.mret_that_dot
         ;
         
         s = s.trim();
@@ -1137,9 +1241,11 @@ var global, exports
             // depends on `piece_i_of_name`, that is why
             // we need a function here.
 
-            var mo = /^(?:\w+\.)?mret\s*\(([\s\S]*)\)\s*;?$/.exec( s );
+            var mo = /^(?:\w+\.)?mret\s*\(([\s\S]*)\)\s*;?$/
+                .exec( s );
+            
             mo  ||  (log_to( 'error', s )
-                     , null.mret_form_not_supported);
+                     , null.mret_form_not_supported_1);
             
             // Trampoline call, actually similar to Backus'
             // metacomposition (just a general remark).
@@ -1158,10 +1264,13 @@ var global, exports
                 // `that.<methodName>` mandatory
                 if (!mtd_mo)
                 {
-                    throw new Error( 'fext(meth/methD): issue with `' + s + '`:'
-                                     + ' within a method, start all your `mret` calls using `that.`:'
-                                     + ' `mret( that.self, ... ) or mret( that.otherMethod, ... )`'
-                                   );
+                    throw new Error
+                    ('fext(meth/methD): issue with `' + s + '`:'
+                     + ' within a method, '
+                     + 'start all your `mret` calls using `that.`:'
+                     + ' `mret( that.self, ... ) or '
+                     + 'mret( that.otherMethod, ... )`'
+                    );
                 }
                 a_name_1 = mtd_mo[ 1 ];
             }
@@ -1169,12 +1278,17 @@ var global, exports
             {
                 if (mtd_mo)
                 {
-                    throw new Error(
-                        'fext(mfun/mfunD): issue with `' + s + '`:'
-                            + ' a simple function may only have `mret` calls WITHOUT `that.`.'
-                            + ' Do not write `mret( that.methodName, ... )` within a simple function.'
-                            + ' Only use `mret( functionName, ... )` within a simple function.'
-                            + ' If you really need the method of an object here, then call it directly, without `mret`.'
+                    throw new Error
+                    ('fext(mfun/mfunD): issue with `' + s + '`: '
+                     + 'a simple function may only have '
+                     + '`mret` calls WITHOUT `that.`. '
+                     + 'Do not write `mret( that.methodName, ... )`'
+                     + ' within a simple function. '
+                     + 'Only use `mret( functionName, ... )` '
+                     + 'within a simple function. '
+                     + 'If you really need the method of an object '
+                     + 'here, then call it directly, '
+                     + 'without `mret`.'
                     );
                 }
                 a_name_1 = a_name_0;
@@ -1184,7 +1298,9 @@ var global, exports
             var a_name   =
                 a_name_1 === 'self'  ?  name  :  a_name_1
             
-            ,   rest_args = mret_args.slice( 1 )
+            ,   rest_args = mret_args
+                .slice( 1 )
+                .map( function ( s ) { return s.trim(); } )
             ; 
 
             (a_name  ||  null).substring.call.a;
@@ -1203,13 +1319,27 @@ var global, exports
         }
         else
         {
-            // No variable left here, all values known.
-            // We can already produce the string.
-            return '  (' + V_CASE_I + '=' + V_CASE_I_RETURN
-                + ', ' + V_RET + ' = ' + s.replace( /;$/, '' ) + ')  ';
+            // We can already prepare the string.
+            var sv = s.replace( /\s*;\s*$/, '' );
+            return f_non_mret; // behind a function for inline_body
         }
 
-        function f( /*object*/piece_i_of_name, /*object*/space )
+        function f_non_mret(
+            /*object*/piece_i_of_name
+            , /*object*/space
+            , /*?object?*/opt2 )
+        {
+            // No variable left here, all values known.
+            if (opt2  &&  opt2.inline_body)
+                return '  return ' + sv + '  ';
+            
+            return '  (' + V_CASE_I + '=' + V_CASE_I_RETURN + ','
+                + V_RET + ' = ' + sv + ')  ';
+        }
+        
+        function f( /*object*/piece_i_of_name, /*object*/space
+            , /*?object?*/opt2
+        )
         // Returns a string
         {
             a_name in piece_i_of_name
@@ -1232,22 +1362,92 @@ var global, exports
                 for (var z = n_sofar; z < n_required; ++z)
                     rest_args_2[ z ] = V_UNDEFINED;
             }
+
+            // We try to eliminate unneeded assignments (where
+            // nothing changes). Quite simple strategy for now:
+            // until the first non-identity assignment.
+            //
+            // Identity assignment means: `<varname> = <varname>;`
+            // Non-identity assign: `<varname> = <anything else>;`
+
+            var first_needed = false
+            ,   n_needed = rest_args_2
+                .reduce( count_n_needed, 0 )
+
+            ,   zero_needed = 0 === n_needed
+
+            ,   more_than_one_needed = 1 < n_needed
+
+            ,   arr = [name !== a_name  &&  (V_CASE_I + '=' + i)]
+                .concat(
+                    zero_needed
+                        ?  []
+
+                        : (first_needed = false
+                           , rest_args_2.map( prepare_one_arg )
+                          )
+                        .concat(
+                            (first_needed = false
+                             , rest_args_2.map( set_one_arg )
+                            )
+                        )
+                )
+                .filter( function ( s ) { return s; } )
+            ;
+            return arr.length ?  '  (' + arr.join( ', ') + ')  '
+                :  ''
+            ;
             
-            return '  ('
-
-                + (name === a_name
-                   ?  []
-                   :  [ V_CASE_I + '=' + i ]
-                  )
-                .concat( rest_args_2.map( set_one_arg ) )
-                .join( ', ' )
-
-                + ')  ';
-
+            function count_n_needed( n, v, i )
+            {
+                return (first_needed
+                        ||  (first_needed = v !== argname_arr[ i ]
+                            )
+                       )
+                    ?  n+1
+                    :  n
+                ;
+            }
+            
+            function prepare_one_arg( v, i )
+            {
+                (v  ||  null).substring.call.a;
+                return is_fext_arg_needed( v, i )
+                    && (fext_arg( i ) + ' = ' + v);
+            }
+            
             function set_one_arg( v, i )
             {
                 (v  ||  null).substring.call.a;
-                return argstring( i ) + '=' + v;
+                return is_fext_arg_needed( v, i )
+
+                // Indirect (to be safe)
+                    ?  (argname_arr[ i ] + ' = ' + fext_arg( i ))
+
+                // Direct (no safety needed here)
+                    :  v !== argname_arr[ i ]
+                    ?  argname_arr[ i ] + ' = ' + v
+
+                // Unchanged
+                    : ''
+                ;
+            }
+
+            function is_fext_arg_needed( v, i )
+            {
+                // Detect the first non-identity assignment
+                
+                (v  ||  null).substring.call.a;
+                return first_needed
+                    ||  (more_than_one_needed
+                         &&
+                         (first_needed = v !== argname_arr[ i ])
+                        );
+            }
+            
+            function fext_arg( i )
+            {
+                return _fext_argname( argname_arr[ i ] );
             }
         }
 
@@ -1294,9 +1494,28 @@ var global, exports
 
     function tc_return( /*object*/piece_i_of_name, /*object*/space, /*?object?*/opt )
     {
-        var inline_body = opt  &&  opt.inline_body;
+        var inline_body    = opt  &&  opt.inline_body
+        ,   is_last_inline = opt  &&  opt.is_last_inline
+        ;
         return inline_body
-            ?  'break ' + LABEL_INLINE_LOOP( opt.inline_loop_ind ) + ';'
+            ?
+            (
+                is_last_inline
+                    ?  'continue ' + LABEL_MAIN_LOOP +';'
+                    :  'break '
+                    + LABEL_INLINE_LOOP( opt.inline_loop_ind ) + ';'
+            )
+            :  'return;'
+        ;
+    }
+
+    function tc_return_non_mret( /*object*/piece_i_of_name, /*object*/space, /*?object?*/opt )
+    {
+        var inline_body    = opt  &&  opt.inline_body
+        ,   is_last_inline = opt  &&  opt.is_last_inline
+        ;
+        return inline_body
+            ?  ''
             :  'return;'
         ;
     }
@@ -1328,6 +1547,5 @@ var global, exports
         }
         return buf.join("");	// String
     }
-    
-    
+       
 })(global  ||  exports  ||  this);

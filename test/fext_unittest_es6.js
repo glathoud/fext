@@ -416,47 +416,51 @@ var global, exports;
         }
 
 
-
-
         , function meth_arrow_self_recursion_use_that()
         {
-            // Somewhat contrived example to show that
-            // we have to use `that` instead of `this`
-
-            var o = {
-                factorial : meth(
-                    'factorial'
-                    , (that, n) =>
-                        (
-                            (that._acc = (n  ||  1) * (that._acc || 1))
-                            , 
-                            n > 1
-                                ? mret( that.self, n-1 )
-                                : (that._tmp = that._acc
-                                   , that._acc = 0
-                                   , that._tmp
-                                  )
-                        )
-                )
-            }
-            , isOk_arr = [
-                [0, 1]
-                , [1, 1]
-                , [2, 2]
-                , [3, 2*3]
-                , [4, 2*3*4]
-                , [5, 2*3*4*5]
-                , [6, 2*3*4*5*6]
-                , [7, 2*3*4*5*6*7]
-            ]
-                .map( function ( ab ) {
-                    return o.factorial( ab[ 0 ] ) === ab[ 1 ];
-                })
-            , isOk = isOk_arr
-                .every( function ( x ) { return x; } )
-            ;
-            return isOk;
+            try {
             
+                // Somewhat contrived example to show that
+                // we have to use `that` instead of `this`
+
+                var o = {
+                    factorial : meth(
+                        'factorial'
+                        , (that, n) =>
+                            (that._acc = (n  ||  1) * (that._acc || 1)
+                             , 
+                             n > 1
+                             ? mret( that.self, n-1 )
+                             : (that._tmp = that._acc
+                                , that._acc = 0
+                                , that._tmp
+                               )
+                            )
+                    )
+                }
+                ;
+                var  isOk_arr = [
+                    [0, 1]
+                    , [1, 1]
+                    , [2, 2]
+                    , [3, 2*3]
+                    , [4, 2*3*4]
+                    , [5, 2*3*4*5]
+                    , [6, 2*3*4*5*6]
+                    , [7, 2*3*4*5*6*7]
+                ]
+                    .map( function ( ab ) {
+                        return o.factorial( ab[ 0 ] ) === ab[ 1 ];
+                    })
+                , isOk = isOk_arr
+                    .every( function ( x ) { return x; } )
+                ;
+                return isOk;
+            }
+            catch ( e )
+            {
+                return /[\s_]not[\s_]+supported[\s_:]/.test( e );
+            }
         }
 
 

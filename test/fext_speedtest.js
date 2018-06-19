@@ -9,11 +9,13 @@ var global, exports;
     ,   log_to = mfun.log_to
 
     , DEBUG_RX = /[\?&]debug=1(?:&|$)/
-    , DEBUG = DEBUG_RX.test( location.search )
+        , DEBUG = DEBUG_RX.test( location.search )
+
+    , ALL = /[\?&]all=1(?:&|$)/.test( location.search )
     
-    , N_RESULT    = DEBUG ? 3    : 10
-    , MIN_DUR_SEC = DEBUG ? 0.03 : 1.0
-    , PAUSE_SEC   = DEBUG ? 0.03 : 1.0
+    , N_RESULT    = DEBUG ? 3   : 10
+    , MIN_DUR_SEC = DEBUG ? 0.1 : 1.0
+    , PAUSE_SEC   = DEBUG ? 0.1 : 1.0
     ;
     
     // ---------- API
@@ -117,7 +119,7 @@ var global, exports;
                 niter_init : 1e5
                 , runner   : isOdd_meth
             }
-                       
+            
             , {
                 niter_init : 1e5
                 , runner   : isOdd_metaret
@@ -127,44 +129,52 @@ var global, exports;
                 niter_init : 1e3
                 , runner   : isOdd_tailtramp
             }
+        ].concat( !ALL ? [] : [
+
+            {
+                niter_init : 1e5
+                , runner   : isOdd_mfun_ex1_no_inline
+            }
+
+            , {
+                niter_init : 1e5
+                , runner   : isOdd_mfun_ex0_no_inline
+            }
             
             , {
                 niter_init : 1e2
-                , runner   : isOdd_tailcatch
+                , runner   : isOdd_tailcatch  // way too slow
             }
-
-            /*
-
-              To test other parameters
-
+            
+            // To test other parameters
+            
             , {
                 niter_init : 1e5
                 , runner   : isOdd_mfun_ex3
             }
-
+            
             , {
                 niter_init : 1e5
                 , runner   : isOdd_mfun_ex2
             }
-
+            
             , {
                 niter_init : 1e5
                 , runner   : isOdd_mfun_ex1
             }
-
+            
             , {
                 niter_init : 1e5
                 , runner   : isOdd_mfun_ex0
             }
-
+            
             , {
                 niter_init : 1e5
                 , runner   : isOdd_mfun_if
             }
-
-            */
-            
-        ];
+        ]
+                );
+        
     }
 
     function isOdd_metaret( niter )
@@ -272,6 +282,8 @@ var global, exports;
         // Sanity check
         isOdd_isEven_check( isOdd, isEven );
 
+        debugger; // xxx
+        
         var result = isOdd( niter ); // <<< speedtest
 
         // Sanity check
@@ -301,7 +313,7 @@ var global, exports;
         ;
         // Sanity check
         isOdd_isEven_check( isOdd, isEven );
-            
+        
         var result = isOdd( niter ); // <<< speedtest
 
         // Sanity check
@@ -331,7 +343,7 @@ var global, exports;
         ;
         // Sanity check
         isOdd_isEven_check( isOdd, isEven );
-            
+        
         var result = isOdd( niter ); // <<< speedtest
 
         // Sanity check
@@ -363,8 +375,6 @@ var global, exports;
         // Sanity check
         isOdd_isEven_check( isOdd, isEven );
 
-        console.log('xxx _ex2 impl:', isOdd.getImpl()+'')
-        
         var result = isOdd( niter ); // <<< speedtest
 
         // Sanity check
@@ -372,6 +382,65 @@ var global, exports;
     }
 
 
+
+    function isOdd_mfun_ex1_no_inline( niter )
+    {
+        // The default `namespacekey` is the returned
+        // function `var isOdd` in this case.
+        var opt = { expansion : 1, inline_body : false }
+
+        ,   isOdd = mfun.call( opt, function isOdd( n ) {
+            return n > 0  ?  mret( isEven, n-1 )
+                :  n < 0  ?  mret( self, -n )
+                :  false
+            ;
+        })
+        ,  isEven = mfun.call( opt, isOdd, function isEven( n ) {
+            return n > 0  ?  mret( isOdd, n-1 )
+                :  n < 0  ?  mret( self, -n )
+                :  true
+            ;
+        })
+        ;
+        // Sanity check
+        isOdd_isEven_check( isOdd, isEven );
+        
+        var result = isOdd( niter ); // <<< speedtest
+
+        // Sanity check
+        result === (niter % 2 !== 0)  ||  null.bug;        
+    }
+
+
+
+
+    function isOdd_mfun_ex0_no_inline( niter )
+    {
+        // The default `namespacekey` is the returned
+        // function `var isOdd` in this case.
+        var opt = { expansion : 0, inline_body : false }
+
+        ,   isOdd = mfun.call( opt, function isOdd( n ) {
+            return n > 0  ?  mret( isEven, n-1 )
+                :  n < 0  ?  mret( self, -n )
+                :  false
+            ;
+        })
+        ,  isEven = mfun.call( opt, isOdd, function isEven( n ) {
+            return n > 0  ?  mret( isOdd, n-1 )
+                :  n < 0  ?  mret( self, -n )
+                :  true
+            ;
+        })
+        ;
+        // Sanity check
+        isOdd_isEven_check( isOdd, isEven );
+        
+        var result = isOdd( niter ); // <<< speedtest
+
+        // Sanity check
+        result === (niter % 2 !== 0)  ||  null.bug;        
+    }
 
 
     function isOdd_mfun_ex3( niter )
@@ -395,7 +464,7 @@ var global, exports;
         ;
         // Sanity check
         isOdd_isEven_check( isOdd, isEven );
-            
+        
         var result = isOdd( niter ); // <<< speedtest
 
         // Sanity check

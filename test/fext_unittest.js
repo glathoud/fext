@@ -785,18 +785,17 @@ return n < 0  ?  mret( isEven, -n )\
                 var o = {
                     factorial : meth(
                         'factorial'
-                        , function(that, n) { return
-                                              (
-                                                  (that._acc = (n  ||  1) * (that._acc || 1))
-                                                  , 
-                                                  n > 1
-                                                      ? mret( that.self, n-1 )
-                                                      : (that._tmp = that._acc
-                                                         , that._acc = 0
-                                                         , that._tmp
-                                                        )
-                                              );
-                                            }
+                        , function(that, n) {
+                            that._acc =
+                                (n  ||  1) * (that._acc || 1);
+                            
+                            return n > 1
+                                ? mret( that.self, n-1 )
+                                : (that._tmp = that._acc
+                                   , that._acc = 0
+                                   , that._tmp
+                                  );
+                        }
                     )
                 }
                 , isOk_arr = [
@@ -1041,18 +1040,18 @@ n > 1  ?  mret( that.self, n-1, acc*n )\
 
                 var o = {
                     factorial : meth(
-                        function factorial(that, n) { return
-                                                      (
-                                                          (that._acc = (n  ||  1) * (that._acc || 1))
-                                                          , 
-                                                          n > 1
-                                                              ? mret( that.self, n-1 )
-                                                              : (that._tmp = that._acc
-                                                                 , that._acc = 0
-                                                                 , that._tmp
-                                                                )
-                                                      );
-                                                    }
+                        function factorial(that, n) {
+
+                            that._acc =
+                                (n  ||  1) * (that._acc || 1);
+                            
+                            return n > 1
+                                ? mret( that.self, n-1 )
+                                : (that._tmp = that._acc
+                                   , that._acc = 0
+                                   , that._tmp
+                                  );
+                        }
                     )
                 }
                 , isOk_arr = [
