@@ -46,7 +46,7 @@ Self-recursion example:
 </script>
 ```
   
- ## Mutual recursion
+## Mutual recursion
  
  ```js
  var namespacekey = {}  // whatever object (won't be modified)
@@ -168,7 +168,34 @@ console.log( o.isEven( 84327681 ) ); // false (no call stack issue)
 
 ## Speed test
 
-In the browser: http://glat.info/fext/
+The higher, the better. 100.0 is the highest in each row, (2.6) is a
+standard deviation, and [9.34e8] is the absolute speed in iterations
+per second.
+
+| Browser     | isOdd_mfun |  isOdd_meth | isOdd_metaret | isOdd_tailtramp |
+| :---        |       ---: |        ---: |          ---: |            ---: |
+| Firefox 60  | 95.5 (2.6) | 100.0 (1.4) |    81.2 (0.2) |      0.1 (<0.1) |
+|             |  [9.34e+8] |   [9.78e+8] |     [7.93e+8] |       [1.25e+6] |
+| ----        |       ---- |        ---- |          ---- |            ---- |
+| Chromium 66 | 98.5 (0.3) | 100.0 (4.9) |    52.0 (0.1) |      0.7 (<0.1) |
+|             |  [8.87e+8] |   [9.00e+8] |     [4.68e+8] |       [6.12e+6] |
+| ----        |       ---- |        ---- |          ---- |            ---- |
+| Chrome 67   | 99.8 (0.8) | 100.0 (0.3) |    62.2 (0.2) |      0.8 (<0.1) |
+|             |  [7.49e+8] |   [7.51e+8] |     [4.67e+8] |       [6.18e+6] |
+
+ * `isOdd_mfun` and `isOdd_meth`: Proposed "explicit" approach. Uses standard JavaScript.
+ * `isOdd_metaret` Another "explicit" approach ([2013](http://glat.info/js.metaret/)). Extends JavaScript with new keywords.
+ * `isOdd_tailtramp`: The fastest trampoline implementation that I could find.
+
+For more details, explanations, and run this test in your browser,
+either open the [live instance](http://glat.info/fext/) or open the
+[./index.html](./index.html) file here.
+
+## Browser support
+
+Modern browsers as of June 2018.
+
+Soon: IE11.
 
 ## Unit tests
 

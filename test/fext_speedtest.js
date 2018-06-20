@@ -30,13 +30,20 @@ var global, exports;
             cont_node.classList.toggle( 'speedtest_running' );
 
         var arr = get_speedtest_arr()
+        ,   arr_0 = arr.slice()
         ,   abs_speed_arr = []
         ;
 
         if (output_node)
         {
-            output_node.textContent = get_header( arr ) + '\n'
-                + (output_node.textContent  ||  '');
+            var already_has_result =
+                0 < output_node.textContent.trim().length;
+
+            if (!already_has_result)
+            {
+                output_node.textContent =
+                    realign_table( get_header( arr_0 ) ) + '\n';
+            }
         }
 
         next();
@@ -54,21 +61,23 @@ var global, exports;
                     abs_speed_arr
                 )
                 
-                ,   who = (
-                    global.navigator
-
-                        ?  navigator.userAgent
-                        .replace( /([\d\)]) (?!\()/g,'$1 |\n| ' )
-
-                        :  'Non-browser JS engine'
-                )
-                    + ' |\n| ' + now.getFullYear()
+                ,   who  = get_simplified_environment()
+                ,   who2 =
+                    /*
+                    now.getFullYear()
                     + '-'
                     + ((1 + now.getMonth())+'').padStart( 2, '0' )
                     + '-'
                     + (now.getDate() +'').padStart( 2, '0' )
-                    + ' (nr:' + N_RESULT
-                    + ', mindur:' + MIN_DUR_SEC + ' sec)'
+                    + ', ' 
+                    */
+
+                    /*
+                    + N_RESULT
+                    + 'x >' + MIN_DUR_SEC + 's'
+                    */
+
+                    ' '
                 
                 ,   text = '| ' + who + ' | '
 
@@ -77,7 +86,7 @@ var global, exports;
                     .join( ' | ' )
                     + ' |\n'
 
-                    + '| | '
+                    + '| ' + who2 + ' | '
                     + abs_speed_arr
                     .map( one_abs_speed_str )
                     .join( ' | ' )
@@ -86,7 +95,21 @@ var global, exports;
                 log_to( 'log', text );
 
                 if (output_node)
-                    output_node.textContent += text;
+                {
+                    var tmp = (
+                        already_has_result
+
+                            ?  '\n'
+                            + get_table_separator( arr_0 )
+                            + '\n'
+
+                            :  ''
+                    ) + text
+                    ;
+                    output_node.textContent = realign_table(
+                        output_node.textContent + tmp
+                    );
+                }
                 
                 if (cont_node)
                 {
@@ -282,8 +305,6 @@ var global, exports;
         // Sanity check
         isOdd_isEven_check( isOdd, isEven );
 
-        debugger; // xxx
-        
         var result = isOdd( niter ); // <<< speedtest
 
         // Sanity check
@@ -543,13 +564,13 @@ var global, exports;
                 :  n < 0  ?  isOdd( -n )
                 :  false
             ;
-        }, 'isOdd')
+        })
         , isEven = tailtramp( function( n ) {
             return n > 0  ?  isOdd( n-1 )
                 :  n < 0  ?  isEven( -n )
                 :  true
             ;
-        }, 'isEven')
+        })
         // Sanity check
         isOdd_isEven_check( isOdd, isEven );
 
@@ -811,7 +832,7 @@ var global, exports;
 
     function one_abs_speed_str( o )
     {
-        return '[abs:' + o.get_mean().toExponential(3) + ' i/s]';
+        return '[' + o.get_mean().toExponential(2) + ']';
     }
     
     function s100( x100 )
@@ -848,19 +869,37 @@ var global, exports;
                 + arr.map( name_of_test ).join( ' | ' )
                 + ' |'
 
-            , get_table_separator( arr )
+            , get_table_separator( arr, { header : true } )
             
         ].join( '\n' );
     }
 
-    function get_table_separator( n )
+    function get_simplified_environment()
+    {
+        var s = global.navigator  &&  global.navigator.userAgent;
+        if (!s)
+            return '<yours> (Non-browser JS engine)';
+        
+        var mo_br  = s.match( /\b(?:Firefox|Chromium|Chrome|Safari)\b[^\s\.]*/ );
+        if (mo_br)
+            return mo_br[ 0 ].replace( /\//g, ' ' );
+        
+        return '<yours>: ' + s.replace( /([\d\)]) (?!\()/g,'$1 |\n| ' )
+    }
+    
+    function get_table_separator( n, opt )
     {
         if ('object' === typeof n)
-            return get_table_separator( n.length );
+            return get_table_separator( n.length, opt );
 
         n.toPrecision.call.a;
+
+        var header = opt  &&  opt.header
+        ,       s0 = header  ?  ':---'  :  '----'
+        ,       s1 = header  ?  '---:'  :  '----'
+        ;
         
-        return '| :--- |' + ' ---: |'.repeat( n );
+        return '| ' + s0 + ' | ' + (s1 + ' |').repeat( n );
     }
     
     function name_of_test( test )
@@ -874,6 +913,47 @@ var global, exports;
             
             ||  null.bug
         ;
+    }
+
+    function realign_table( s )
+    {
+        var rows = s.split( '\n' );
+        while (rows[ rows.length - 1 ].trim().length < 1)
+            rows.pop();
+
+        var   rc = rows.map( split_row )
+        ,   colw = rc.reduce( update_colw, [] )
+        ;
+        return rc.map( pad_row ).join( '\n' )
+
+        function split_row( row )
+        {
+            return row.split( '|' ).slice( 1, -1 );
+        }
+        
+        function update_colw( arr, row )
+        {
+            row.forEach( update_colw_one );
+            return arr;
+
+            function update_colw_one( col, j )
+            {
+                var w = col.length;
+                if (!(arr[ j ] > w))
+                    arr[ j ] = w;
+            }
+        }
+
+        function pad_row( row )
+        {
+            return '|' + row.map( pad_col ).join( '|' ) + '|';
+
+            function pad_col( col, j )
+            {
+                return col[ j < 1  ?  'padEnd'  :  'padStart']
+                ( colw[ j ] );
+            }
+        }
     }
     
 })(global  ||  exports  ||  this);

@@ -14,13 +14,19 @@
       .right { float: right; }
       .text-center { text-align: center; }
 
-      .intro { margin: auto; max-width: 600px; text-align: justify;}
+      .intro { margin: auto; max-width: 600px; text-align: justify;
+      line-height: 1.5em;
+      }
+      .intro code { line-height: normal; }
 
       .top-img { text-align: center; }
       @media screen and (min-width: 1200px) {
       .top-img { float: left; }
       }
-      
+
+      .section_anchor { display: none; margin-left: 0.5em; }
+      h3:hover .section_anchor { display: initial; }
+
       .hidden { display: none; }
       .small_img { max-width: 6em; margin: 0.5em; }
       .code_cont { 
@@ -74,44 +80,118 @@
       
       <p>It turns out that we can do this explicit approach using today's JavaScript, without extending the language.
         
-      <code>fext.js</code> demonstrates this. Mutual recursion is supported.</p>
-
+        <code>fext.js</code> demonstrates this.</p>
+      <p>Mutual recursion is supported.</p>
+      
+      <section id="section_quick_example">
       <h3>Quick example</h3>
 
-      <pre><code class="prettyprint lang-js">&lt;script type="text/javascript" src="fext.js"&gt;&lt;/script&gt
+      <pre class="prettyprint lang-js"><code>&lt;script type="text/javascript" src="fext.js"&gt;&lt;/script&gt
 &lt;script type="text/javascript"&gt;
-  var gcd = mfun(
-         (a, b) => a > b  ?  mret( self, a-b, b )
-             :     a < b  ?  mret( self, b-a, a )
-             :     a
-  );
-  console.log( gcd( 2*3*5*17, 3*5*19 ) );  // 15 (3*5)
+var gcd = mfun(
+       (a, b) => a > b  ?  mret( self, a-b, b )
+           :     a < b  ?  mret( self, b-a, a )
+           :     a
+);
+console.log( gcd( 2*3*5*17, 3*5*19 ) );  // 15 (3*5)
 &lt;/script&gt;</code></pre>
+
+                       <section id="section_mutual_recursion_example">
+                         <h3>Mutual recursion example</h3>
+
+                                 <pre class="prettyprint lang-js"><code>&lt;script type="text/javascript" src="fext.js"&gt;&lt;/script&gt
+                                     &lt;script type="text/javascript"&gt;
+var isOdd = mfun( function isOdd( n ) {
+    return n > 0  ?  mret( isEven, n-1 )
+        :  n < 0  ?  mret( self, -n )
+        :  false
+    ;
+})
+,  isEven = mfun( isOdd, function isEven( n ) {
+    return n > 0  ?  mret( isOdd, n-1 )
+        :  n < 0  ?  mret( self, -n )
+        :  true
+    ;
+})
+console.log( isOdd( 8951531 ) ); // true ; no call stack issue
+</code></pre>
+                       </section>
       
-      <h3>API Documentation</h3>
+                       <section id="section_api_doc">
+      <h3>API Documentation incl. debugging tools</h3>
 
-    <p>README.md on <a href="https://github.com/glathoud/fext#api">GitHub</a> (formatted), or directly <a href="README.md">here</a> (unformatted).</p>
-
-    <h3>Speed test</h3>
-
-    <section id="speedtest_section">
-      
-      <pre><code id="speedtest_output"></code></pre>
-      
-      <p>
-        <button onclick="fext_speedtest(speedtest_section,speedtest_output)">Run</button>
-        <span class="speedtest_patience">Running (please be patient...)</span>
-
-      </p>
+    <p>README.md on <a href="https://github.com/glathoud/fext#api">GitHub</a> (formatted), or directly <a href="README.md">here</a> (unformatted).</p> <p>Included: two simple debugging tools <code>mfunD</code> &amp; <code>methD</code> that deactivate the optimizations.</p>
 
     </section>
     
-    <h3>Unit tests</h3>
-    <pre><code id="unittest_output">Running...</code></pre>
+    <section id="section_speedtest">
 
+      <h3>Speed test</h3>
+
+      <p>These results present the average relative speed (higher is better):</p>
+      <ul>
+        <li><code>100.0</code> is the max of each row,</li>
+        <li>standard deviation in brackets e.g. <code>(2.9)</code>,</li>
+        <li>absolute speed in square brackets,
+        e.g. <code>[5.78e+8]</code> (iterations per second).</li>
+      </ul>
+
+      <p>The <code>isOdd_mfun</code> and <code>isOdd_mret</code>
+        results show that the proposed approach runs:</p>
+
+      <ul>
+        <li>similar to, or faster than <code>isOdd_metaret</code>,
+        another approach that extends the JavaScript language with
+        new keywords
+        (<a href="http://glat.info/js.metaret/">2013</a>),</li>
+
+        <li>much faster than <code>tailtramp</code>, the fastest
+        trampoline implementation I could find (feel free to
+          ping me with a faster one).</li>
+      </ul>
+
+      <p><strong>So the proposed approach (1)&nbsp;runs very fast and (2)&nbsp;<em>does not need to extend JavaScript with new keywords</em>.</strong></p>
+      
+      <pre><code id="speedtest_output">| Browser     | isOdd_mfun |  isOdd_meth | isOdd_metaret | isOdd_tailtramp |
+| :---        |       ---: |        ---: |          ---: |            ---: |
+| Firefox 60  | 95.5 (2.6) | 100.0 (1.4) |    81.2 (0.2) |      0.1 (<0.1) |
+|             |  [9.34e+8] |   [9.78e+8] |     [7.93e+8] |       [1.25e+6] |
+| ----        |       ---- |        ---- |          ---- |            ---- |
+| Chromium 66 | 98.5 (0.3) | 100.0 (4.9) |    52.0 (0.1) |      0.7 (<0.1) |
+|             |  [8.87e+8] |   [9.00e+8] |     [4.68e+8] |       [6.12e+6] |
+| ----        |       ---- |        ---- |          ---- |            ---- |
+| Chrome 67   | 99.8 (0.8) | 100.0 (0.3) |    62.2 (0.2) |      0.8 (<0.1) |
+|             |  [7.49e+8] |   [7.51e+8] |     [4.67e+8] |       [6.18e+6] |</code></pre>
+      
+      <p>
+        <button onclick="fext_speedtest(section_speedtest,speedtest_output)">Run</button>
+        <span class="speedtest_patience">Running (please be patient...)</span>
+      </p>
+
+    </section>
+
+    <section id="section_unit_tests">
+      <h3>Unit tests</h3>
+      <pre><code id="unittest_output">Running...</code></pre>
+
+    </section>
+
+    <section id="section_longer_example">
+      <h3>Longer example</h3>
+
+      <p>Search the first &amp; last indices of a given value in a
+        sorted array that has duplicates:</p>
+
+      <ul>
+        <li>Code: <a href="#lib_sorted_search_js">lib/sorted_search.js</a></li>
+        <li>Unittest: <a href="#lib_sorted_search_js__unit_tests">lib/sorted_search.js: unit tests</a></li>
+      </ul>
+      
+    </section>
     
-    <section>
-      <h3>Code</h3>
+    
+    <section id="section_annex_more_code">
+      <h3>Annex A: More code</h3>
 
       <p>On <a href="https://github.com/glathoud/fext/">GitHub</a> and here below:</p>
       <div id="toccont">
@@ -119,8 +199,120 @@
       </div>
       
     </section>
+   
+    <section id="section_setup_details_speed_test">
+      <h3>Annex B: Setup details of the speed test</h3>
+      
+      <p>The <code>isOdd/isEven</code> mutual recursion use case
+        measures well the overhead due to each approach, since both
+        <code>isOdd</code> &amp; <code>isEven</code> do little inside
+  their function bodies.</p>
 
-    </div>
+      <p>We measure 10 times the duration of <code class="prettyprint lang-js">isOdd( niter )</code> where <code class="prettyprint lang-js">niter</code> is adjusted to have a duration > 1.0 second.</p>
+
+
+
+      <p>
+        <code>isOdd_mfun</code> &amp; <code>isOdd_meth</code> are the
+        proposed approach, using only standard JavaScript, e.g.:
+        <pre class="prettyprint lang-js"><code>var isOdd = mfun( function isOdd( n ) {
+    return n > 0  ?  mret( isEven, n-1 )
+        :  n < 0  ?  mret( self, -n )
+        :  false
+    ;
+})
+,  isEven = mfun( isOdd, function isEven( n ) {
+    return n > 0  ?  mret( isOdd, n-1 )
+        :  n < 0  ?  mret( self, -n )
+        :  true
+    ;
+})</code></pre>
+
+<p><code>isOdd_metaret</code> is another approach that extends the
+        JavaScript language with new keywords, including <code>metafun</code> and <code>metaret</code>
+        (<a href="http://glat.info/js.metaret/">2013</a>):</p>
+
+  <pre class="prettyprint lang-js"><code>metafun isEven( self, n )
+{
+    if (n > 0)
+        metaret isOdd, n - 1; // mutual recursion
+
+    if (n < 0)
+        metaret self, -n;
+
+    return true;
+}
+
+metafun isOdd( self, n )
+{
+    if (n > 0)
+        metaret isEven, n - 1;
+
+    if (n < 0)
+        metaret self, -n;
+
+    return false; 
+}</code></pre>
+
+            <p>and <code>isOdd_tailtramp</code> is the fastest trampoline implementation that I could find:</p>
+
+            <pre class="prettyprint lang-js"><code>var isOdd = tailtramp( function( n ) {
+    return n > 0  ?  isEven( n-1 )
+        :  n < 0  ?  isOdd( -n )
+        :  false
+    ;
+})
+, isEven = tailtramp( function( n ) {
+    return n > 0  ?  isOdd( n-1 )
+        :  n < 0  ?  isEven( -n )
+        :  true
+    ;
+})
+
+function tailtramp(g)
+{
+    var tailtramp_n = 0;
+    return tailtramp_impl;
+    
+    function tailtramp_impl()
+    {
+        var arr = [g, this, arguments]
+        , ret;
+
+        // Jump off a small Empire State Building
+        if (tailtramp_n>5)
+            return new TailCall(arr);
+        
+        while (true)
+        {
+            tailtramp_n++;
+            ret = arr[0].apply(arr[1], arr[2]);
+            tailtramp_n--;
+            
+            if (!(ret instanceof TailCall))
+            {
+                tailtramp_n = 0;
+                return ret;
+            }
+            
+            // Hit 33rd Street and bounce again
+            arr = ret.arr;
+        }
+    }
+}
+
+function TailCall(arr)
+{
+    this.arr  = arr;
+}</code></pre>
+      
+    </section>
+
+
+
+
+
+</div>
 
     
     <div id="source_code_0" class="code_cont"></div>
@@ -159,6 +351,8 @@
         write_source_code( source_code_1, "lib/sorted_search.js" )
         write_source_code( source_code_1, get_test_arr_sorted_search, "lib/sorted_search.js: unit tests" );
 
+        setup_section_anchors();
+        
         function write_source_code( contnode, x, opt )
         {
             var i_write = write_source_code.n | 0;
@@ -264,6 +458,24 @@
                 }
             );
         }
+
+        function setup_section_anchors()
+        {
+            document.querySelectorAll('[id^="section_"]')
+                .forEach( setup_one_section_anchor )
+            ;
+        }
+        function setup_one_section_anchor( cont )
+        {
+            var h3 = cont.querySelector('h3')
+            ,    a = document.createElement('a')
+            ;
+            a.setAttribute( 'href','#' + cont.id );
+            a.textContent='#';
+            a.setAttribute( 'class','section_anchor' );
+            h3.append( a );
+        }
+        
     })();
     </script>
 

@@ -1,4 +1,5 @@
-/*global mret mdecl meth mfun methD mfunD console Map print global exports __fext_debug_all*/
+/*global mret mdecl meth mfun methD mfunD console Map print global
+ exports __fext_debug_all*/
 
 /*
   fext.js: Fast Explicit Tail Calls
@@ -20,6 +21,10 @@
   https://github.com/glathoud)
 
 
+  Write-up with a speed test: see ./index.html (live instance:
+  http://glat.info/fext)
+
+  
   Implementation notes: 
 
   (1) fext.js *itself* is implemented with mostly "old-fashioned"
@@ -78,8 +83,10 @@ var global, exports
     {
         if (_debugging)
         {
-            var this_ = 'object' === typeof _debugging  &&  _debugging  ||  null;
-            
+            var this_ =
+                'object' === typeof _debugging  &&  _debugging
+                ||  null
+            ;
             return arguments[ 0 ]
                 .apply( this_  // methD case
                         , ( this_
@@ -92,7 +99,12 @@ var global, exports
         }
         else
         {
-            throw new Error( 'fext: wrap your function with `mfun`. See https://github.com/glathoud/fext and http://glat.info/fext for examples.' );
+            throw new Error
+            (
+                'fext: wrap your function with `mfun`. '
+                    + ' See https://github.com/glathoud/fext and '
+                    + 'http://glat.info/fext for examples.'
+            );
         }
     }
 
@@ -127,13 +139,15 @@ var global, exports
       `f_or_s`: string|function
       `name`:   string
 
-      `namespacekey` is any common object that will be used as a key to
-      group mutually recursive functions.
+      `namespacekey` is any common object that will be used as a key
+      to group mutually recursive functions.
 
       `namespacekey` will NOT be modified, only used as a key to
       determine which functions know each other (a.k.a. namespace).
 
       --- Variants --
+
+      (More examples in ./README.md)
 
       (1) Self-recursion
 
@@ -447,22 +461,27 @@ var global, exports
                 ;
                 try
                 {
-                    // Nicety: make sure the returned function has a
-                    // meaningful name. Reason: simply doing `new
-                    // Function(head,body)` would return an
-                    // anonymous function).
-                    
-                    impl = new Function(
-                        'return ' + name + ';\n'
-                            + 'function ' + name + '( ' + head + ' )\n'
-                            + '{\n'
-                            + body
-                            + '}\n'
-                    )()
+                    /*
+                      Nicety: make sure the returned function has a
+                      meaningful name. Reason: simply doing `new
+                      Function(head,body)` would return an anonymous
+                      function).
+                    */
+                    var tmp = 'return ' + name + ';\n'
+                        + 'function ' + name + '( ' + head + ' )\n'
+                        + '{\n'
+                        + body
+                        + '}\n'
+                    ;
+                    impl = new Function( tmp )();
                 }
                 catch( e )
                 {
-                    console.error( 'fext: caught error while compiling the implementation: ' + e );
+                    log_to(
+                        'error'
+                        , 'fext: caught error while compiling '
+                            + 'the implementation: ' + e
+                    );
                     throw e;
                 }
             }
@@ -493,8 +512,8 @@ var global, exports
         
         function master_bodycode_gen()
         /*
-          A cheap trampoline implementation that replaces tail calls
-          with an integer assignment.
+          Tail call elimination: replace each tail call with an
+          integer assignment.
 
           An integer value >= 0 says which function will be run next
           *after* the current one returns.
@@ -532,16 +551,22 @@ var global, exports
                             ||  null.bug;
 
                         var is_last_inline = inline_body
-                            &&  !expansion;
+                            &&  !expansion
+
+                        ,   cg_opt = {
+                            inline_body      : inline_body 
+                            , is_last_inline : is_last_inline
+                        }
+                        ;
                         
                         return 'case ' + i + ': '
                             + space[ a_name ].callcode_gen( 
                                 piece_i_of_name
                                 , null
-                                , { inline_body      : inline_body
-                                    , is_last_inline : is_last_inline                                  }
+                                , cg_opt
                             )
-                            + ' continue ' + LABEL_MAIN_LOOP + ';\n';
+                            + ' continue ' + LABEL_MAIN_LOOP
+                            + ';\n';
                     }
                 ) )
                 .concat([
@@ -736,8 +761,8 @@ var global, exports
                 .concat(
                     inline_body
                         ?  [ 'return;' ]
-                        : [ '  ' + V_CASE_I + ' = ' + V_CASE_I_RETURN + ';'
-                            ,  '  ' + V_RET  + ' = ' + V_UNDEFINED + ';'
+                        : [ V_CASE_I + ' = ' + V_CASE_I_RETURN + ';'
+                            , V_RET  + ' = ' + V_UNDEFINED + ';'
                           ]
                 )
                 .concat( [ '}' ] )
@@ -819,42 +844,29 @@ var global, exports
       For performance reasons (*), the method declarations must take
       an extra input parameter `that`, and use it instead of `this`.
 
-      (*) as of June 2018: issues in Firefox with .bind(this).
-      
-      On the other hand, the `mret` do NOT need to pass `that`.
-      This reduces verbosity.
+      All `mret` calls must use `that.`, as in `mret( that.self,
+      ...)`.
 
-      Example (all examples also work on prototype):
+      (*) as of June 2018: issues in Firefox with .bind(this).
+
+      NOTE
+
+      This extra input parameter `that` also made possible to write
+      the debugging tool `methD`.
+      
+      
+      Example:
       
       var o = {
       factorial : meth( 'factorial'
       , (that, n, acc) =>
-      acc == null  ?  mret( self, n, 1 )
-      : n > 1  ?  mret( self, n-1, acc*n )
+      acc == null  ?  mret( that.self, n, 1 )
+      : n > 1  ?  mret( that.self, n-1, acc*n )
       : acc)
       };
 
+      More examples in ./README.md
 
-      Somewhat contrived example to show that
-      we have to use `that` instead of `this`
-
-      var o = {
-      factorial : meth(
-      'factorial'
-      , (that, n) =>
-      (
-      (that._acc = (n  ||  1) * (that._acc || 1))
-      , 
-      n > 1
-      ? mret( self, n-1 )
-      : (that._tmp = that._acc
-      , that._acc = 0
-      , that._tmp
-      )
-      )
-      )
-      }
-      
     */
 
     {
@@ -1063,6 +1075,12 @@ var global, exports
     {
         return '__fext_arg_' + s + '__';
     }
+
+    var SIMPLE_RX = /^\s+((?:\w+\.)?\bmret\s*\([\s\S]+?\))\s*$/
+        
+    ,   COND_RX =
+        /^\s+((?:[^\?:,]+\?[^\?:]+:)*?[^\?:,]+\?[^\?:]+:[^\?:]+)\s*$/
+        ;
     
     function find_tail_calls( /*string*/name, /*string*/code )
     {
@@ -1120,19 +1138,12 @@ var global, exports
             // --- Try two relatively common forms, else throw error
 
             , has_mret = mret_rx.test( s_1 )
-            
-            , simple_rx =
-                /^\s+((?:\w+\.)?\bmret\s*\([\s\S]+?\))\s*$/
-                
-            , cond_rx =
-                /^\s+((?:[^\?:,]+\?[^\?:]+:)*?[^\?:,]+\?[^\?:]+:[^\?:]+)\s*$/
-                
             , tmp
             ;
             sf_tmpl_arr.push( commented( s_0 ) + '\n' )
             sf_tmpl_arr.push( '{' );
             
-            if (tmp = has_mret  &&  s_1.match( simple_rx ))
+            if (tmp = has_mret  &&  s_1.match( SIMPLE_RX ))
             {
                 var s_call   = tmp[ 1 ]
                 ,   s_call_2 = sf_tmpl_gen.call(
@@ -1146,7 +1157,7 @@ var global, exports
                 sf_tmpl_arr.push( tc_return, '\n' );
                 
             }
-            else if (tmp = has_mret  &&  s_1.match( cond_rx ))
+            else if (tmp = has_mret  &&  s_1.match( COND_RX ))
             {
                 var cond_expr = tmp[ 1 ]
                 ,   cond_rx_2 = /(?:([^\?,]+)\?)?([^\:]+)($|:)/g
@@ -1492,7 +1503,8 @@ var global, exports
         }
     }
 
-    function tc_return( /*object*/piece_i_of_name, /*object*/space, /*?object?*/opt )
+    function tc_return
+    ( /*object*/piece_i_of_name, /*object*/space, /*?object?*/opt )
     {
         var inline_body    = opt  &&  opt.inline_body
         ,   is_last_inline = opt  &&  opt.is_last_inline
@@ -1509,7 +1521,8 @@ var global, exports
         ;
     }
 
-    function tc_return_non_mret( /*object*/piece_i_of_name, /*object*/space, /*?object?*/opt )
+    function tc_return_non_mret
+    ( /*object*/piece_i_of_name, /*object*/space, /*?object?*/opt )
     {
         var inline_body    = opt  &&  opt.inline_body
         ,   is_last_inline = opt  &&  opt.is_last_inline
@@ -1522,18 +1535,24 @@ var global, exports
 
     function white_out_comments( code )
     {
-        return code.replace( /\/\*[\s\S]*?\*\/|\/\/.*?(?=[\r\n])/g, w );
+        return code.replace(
+                /\/\*[\s\S]*?\*\/|\/\/.*?(?=[\r\n])/g
+            , w
+        );
         function w( s )
         {
-            return ' '
-                ?  ' '.repeat( s.length )
-                :  sRepeat( ' ', s.length )  // IE
+            return sRepeat( ' ', s.length );
             
         }
     }
 
     function sRepeat( s, n )
     {
+        if (s.repeat)
+            return s.repeat( n );
+
+        // (mainly IE) support
+        
         var buf = [];
         for(;;)
         {
@@ -1545,7 +1564,7 @@ var global, exports
             
             s += s;
         }
-        return buf.join("");	// String
+        return buf.join( '' );  // String
     }
        
 })(global  ||  exports  ||  this);
