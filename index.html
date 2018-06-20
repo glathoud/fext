@@ -99,8 +99,8 @@ console.log( gcd( 2*3*5*17, 3*5*19 ) );  // 15 (3*5)
                        <section id="section_mutual_recursion_example">
                          <h3>Mutual recursion example</h3>
 
-                                 <pre class="prettyprint lang-js"><code>&lt;script type="text/javascript" src="fext.js"&gt;&lt;/script&gt
-                                     &lt;script type="text/javascript"&gt;
+                                 <pre class="prettyprint lang-js"><code>&lt;script type="text/javascript" src="fext.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript"&gt;
 var isOdd = mfun( function isOdd( n ) {
     return n > 0  ?  mret( isEven, n-1 )
         :  n < 0  ?  mret( self, -n )
@@ -114,6 +114,7 @@ var isOdd = mfun( function isOdd( n ) {
     ;
 })
 console.log( isOdd( 8951531 ) ); // true ; no call stack issue
+&lt;/script&gt;
 </code></pre>
                        </section>
       

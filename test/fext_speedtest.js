@@ -44,6 +44,16 @@ var global, exports;
                 output_node.textContent =
                     realign_table( get_header( arr_0 ) ) + '\n';
             }
+            else if (DEBUG  ||  ALL)
+            {
+                output_node.textContent =
+                    realign_table(
+                        output_node.textContent
+                            + '\n'
+                            + get_table_separator( arr_0 ) + '\n'
+                            + get_header( arr_0 ) + '\n'
+                    );
+            }
         }
 
         next();
@@ -155,6 +165,11 @@ var global, exports;
         ].concat( !ALL ? [] : [
 
             {
+                niter_init : 1e5
+                , runner   : isOdd_meth_proto
+            }
+            
+            , {
                 niter_init : 1e5
                 , runner   : isOdd_mfun_ex1_no_inline
             }
@@ -557,6 +572,38 @@ var global, exports;
 
 
 
+    function isOdd_meth_proto( niter )
+    {
+        function C() {}
+        C.prototype.isOdd = meth( 'isOdd', function( that, n ) {
+            return n > 0  ?  mret( that.isEven, n-1 )
+                :  n < 0  ?  mret( that.self, -n )
+                :  false
+            ;
+        });
+        C.prototype.isEven = meth( 'isEven', function( that, n ) {
+            return n > 0  ?  mret( that.isOdd, n-1 )
+                :  n < 0  ?  mret( that.self, -n )
+                :  true
+            ;
+        });
+
+        var o = new C;
+        
+        // Sanity check
+        isOdd_isEven_check( o.isOdd.bind( o )
+                            , o.isEven.bind( o )
+                          );
+
+        var result = o.isOdd( niter ); // <<< speedtest
+
+        // Sanity check
+        result === (niter % 2 !== 0)  ||  null.bug;
+    }
+
+
+
+
     function isOdd_tailtramp( niter )
     {
         var isOdd = tailtramp( function( n ) {
@@ -865,7 +912,7 @@ var global, exports;
     {
         return [
 
-            '| Environment | '
+            '| Browser | '
                 + arr.map( name_of_test ).join( ' | ' )
                 + ' |'
 
