@@ -456,9 +456,12 @@ var global, exports
         {
             if (!impl)
             {
+                _inline_loop_ind = 0;// Not mandatory,good for D #10
+                
                 var head = argname_csv
                 ,   body = master_bodycode_gen()
                 ;
+                _inline_loop_ind = null; // #10
                 try
                 {
                     /*
@@ -1187,7 +1190,8 @@ var global, exports
                         , s_call
                     ); 
                     
-                    sf_tmpl_arr.push( '{\n{\n', s_call_2, '\n}\n' );
+                    sf_tmpl_arr.push( '{\n{\n', s_call_2
+                                      , ';\n}\n' );
 
                     sf_tmpl_arr.push( tc_return, '\n' );
 
