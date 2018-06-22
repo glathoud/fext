@@ -122,8 +122,11 @@ var global, exports
     ,   V_RET           = '__fext_ret__'
     ,   V_UNDEFINED     = '__fext_undefined__'
     ,   V_THAT          = 'that'
-    ;
 
+    // Put here to (over-)ensure unicity for easier conversion to D
+    // #10
+    ,   _inline_loop_ind
+    ;
     
     function mfun( a, b, c )
     /*
@@ -247,9 +250,9 @@ var global, exports
                         );
         
         // ?boolean?
-        var inline_body = dflt( this  &&  this.inline_body
-                                , true
-                              ); 
+        var inline_body_me = dflt( this  &&  this.inline_body
+                                   , true
+                                 ); 
         
         // ?integer>0?: number of expansion levels
         var expansion = dflt( this  &&  this.expansion
@@ -456,12 +459,9 @@ var global, exports
         {
             if (!impl)
             {
-                _inline_loop_ind = 0;// Not mandatory,good for D #10
-                
                 var head = argname_csv
                 ,   body = master_bodycode_gen()
                 ;
-                _inline_loop_ind = null; // #10
                 try
                 {
                     /*
@@ -526,6 +526,17 @@ var global, exports
         {
             ensure_depgraph_complete();
 
+            _inline_loop_ind = 0;//Not mandatory here,good for D #10
+
+            var is_last_inline = inline_body_me
+                &&  !expansion
+            
+            ,   gen_cfg = {
+                inline_body      : inline_body_me
+                , is_last_inline : is_last_inline
+            }
+            ;
+            
             return [
                 '"use strict";'
                 , 'var ' +
@@ -553,20 +564,11 @@ var global, exports
                         (a_name === name) === (i === 0)
                             ||  null.bug;
 
-                        var is_last_inline = inline_body
-                            &&  !expansion
-
-                        ,   cg_opt = {
-                            inline_body      : inline_body 
-                            , is_last_inline : is_last_inline
-                        }
-                        ;
-                        
                         return 'case ' + i + ': '
                             + space[ a_name ].callcode_gen( 
                                 piece_i_of_name
                                 , null
-                                , cg_opt
+                                , gen_cfg
                             )
                             + ' continue ' + LABEL_MAIN_LOOP
                             + ';\n';
@@ -579,7 +581,7 @@ var global, exports
                     , ''
                 ])
                 .concat( 
-                    inline_body
+                    inline_body_me
 
                         ?  []
 
@@ -592,6 +594,7 @@ var global, exports
                                 return space[ a_name ]
                                     .piececode_gen(
                                         piece_i_of_name
+                                        , gen_cfg
                                     );
                             }
                         )
@@ -673,14 +676,16 @@ var global, exports
             }
         }
         
-        function callcode_gen( piece_i_of_name, remaining_ex, opt )
+        function callcode_gen( piece_i_of_name, remaining_ex, cfg )
         {
+            cfg  ||  null.mandatory;
+            
             remaining_ex == null  &&  (remaining_ex = expansion);
             
             var ret_arr = [
-                inline_body
+                cfg.inline_body
                 
-                    ?   new_body_gen( piece_i_of_name, opt )
+                    ?   new_body_gen( piece_i_of_name, cfg )
                 
                     :  name + '_fext();'
             ];
@@ -729,15 +734,17 @@ var global, exports
                             ret_arr.push( tmp );
                         }
 
-                        if (inline_body)
+                        var cfg2 = cfg;
+                        
+                        if (cfg.inline_body)
                         {
-                            opt = Object.create( opt );
-                            opt.is_last_inline = ex === 0;
+                            cfg2 = Object.create( cfg2 );
+                            cfg2.is_last_inline = ex === 0;
                         }
                         
                         ret_arr.push(
                             space[ a_name ].callcode_gen(
-                                piece_i_of_name, ex, opt
+                                piece_i_of_name, ex, cfg2
                             )
                         );
                         if (!only_self)
@@ -747,10 +754,15 @@ var global, exports
             }
         }
         
-        function piececode_gen( /*uint[string]*/piece_i_of_name )
+        function piececode_gen(
+            /*uint[string]*/piece_i_of_name
+            , /*object*/cfg
+        )
         {
+            cfg  ||  null.mandatory;
+            
             var p_head   = 'function ' + name + '_fext()'
-            ,   new_body = new_body_gen( piece_i_of_name )
+            ,   new_body = new_body_gen( piece_i_of_name, cfg )
             ;
             return [
                 p_head
@@ -762,7 +774,7 @@ var global, exports
                 ,  '  ;'
             ]
                 .concat(
-                    inline_body
+                    cfg.inline_body
                         ?  [ 'return;' ]
                         : [ V_CASE_I + ' = ' + V_CASE_I_RETURN + ';'
                             , V_RET  + ' = ' + V_UNDEFINED + ';'
@@ -773,12 +785,13 @@ var global, exports
         }
 
 
-        var _inline_loop_ind;
         function new_body_gen( /*uint[string]*/piece_i_of_name
-            , /*?object?*/opt )
+            , /*object*/cfg )
         {
-            var is_last_inline = opt  &&  opt.is_last_inline;
-
+            cfg  ||  null.mandatory;
+            var    inline_body = cfg.inline_body
+            ,   is_last_inline = cfg.is_last_inline
+            ;
             if (inline_body  &&  has_var)
             {
                 throw new Error(
@@ -789,23 +802,7 @@ var global, exports
             }
 
             if (inline_body)
-            {
-                
-                opt = Object.create( opt );
-                if (is_last_inline)
-                {
-                    opt.inline_loop_ind = null;
-                }
-                else
-                {
-                    opt.inline_loop_ind
-                        = _inline_loop_ind
-                        = _inline_loop_ind == null
-                        ?  0
-                        :  1 + _inline_loop_ind
-                    ;
-                }
-            }
+                _inline_loop_ind++;
             
             var new_body = s_body;
 
@@ -814,12 +811,12 @@ var global, exports
             {
                 new_body = tc_arr[ i ]
                     .change_body( new_body, piece_i_of_name, space
-                                  , opt );
+                                  , cfg );
             }
             
             return inline_body  &&  !is_last_inline
 
-                ?  LABEL_INLINE_LOOP( opt.inline_loop_ind )
+                ?  LABEL_INLINE_LOOP( _inline_loop_ind )
                 + ': for(;;) {\n' + new_body + '\n}\n'
 
                 :  new_body;
@@ -1519,7 +1516,7 @@ var global, exports
                 is_last_inline
                     ?  'continue ' + LABEL_MAIN_LOOP +';'
                     :  'break '
-                    + LABEL_INLINE_LOOP( opt.inline_loop_ind ) + ';'
+                    + LABEL_INLINE_LOOP( _inline_loop_ind ) + ';'
             )
             :  'return;'
         ;
