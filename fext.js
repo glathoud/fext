@@ -255,9 +255,9 @@ var global, exports
                                  ); 
         
         // ?integer>0?: number of expansion levels
-        var expansion = dflt( this  &&  this.expansion
-                              , 4
-                            );
+        var expansion_me = dflt( this  &&  this.expansion
+                                 , 4
+                               );
 
         // ?function?: Mostly for internal use (e.g. `meth()`)
         var prepro_arg_arr = this  &&  this.preprocess_argname_arr
@@ -529,11 +529,12 @@ var global, exports
             _inline_loop_ind = 0;//Not mandatory here,good for D #10
 
             var is_last_inline = inline_body_me
-                &&  !expansion
+                &&  !expansion_me
             
             ,   gen_cfg = {
                 inline_body      : inline_body_me
                 , is_last_inline : is_last_inline
+                , expansion      : expansion_me
             }
             ;
             
@@ -680,7 +681,8 @@ var global, exports
         {
             cfg  ||  null.mandatory;
             
-            remaining_ex == null  &&  (remaining_ex = expansion);
+            remaining_ex == null
+                &&  (remaining_ex = cfg.expansion);
             
             var ret_arr = [
                 cfg.inline_body
