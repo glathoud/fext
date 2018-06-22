@@ -659,6 +659,9 @@ return n < 0  ?  mret( isEven, -n )\
                 return a && b && c && d;
             }
 
+
+
+
             , function graph_recursion_test()
             {
                 var is0mod3 = mfun( 'is0mod3', function( x ) {
@@ -710,6 +713,501 @@ return n < 0  ?  mret( isEven, -n )\
                 ;
                 return arr.every( function ( x ) { return x; } );
             }
+
+
+
+
+
+            
+
+
+            , function
+            graph_recursion_test_inline_body_true_expansion_0()
+            {
+                var is0mod3 = mfun.call( { inline_body : true
+                                           , expansion : 0
+                                         }
+                                         , 'is0mod3', function( x ) {
+                    return x === 0  ?  true
+                        :  x === 1  ?  false
+                        :  x === 2  ?  false
+                        :  x > 2  ?  mret( is2mod3, x-1 )
+                        :  x < 0  ?  mret( is0mod3, x+3 )
+                        :  null.invalid_x;
+                })
+                ,   is2mod3 = mfun( is0mod3, 'is2mod3', function ( x ) {
+                    return x === 0  ?  false
+                        :  x === 1  ?  false
+                        :  x === 2  ?  true
+                        :  x > 2    ?  mret( is1mod3, x-1 )
+                        :  x < 0    ?  mret( is0mod3, x+3 )
+                        :  null.invalid_x;
+                })
+                ,   is1mod3 = mfun( is0mod3, 'is1mod3', function ( x ) {
+                    return x === 0  ?  false
+                        :  x === 1  ?  true
+                        :  x === 2  ?  false
+                        :  x > 2  ?  mret( is0mod3, x-1 )
+                        :  x < 0  ?  mret( is1mod3, x+3 )
+                        :  null.invalid_x;
+                })
+
+                ,  arr = [
+                    true === is0mod3( 0 )
+                    , true === is1mod3( 1 )
+                    , true === is2mod3( 2 )
+
+                    , false === is0mod3( 1 )
+                    , false === is1mod3( 2 )
+                    , false === is2mod3( 0 )
+
+                    , false === is0mod3( 2 )
+                    , false === is1mod3( 0 )
+                    , false === is2mod3( 1 )
+
+                    , true === is0mod3( 99 )
+                    , false === is0mod3( 100 )
+                    , false === is0mod3( 101 )
+
+                    , true === is0mod3( -99 )
+                    , false === is0mod3( -100 )
+                    , false === is0mod3( -101 )
+                ]
+                ;
+                return arr.every( function ( x ) { return x; } );
+            }
+
+            , function
+            graph_recursion_test_inline_body_true_expansion_1()
+            {
+                var is0mod3 = mfun.call( { inline_body : true
+                                           , expansion : 1
+                                         }
+                                         , 'is0mod3', function( x ) {
+                    return x === 0  ?  true
+                        :  x === 1  ?  false
+                        :  x === 2  ?  false
+                        :  x > 2  ?  mret( is2mod3, x-1 )
+                        :  x < 0  ?  mret( is0mod3, x+3 )
+                        :  null.invalid_x;
+                })
+                ,   is2mod3 = mfun( is0mod3, 'is2mod3', function ( x ) {
+                    return x === 0  ?  false
+                        :  x === 1  ?  false
+                        :  x === 2  ?  true
+                        :  x > 2    ?  mret( is1mod3, x-1 )
+                        :  x < 0    ?  mret( is0mod3, x+3 )
+                        :  null.invalid_x;
+                })
+                ,   is1mod3 = mfun( is0mod3, 'is1mod3', function ( x ) {
+                    return x === 0  ?  false
+                        :  x === 1  ?  true
+                        :  x === 2  ?  false
+                        :  x > 2  ?  mret( is0mod3, x-1 )
+                        :  x < 0  ?  mret( is1mod3, x+3 )
+                        :  null.invalid_x;
+                })
+
+                ,  arr = [
+                    true === is0mod3( 0 )
+                    , true === is1mod3( 1 )
+                    , true === is2mod3( 2 )
+
+                    , false === is0mod3( 1 )
+                    , false === is1mod3( 2 )
+                    , false === is2mod3( 0 )
+
+                    , false === is0mod3( 2 )
+                    , false === is1mod3( 0 )
+                    , false === is2mod3( 1 )
+
+                    , true === is0mod3( 99 )
+                    , false === is0mod3( 100 )
+                    , false === is0mod3( 101 )
+
+                    , true === is0mod3( -99 )
+                    , false === is0mod3( -100 )
+                    , false === is0mod3( -101 )
+                ]
+                ;
+                return arr.every( function ( x ) { return x; } );
+            }
+
+
+
+            , function
+            graph_recursion_test_inline_body_true_expansion_2()
+            {
+                var is0mod3 = mfun.call( { inline_body : true
+                                           , expansion : 2
+                                         }
+                                         , 'is0mod3', function( x ) {
+                    return x === 0  ?  true
+                        :  x === 1  ?  false
+                        :  x === 2  ?  false
+                        :  x > 2  ?  mret( is2mod3, x-1 )
+                        :  x < 0  ?  mret( is0mod3, x+3 )
+                        :  null.invalid_x;
+                })
+                ,   is2mod3 = mfun( is0mod3, 'is2mod3', function ( x ) {
+                    return x === 0  ?  false
+                        :  x === 1  ?  false
+                        :  x === 2  ?  true
+                        :  x > 2    ?  mret( is1mod3, x-1 )
+                        :  x < 0    ?  mret( is0mod3, x+3 )
+                        :  null.invalid_x;
+                })
+                ,   is1mod3 = mfun( is0mod3, 'is1mod3', function ( x ) {
+                    return x === 0  ?  false
+                        :  x === 1  ?  true
+                        :  x === 2  ?  false
+                        :  x > 2  ?  mret( is0mod3, x-1 )
+                        :  x < 0  ?  mret( is1mod3, x+3 )
+                        :  null.invalid_x;
+                })
+
+                ,  arr = [
+                    true === is0mod3( 0 )
+                    , true === is1mod3( 1 )
+                    , true === is2mod3( 2 )
+
+                    , false === is0mod3( 1 )
+                    , false === is1mod3( 2 )
+                    , false === is2mod3( 0 )
+
+                    , false === is0mod3( 2 )
+                    , false === is1mod3( 0 )
+                    , false === is2mod3( 1 )
+
+                    , true === is0mod3( 99 )
+                    , false === is0mod3( 100 )
+                    , false === is0mod3( 101 )
+
+                    , true === is0mod3( -99 )
+                    , false === is0mod3( -100 )
+                    , false === is0mod3( -101 )
+                ]
+                ;
+                return arr.every( function ( x ) { return x; } );
+            }
+
+
+
+
+            , function
+            graph_recursion_test_inline_body_true_expansion_3()
+            {
+                var is0mod3 = mfun.call( { inline_body : true
+                                           , expansion : 3
+                                         }
+                                         , 'is0mod3', function( x ) {
+                    return x === 0  ?  true
+                        :  x === 1  ?  false
+                        :  x === 2  ?  false
+                        :  x > 2  ?  mret( is2mod3, x-1 )
+                        :  x < 0  ?  mret( is0mod3, x+3 )
+                        :  null.invalid_x;
+                })
+                ,   is2mod3 = mfun( is0mod3, 'is2mod3', function ( x ) {
+                    return x === 0  ?  false
+                        :  x === 1  ?  false
+                        :  x === 2  ?  true
+                        :  x > 2    ?  mret( is1mod3, x-1 )
+                        :  x < 0    ?  mret( is0mod3, x+3 )
+                        :  null.invalid_x;
+                })
+                ,   is1mod3 = mfun( is0mod3, 'is1mod3', function ( x ) {
+                    return x === 0  ?  false
+                        :  x === 1  ?  true
+                        :  x === 2  ?  false
+                        :  x > 2  ?  mret( is0mod3, x-1 )
+                        :  x < 0  ?  mret( is1mod3, x+3 )
+                        :  null.invalid_x;
+                })
+
+                ,  arr = [
+                    true === is0mod3( 0 )
+                    , true === is1mod3( 1 )
+                    , true === is2mod3( 2 )
+
+                    , false === is0mod3( 1 )
+                    , false === is1mod3( 2 )
+                    , false === is2mod3( 0 )
+
+                    , false === is0mod3( 2 )
+                    , false === is1mod3( 0 )
+                    , false === is2mod3( 1 )
+
+                    , true === is0mod3( 99 )
+                    , false === is0mod3( 100 )
+                    , false === is0mod3( 101 )
+
+                    , true === is0mod3( -99 )
+                    , false === is0mod3( -100 )
+                    , false === is0mod3( -101 )
+                ]
+                ;
+                return arr.every( function ( x ) { return x; } );
+            }
+
+
+
+
+
+
+
+
+            
+
+
+            , function
+            graph_recursion_test_inline_body_false_expansion_0()
+            {
+                var is0mod3 = mfun.call( { inline_body : false
+                                           , expansion : 0
+                                         }
+                                         , 'is0mod3', function( x ) {
+                    return x === 0  ?  true
+                        :  x === 1  ?  false
+                        :  x === 2  ?  false
+                        :  x > 2  ?  mret( is2mod3, x-1 )
+                        :  x < 0  ?  mret( is0mod3, x+3 )
+                        :  null.invalid_x;
+                })
+                ,   is2mod3 = mfun( is0mod3, 'is2mod3', function ( x ) {
+                    return x === 0  ?  false
+                        :  x === 1  ?  false
+                        :  x === 2  ?  true
+                        :  x > 2    ?  mret( is1mod3, x-1 )
+                        :  x < 0    ?  mret( is0mod3, x+3 )
+                        :  null.invalid_x;
+                })
+                ,   is1mod3 = mfun( is0mod3, 'is1mod3', function ( x ) {
+                    return x === 0  ?  false
+                        :  x === 1  ?  true
+                        :  x === 2  ?  false
+                        :  x > 2  ?  mret( is0mod3, x-1 )
+                        :  x < 0  ?  mret( is1mod3, x+3 )
+                        :  null.invalid_x;
+                })
+
+                ,  arr = [
+                    true === is0mod3( 0 )
+                    , true === is1mod3( 1 )
+                    , true === is2mod3( 2 )
+
+                    , false === is0mod3( 1 )
+                    , false === is1mod3( 2 )
+                    , false === is2mod3( 0 )
+
+                    , false === is0mod3( 2 )
+                    , false === is1mod3( 0 )
+                    , false === is2mod3( 1 )
+
+                    , true === is0mod3( 99 )
+                    , false === is0mod3( 100 )
+                    , false === is0mod3( 101 )
+
+                    , true === is0mod3( -99 )
+                    , false === is0mod3( -100 )
+                    , false === is0mod3( -101 )
+                ]
+                ;
+                return arr.every( function ( x ) { return x; } );
+            }
+            
+
+
+
+
+            , function
+            graph_recursion_test_inline_body_false_expansion_1()
+            {
+                var is0mod3 = mfun.call(
+                    { inline_body : false
+                      , expansion : 1
+                    }
+                    , 'is0mod3'
+                    , function( x )
+                    {
+                    return x === 0  ?  true
+                        :  x === 1  ?  false
+                        :  x === 2  ?  false
+                        :  x > 2  ?  mret( is2mod3, x-1 )
+                        :  x < 0  ?  mret( is0mod3, x+3 )
+                        :  null.invalid_x;
+                })
+                ,   is2mod3 = mfun( is0mod3, 'is2mod3', function ( x ) {
+                    return x === 0  ?  false
+                        :  x === 1  ?  false
+                        :  x === 2  ?  true
+                        :  x > 2    ?  mret( is1mod3, x-1 )
+                        :  x < 0    ?  mret( is0mod3, x+3 )
+                        :  null.invalid_x;
+                })
+                ,   is1mod3 = mfun( is0mod3, 'is1mod3', function ( x ) {
+                    return x === 0  ?  false
+                        :  x === 1  ?  true
+                        :  x === 2  ?  false
+                        :  x > 2  ?  mret( is0mod3, x-1 )
+                        :  x < 0  ?  mret( is1mod3, x+3 )
+                        :  null.invalid_x;
+                })
+
+                ,  arr = [
+                    true === is0mod3( 0 )
+                    , true === is1mod3( 1 )
+                    , true === is2mod3( 2 )
+
+                    , false === is0mod3( 1 )
+                    , false === is1mod3( 2 )
+                    , false === is2mod3( 0 )
+
+                    , false === is0mod3( 2 )
+                    , false === is1mod3( 0 )
+                    , false === is2mod3( 1 )
+
+                    , true === is0mod3( 99 )
+                    , false === is0mod3( 100 )
+                    , false === is0mod3( 101 )
+
+                    , true === is0mod3( -99 )
+                    , false === is0mod3( -100 )
+                    , false === is0mod3( -101 )
+                ]
+                ;
+                return arr.every( function ( x ) { return x; } );
+            }
+
+
+
+            , function
+            graph_recursion_test_inline_body_false_expansion_2()
+            {
+                var is0mod3 = mfun.call(
+                    { inline_body : false
+                      , expansion : 2
+                    }
+                    , 'is0mod3'
+                    , function( x )
+                    {
+                    return x === 0  ?  true
+                        :  x === 1  ?  false
+                        :  x === 2  ?  false
+                        :  x > 2  ?  mret( is2mod3, x-1 )
+                        :  x < 0  ?  mret( is0mod3, x+3 )
+                        :  null.invalid_x;
+                })
+                ,   is2mod3 = mfun( is0mod3, 'is2mod3', function ( x ) {
+                    return x === 0  ?  false
+                        :  x === 1  ?  false
+                        :  x === 2  ?  true
+                        :  x > 2    ?  mret( is1mod3, x-1 )
+                        :  x < 0    ?  mret( is0mod3, x+3 )
+                        :  null.invalid_x;
+                })
+                ,   is1mod3 = mfun( is0mod3, 'is1mod3', function ( x ) {
+                    return x === 0  ?  false
+                        :  x === 1  ?  true
+                        :  x === 2  ?  false
+                        :  x > 2  ?  mret( is0mod3, x-1 )
+                        :  x < 0  ?  mret( is1mod3, x+3 )
+                        :  null.invalid_x;
+                })
+
+                ,  arr = [
+                    true === is0mod3( 0 )
+                    , true === is1mod3( 1 )
+                    , true === is2mod3( 2 )
+
+                    , false === is0mod3( 1 )
+                    , false === is1mod3( 2 )
+                    , false === is2mod3( 0 )
+
+                    , false === is0mod3( 2 )
+                    , false === is1mod3( 0 )
+                    , false === is2mod3( 1 )
+
+                    , true === is0mod3( 99 )
+                    , false === is0mod3( 100 )
+                    , false === is0mod3( 101 )
+
+                    , true === is0mod3( -99 )
+                    , false === is0mod3( -100 )
+                    , false === is0mod3( -101 )
+                ]
+                ;
+                return arr.every( function ( x ) { return x; } );
+            }
+            
+
+
+
+
+
+
+            , function
+            graph_recursion_test_inline_body_false_expansion_4()
+            {
+                var is0mod3 = mfun.call(
+                    { inline_body : false
+                      , expansion : 4
+                    }
+                    , 'is0mod3'
+                    , function( x )
+                    {
+                    return x === 0  ?  true
+                        :  x === 1  ?  false
+                        :  x === 2  ?  false
+                        :  x > 2  ?  mret( is2mod3, x-1 )
+                        :  x < 0  ?  mret( is0mod3, x+3 )
+                        :  null.invalid_x;
+                })
+                ,   is2mod3 = mfun( is0mod3, 'is2mod3', function ( x ) {
+                    return x === 0  ?  false
+                        :  x === 1  ?  false
+                        :  x === 2  ?  true
+                        :  x > 2    ?  mret( is1mod3, x-1 )
+                        :  x < 0    ?  mret( is0mod3, x+3 )
+                        :  null.invalid_x;
+                })
+                ,   is1mod3 = mfun( is0mod3, 'is1mod3', function ( x ) {
+                    return x === 0  ?  false
+                        :  x === 1  ?  true
+                        :  x === 2  ?  false
+                        :  x > 2  ?  mret( is0mod3, x-1 )
+                        :  x < 0  ?  mret( is1mod3, x+3 )
+                        :  null.invalid_x;
+                })
+
+                ,  arr = [
+                    true === is0mod3( 0 )
+                    , true === is1mod3( 1 )
+                    , true === is2mod3( 2 )
+
+                    , false === is0mod3( 1 )
+                    , false === is1mod3( 2 )
+                    , false === is2mod3( 0 )
+
+                    , false === is0mod3( 2 )
+                    , false === is1mod3( 0 )
+                    , false === is2mod3( 1 )
+
+                    , true === is0mod3( 99 )
+                    , false === is0mod3( 100 )
+                    , false === is0mod3( 101 )
+
+                    , true === is0mod3( -99 )
+                    , false === is0mod3( -100 )
+                    , false === is0mod3( -101 )
+                ]
+                ;
+                return arr.every( function ( x ) { return x; } );
+            }
+
+
+
+
             
 
             , function speed()
