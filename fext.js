@@ -408,7 +408,7 @@ var global, exports
             (
                 topmap.has( namespacekey )
                     ?  topmap
-                    :  topmap.set( namespacekey, {} )
+                    :  (topmap.set( namespacekey, {} ), topmap)
             )
             .get( namespacekey )
         ;
