@@ -122,10 +122,6 @@ var global, exports
     ,   V_RET           = '__fext_ret__'
     ,   V_UNDEFINED     = '__fext_undefined__'
     ,   V_THAT          = 'that'
-
-    // Put here to (over-)ensure unicity for easier conversion to D
-    // #10
-    ,   _inline_loop_ind
     ;
     
     function mfun( a, b, c )
@@ -526,15 +522,14 @@ var global, exports
         {
             ensure_depgraph_complete();
 
-            _inline_loop_ind = 0;//Not mandatory here,good for D #10
-
             var is_last_inline = inline_body_me
                 &&  !expansion_me
             
             ,   gen_cfg = {
-                inline_body      : inline_body_me
-                , is_last_inline : is_last_inline
-                , expansion      : expansion_me
+                inline_body       : inline_body_me
+                , is_last_inline  : is_last_inline
+                , expansion       : expansion_me
+                , inline_loop     : { ind : 0 } // will be unique, esp. for D #10
             }
             ;
             
@@ -804,8 +799,13 @@ var global, exports
             }
 
             if (inline_body)
-                _inline_loop_ind++;
-            
+            {
+                cfg.inline_loop.ind.toPrecision.call.a;
+
+                // Common index to enforce unicity, esp. for D #10
+                cfg.inline_loop.ind++;
+            }
+
             var new_body = s_body;
 
             // Decreasing order important here
@@ -818,7 +818,7 @@ var global, exports
             
             return inline_body  &&  !is_last_inline
 
-                ?  LABEL_INLINE_LOOP( _inline_loop_ind )
+                ?  LABEL_INLINE_LOOP( cfg.inline_loop.ind )
                 + ': for(;;) {\n' + new_body + '\n}\n'
 
                 :  new_body;
@@ -1518,7 +1518,7 @@ var global, exports
                 is_last_inline
                     ?  'continue ' + LABEL_MAIN_LOOP +';'
                     :  'break '
-                    + LABEL_INLINE_LOOP( _inline_loop_ind ) + ';'
+                    + LABEL_INLINE_LOOP( opt.inline_loop.ind ) + ';'
             )
             :  'return;'
         ;
