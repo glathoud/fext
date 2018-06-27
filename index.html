@@ -346,7 +346,10 @@ function TailCall(arr)
         toccont.style.display = 'none';
         
         var to_write = [];
-        write_source_code( source_code_0, get_test_arr_es6, "ES6 unit tests" );
+
+        if ('function' === typeof get_test_arr_es6) // e.g. not on IE11
+          write_source_code( source_code_0, get_test_arr_es6, "ES6 unit tests");
+        
         write_source_code( source_code_0, get_test_arr_es5, "ES5 unit tests" );
         write_source_code( source_code_1, "fext.js" )
         write_source_code( source_code_1, "lib/sorted_search.js" )

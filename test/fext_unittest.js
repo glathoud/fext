@@ -1,4 +1,4 @@
-/*global global exports mret mfun meth self mfunD methD speed
+/*global global exports mret mfun meth self mfunD methD 
    isEven isOdd that*/ // the last three for the mistake checks
 
 var global, exports;
@@ -1229,9 +1229,15 @@ return n < 0  ?  mret( isEven, -n )\
                 , end=Date.now()
                 , dur=(end-begin)/1000
                 , iter_per_sec=N/dur
-                , isOk_2 = dur < 5
-                ;
 
+                // https://stackoverflow.com/questions/21825157/internet-explorer-11-detection
+                , likeIE11 = !!(window.MSInputMethodContext  &&  document.documentMode)
+
+                , expected_maxdur = likeIE11  ?  100  :  5
+                
+                , isOk_2 = dur < expected_maxdur
+                ;
+                
                 speed.extra_output =
                     'dur: ' + dur + ' sec, speed: '
                     + iter_per_sec.toPrecision(4) + ' iters/sec'
