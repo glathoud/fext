@@ -193,9 +193,7 @@ either open the [live instance](http://glat.info/fext/) or open the
 
 ## Browser support
 
-Modern browsers as of June 2018.
-
-Soon: IE11.
+Modern browsers, and IE11, as of June 2018.
 
 ## Unit tests
 
