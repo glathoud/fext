@@ -1224,7 +1224,7 @@ return n < 0  ?  mret( isEven, -n )\
                 })
                 
                 // https://stackoverflow.com/questions/21825157/internet-explorer-11-detection
-                , likeIE11 = !!(window.MSInputMethodContext  &&  document.documentMode);
+                , likeIE11 = !!(window.MSInputMethodContext  &&  document.documentMode)
                 , N=(99999999 / (likeIE11 ? 1000 : 1)) | 0
 
                 , begin=Date.now()
