@@ -39,14 +39,14 @@ var global, exports;
         var result_all = true
         ,   n_passed   = 0
         ,   log_to = mfun.log_to
+        ;
 
-
-        , get_test_arr_es6 = global.get_test_arr_es6
+        get_test_arr_es6 ||  (get_test_arr_es6 = global.get_test_arr_es6);
 
         // Nashorn 1.8.0_171 and IE11 do not support ES6 (backticks,
         // arrow functions...) so we put those tests in a separate
         // file.
-        ,   es6_tests = get_test_arr_es6
+        var es6_tests = get_test_arr_es6
             ?  get_test_arr_es6()
             :  []
 

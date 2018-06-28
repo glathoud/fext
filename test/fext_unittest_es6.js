@@ -5,6 +5,29 @@ var global, exports;
 
     'use strict';
 
+    var mfun, mfunD, meth, methD, mret, fext, get_test_arr_es6;
+
+    if (typeof require === 'function')
+    {
+        // With Node.js
+        fext  = require( '../fext' ).fext;
+        meth  = fext.meth;
+        methD = fext.methD;
+        mfun  = fext.mfun;
+        mfunD = fext.mfunD;
+        mret  = fext.mret;
+    }
+    else
+    {
+        // Without Node.js
+        fext  = global.fext;
+        methD = global.methD;
+        meth  = global.meth;
+        mfun  = global.mfun;
+        mfunD = global.mfunD;
+        mret  = global.mret;
+    }
+    
     global.get_test_arr_es6 = get_test_arr_es6;
 
     function get_test_arr_es6() { return [
