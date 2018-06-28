@@ -5,13 +5,28 @@ var global, exports;
 
     'use strict';
 
-    var mfun   = global.mfun
-    ,   log_to = mfun.log_to
+    var mfun, mret;
+    
+    if (typeof require === 'function')
+    {
+        // With Node.js
+        mfun = require( '../fext' ).mfun;
+        mret = require( '../fext' ).mret;
+    }
+    else
+    {
+        // Without Node.js
+        mfun = global.mfun;
+        mret = global.mret;
+    }
+    
+    var log_to = mfun.log_to
 
     , DEBUG_RX = /[\?&]debug=1(?:&|$)/
-        , DEBUG = DEBUG_RX.test( location.search )
+        , loc  = global.location
+        , DEBUG = loc  &&  DEBUG_RX.test( loc.search )
 
-    , ALL = /[\?&]all=1(?:&|$)/.test( location.search )
+    , ALL = loc  &&  /[\?&]all=1(?:&|$)/.test( loc.search )
     
     , N_RESULT    = DEBUG ? 3   : 10
     , MIN_DUR_SEC = DEBUG ? 0.1 : 1.0

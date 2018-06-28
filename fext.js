@@ -56,8 +56,8 @@ var global, exports
 
     // Debugging tools
 
-    global.mfunD = mfun.bind( { debug : true } );
-    global.methD = meth.bind( { debug : 'method' } );
+    var mfunD = global.mfunD = mfun.bind( { debug : true } );
+    var methD = global.methD = meth.bind( { debug : 'method' } );
 
     // Alternative: single namespace
 
@@ -70,7 +70,7 @@ var global, exports
     };
 
     Object.freeze  &&  Object.freeze( global.fext );
-    
+
     // ---------- API: convenience tool
 
     mfun.log_to = log_to;

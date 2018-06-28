@@ -6,7 +6,21 @@ var global, exports;
 
     'use strict';
 
-    var mfun = global.mfun;
+    var mfun, mret, get_test_arr_es6;
+
+    if (typeof require === 'function')
+    {
+        // With Node.js
+        mfun = require( '../fext' ).mfun;
+        mret = require( '../fext' ).mret;
+        get_test_arr_es6 = require( './fext_unittest_es6' ).get_test_arr_es6;
+    }
+    else
+    {
+        // Without Node.js
+        mfun = global.mfun;
+        mret = global.mret;
+    }
     
     global.fext_unittest = fext_unittest;
     global.get_test_arr_es5 = get_test_arr_es5;
@@ -17,10 +31,14 @@ var global, exports;
         ,   n_passed   = 0
         ,   log_to = mfun.log_to
 
-        // Nashorn 1.8.0_171 does not support ES6 (backticks, arrow
-        // functions...) so we put those tests in a separate file.
-        ,   es6_tests = global.get_test_arr_es6
-            ?  global.get_test_arr_es6()
+
+        , get_test_arr_es6 = global.get_test_arr_es6
+
+        // Nashorn 1.8.0_171 and IE11 do not support ES6 (backticks,
+        // arrow functions...) so we put those tests in a separate
+        // file.
+        ,   es6_tests = get_test_arr_es6
+            ?  get_test_arr_es6()
             :  []
 
         , result = es6_tests.concat( get_test_arr_es5() )
