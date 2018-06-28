@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>fext.js: Fast Explicit Tail Calls</title>
+    <title>Fast Explicit Tail Calls in JavaScript</title>
     <link rel="stylesheet" type="text/css" href="web/prettify.css">
     <style type="text/css">
       body {
@@ -12,17 +12,16 @@
       }
       .title { margin-bottom: 1em; }
       .right { float: right; }
+      .clear { clear: both; }
       .text-center { text-align: center; }
 
       .intro { margin: auto; max-width: 600px; text-align: justify;
       line-height: 1.5em;
+      margin-top: 1.5em;
       }
       .intro code { line-height: normal; }
 
       .top-img { text-align: center; }
-      @media screen and (min-width: 1200px) {
-      .top-img { float: left; }
-      }
 
       .section_anchor { display: none; margin-left: 0.5em; }
       h3:hover .section_anchor { display: initial; }
@@ -61,19 +60,29 @@
     </head>
   <body>
 
+    <a href="https://github.com/glathoud/fext">
+      <img style="position: fixed; top: 0; right: 0; border: 0; margin: 0; padding: 0;"
+       src="web/forkme_right_green_007200.png"
+       alt="Fork me on GitHub">
+    </a>
+    
     <div class="intro">
       
     <div class="top-img"><img class="small_img" src="web/serpent-mord-queue-2.jpg"/></div>
 
-    <h1 class="title"><code>fext.js</code>: Fast Explicit Tail Calls</h1>
+    <h2 class="title">Fast Explicit Tail Calls in JavaScript</h2>
 
 
     <div class="right">by <a href="../">G. Lathoud</a>, June 2018.</div>
 
-    <p>...using today&#39;s JavaScript!</p>
+<div class="clear" style="margin-bottom: 3em"></div>
 
-      <p>Usually, tail calls are automatically optimized (LISP...).</p> <p>In JavaScript, programmers may well not know which "return" statements are optimized by the engine, and which not. This would lead to practical issues when debugging/optimizing (<a href="http://neopythonic.blogspot.de/2009/04/final-words-on-tail-calls.html">2009</a>).</p>
-      
+    <p>If you don't know what this is about, please have a look at an excellent <a href="http://2ality.com/2015/06/tail-call-optimization.html">background article</a> on tail calls in JavaScript. Also my own <a href="http://glat.info/pub/tailopt-js/">early work</a> on this might be helpful.</p>
+
+    <p>In LISP and other languages, tail calls are automatically optimized. In Clojure, there is an explicit keyword <code>recur</code>. Generally, programmers may well not know which "return" statements are optimized by the engine, and which not. This would lead to practical issues when debugging/optimizing (<a href="http://neopythonic.blogspot.de/2009/04/final-words-on-tail-calls.html">2009</a>).</p>
+
+<p>What about JavaScript?</p>
+    
       <p>As of 2018, progress is "slow" and the Chrome team has already <em>removed</em> the automatic self-recursion optimization from its JavaScript engine.</p>
       
       <p>Another possibility is to <strong>explicitly mark the tail calls that will be optimized</strong>.  JavaScript extensions were proposed that add new keywords to the language (<a href="http://glat.info/js.metaret/">2013</a>,&nbsp;<a href="https://github.com/tc39/proposal-ptc-syntax">2016</a>).</p>
