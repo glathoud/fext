@@ -98,8 +98,8 @@
       <pre class="prettyprint lang-js"><code>&lt;script type="text/javascript" src="fext.js"&gt;&lt;/script&gt
 &lt;script type="text/javascript"&gt;
 var gcd = mfun(
-       (a, b) => a > b  ?  mret( self, a-b, b )
-           :     a < b  ?  mret( self, b-a, a )
+       (a, b) => a > b  ?  mret( mself, a-b, b )
+           :     a < b  ?  mret( mself, b-a, a )
            :     a
 );
 console.log( gcd( 2*3*5*17, 3*5*19 ) );  // 15 (3*5)
@@ -112,13 +112,13 @@ console.log( gcd( 2*3*5*17, 3*5*19 ) );  // 15 (3*5)
 &lt;script type="text/javascript"&gt;
 var isOdd = mfun( function isOdd( n ) {
     return n > 0  ?  mret( isEven, n-1 )
-        :  n < 0  ?  mret( self, -n )
+        :  n < 0  ?  mret( mself, -n )
         :  false
     ;
 })
 ,  isEven = mfun( isOdd, function isEven( n ) {
     return n > 0  ?  mret( isOdd, n-1 )
-        :  n < 0  ?  mret( self, -n )
+        :  n < 0  ?  mret( mself, -n )
         :  true
     ;
 })
@@ -227,13 +227,13 @@ console.log( isOdd( 8951531 ) ); // true ; no call stack issue
         proposed approach, using only standard JavaScript, e.g.:
         <pre class="prettyprint lang-js"><code>var isOdd = mfun( function isOdd( n ) {
     return n > 0  ?  mret( isEven, n-1 )
-        :  n < 0  ?  mret( self, -n )
+        :  n < 0  ?  mret( mself, -n )
         :  false
     ;
 })
 ,  isEven = mfun( isOdd, function isEven( n ) {
     return n > 0  ?  mret( isOdd, n-1 )
-        :  n < 0  ?  mret( self, -n )
+        :  n < 0  ?  mret( mself, -n )
         :  true
     ;
 })</code></pre>

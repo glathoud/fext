@@ -1,0 +1,30 @@
+{
+  "name": "fext",
+  "version": "1.0.0",
+  "description": "Fast explicit tail calls in JavaScript",
+  "main": "fext.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/glathoud/fext.git"
+  },
+  "keywords": [
+    "fast",
+    "explicit",
+    "tail",
+    "calls"
+  ],
+  "author": "Guillaume Lathoud <glat@glat.info> (http://glat.info)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/glathoud/fext/issues"
+  },
+  "homepage": "https://github.com/glathoud/fext#readme",
+  "devDependencies": {
+  }
+}

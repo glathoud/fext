@@ -286,7 +286,7 @@ var global, exports
             }
         }
 
-        // Support anonymous functions: `return mret( self, ...)`
+        // Support anonymous functions: `return mret( mself, ...)`
 
         name  ||  (name = '__fext_anonymous_' + (
             mfun.__fext_anon_id__ = 1 + (mfun.__fext_anon_id__ | 0)
@@ -493,12 +493,12 @@ var global, exports
         {
             _debugging = debug;
 
-            var old_self = global.self;
-            global.self = dbg_f;
+            var old_mself = global.mself;
+            global.mself = dbg_f;
             
             var ret = dbg_f.apply( this, arguments );
 
-            global.self = old_self;
+            global.mself = old_mself;
             
             _debugging = false;
             return ret;
@@ -846,7 +846,7 @@ var global, exports
       For performance reasons (*), the method declarations must take
       an extra input parameter `that`, and use it instead of `this`.
 
-      All `mret` calls must use `that.`, as in `mret( that.self,
+      All `mret` calls must use `that.`, as in `mret( that.mself,
       ...)`.
 
       (*) as of June 2018: issues in Firefox with .bind(this).
@@ -862,8 +862,8 @@ var global, exports
       var o = {
       factorial : meth( 'factorial'
       , (that, n, acc) =>
-      acc == null  ?  mret( that.self, n, 1 )
-      : n > 1  ?  mret( that.self, n-1, acc*n )
+      acc == null  ?  mret( that.mself, n, 1 )
+      : n > 1  ?  mret( that.mself, n-1, acc*n )
       : acc)
       };
 
@@ -939,8 +939,8 @@ var global, exports
                 
                 _debugging = this;
 
-                var old_self = this.self;
-                this.self = dbg_f;
+                var old_mself = this.mself;
+                this.mself = dbg_f;
             }
             
             var ret = dbg_f.apply(
@@ -954,7 +954,7 @@ var global, exports
             {
                 // Top call (end)
 
-                this.self = old_self;
+                this.mself = old_mself;
                 _debugging = false;
             }
 
@@ -1282,7 +1282,7 @@ var global, exports
                     ('fext(meth/methD): issue with `' + s + '`:'
                      + ' within a method, '
                      + 'start all your `mret` calls using `that.`:'
-                     + ' `mret( that.self, ... ) or '
+                     + ' `mret( that.mself, ... ) or '
                      + 'mret( that.otherMethod, ... )`'
                     );
                 }
@@ -1310,7 +1310,7 @@ var global, exports
             
             // Support anonymous self-recursion
             var a_name   =
-                a_name_1 === 'self'  ?  name  :  a_name_1
+                a_name_1 === 'mself'  ?  name  :  a_name_1
             
             ,   rest_args = mret_args
                 .slice( 1 )

@@ -38,8 +38,8 @@ Self-recursion example:
 <script src="fext.js"></script>
 <script>
   var gcd = mfun(
-         (a, b) => a > b  ?  mret( self, a-b, b )
-             :     a < b  ?  mret( self, b-a, a )
+         (a, b) => a > b  ?  mret( mself, a-b, b )
+             :     a < b  ?  mret( mself, b-a, a )
              :     a
   );
   console.log( gcd( 2*3*5*17, 3*5*19 ) );  // 15 (3*5)
@@ -53,13 +53,13 @@ Self-recursion example:
 
 ,   isOdd = mfun( namespacekey
                   , "isOdd"
-                  , n => n < 0    ?  mret( self, -n )
+                  , n => n < 0    ?  mret( mself, -n )
                   :      n === 0  ?  false
                   :      mret( isEven, n-1 )
                 )
 ,  isEven = mfun( namespacekey
                   , "isEven"
-                  , n => n < 0    ?  mret( self, -n )
+                  , n => n < 0    ?  mret( mself, -n )
                   :      n === 0  ?  true
                   :      mret( isOdd, n-1 )
                 )
@@ -74,13 +74,13 @@ You can conveniently omit `namespacekey`:
 ```js
 // The default `namespacekey` is the returned function
 // `var isOdd` in this case
-var isOdd = mfun( n => n < 0    ?  mret( self, -n )
+var isOdd = mfun( n => n < 0    ?  mret( mself, -n )
                   :    n === 0  ?  false
                   :    mret( isEven, n-1 )
                 )
 ,  isEven = mfun( isOdd  // <<< `isOdd` is used here as `namespacekey`
                   , "isEven"
-                  , n => n < 0    ?  mret( self, -n )
+                  , n => n < 0    ?  mret( mself, -n )
                   :      n === 0  ?  true
                   :      mret( isOdd, n-1 )
                 )
@@ -95,8 +95,8 @@ Self-recursion example:
  ```js
  var o = {
     gcd : meth( "gcd"
-                , (that, a, b) => a > b  ?  mret( that.self, a-b, b )
-                :                 a < b  ?  mret( that.self, b-a, a )
+                , (that, a, b) => a > b  ?  mret( that.mself, a-b, b )
+                :                 a < b  ?  mret( that.mself, b-a, a )
                 :                 a
               )
 };
@@ -116,7 +116,7 @@ meth( "methodname", (that,a,b,c) => ... )
  * Inside the method, you MUST use `that` (and not `this`). Reason: `.bind()` slower in Firefox 60.
  * Use `that.` in the `mret` calls, as in:
 ```js
-return mret( that.self, ...)
+return mret( that.mself, ...)
 ```
 or
 ```js
@@ -131,12 +131,12 @@ The `mret( that.<methodName> )` call syntax
 ```js
 var o = {
     isOdd : meth( "isOdd"
-                  , (that, n) => n < 0  ?  mret( that.self, -n )
+                  , (that, n) => n < 0  ?  mret( that.mself, -n )
                   :            n === 0  ?  false
                   :            mret( that.isEven, n-1 )
                 )
     , isEven : meth( "isEven"
-                     , (that, n) => n < 0  ?  mret( that.self, -n )
+                     , (that, n) => n < 0  ?  mret( that.mself, -n )
                      :            n === 0  ?  true
                      :            mret( that.isOdd, n-1 )
                    )
@@ -152,12 +152,12 @@ Pretty much the same as above.
 ```js
 function A() {}
 A.prototype.isOdd = meth( "isOdd"
-                          , (that, n) => n < 0  ?  mret( that.self, -n )
+                          , (that, n) => n < 0  ?  mret( that.mself, -n )
                           :            n === 0  ?  false
                           :            mret( that.isEven, n-1 )
                         );
 A.prototype.isEven = meth( "isEven"
-                           , (that, n) => n < 0  ?  mret( that.self, -n )
+                           , (that, n) => n < 0  ?  mret( that.mself, -n )
                            :            n === 0  ?  true
                            :            mret( that.isOdd, n-1 )
                          );

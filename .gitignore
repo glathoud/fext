@@ -7,3 +7,4 @@ DIRECTIONS.org
 *.outdir
 *.pyc
 .*.sh
+node_modules

@@ -1,4 +1,4 @@
-/*global global exports*/
+/*global global exports mfun mret mself mfunD mretD*/
 
 var global, exports;
 (function (global) {
@@ -12,8 +12,8 @@ var global, exports;
         function arrow_self_recursion_anonymous_gcd()
         {
             var gcd = mfun(
-                (a, b) => a > b  ?  mret( self, a-b, b )
-                    :     a < b  ?  mret( self, b-a, a )
+                (a, b) => a > b  ?  mret( mself, a-b, b )
+                    :     a < b  ?  mret( mself, b-a, a )
                     :     a
             )
             , isOk_arr = [
@@ -38,8 +38,8 @@ var global, exports;
         , function self_recursion_anonymous_backtick()
         {
             var factorial = mfun( `function ( n, acc ) {
-                return acc == null  ?  mret( self, n, 1 )
-                    : n > 1  ?  mret( self, n-1, acc*n )
+                return acc == null  ?  mret( mself, n, 1 )
+                    : n > 1  ?  mret( mself, n-1, acc*n )
                     : acc;
             }`)
             , isOk_arr = [
@@ -97,7 +97,7 @@ var global, exports;
             ,   factsub   = mfun( namespacekey
                                   , 'factsub'
                                   , `( n, acc ) =>
-                                  n > 1  ?  mret( self, n-1, acc*n )
+                                  n > 1  ?  mret( mself, n-1, acc*n )
                                   : acc`
                                 )
             , isOk_arr = [
@@ -128,7 +128,7 @@ var global, exports;
             ,   factsub   = mfun( factorial
                                   , 'factsub'
                                   , `( n, acc ) =>
-                                  n > 1  ?  mret( self, n-1, acc*n )
+                                  n > 1  ?  mret( mself, n-1, acc*n )
                                   : acc`
                                 )
             , isOk_arr = [
@@ -154,8 +154,8 @@ var global, exports;
         , function arrow_self_recursion_anonymous()
         {
             var factorial = mfun(  ( n, acc ) =>
-                                   acc == null  ?  mret( self, n, 1 )
-                                   : n > 1  ?  mret( self, n-1, acc*n )
+                                   acc == null  ?  mret( mself, n, 1 )
+                                   : n > 1  ?  mret( mself, n-1, acc*n )
                                    : acc)
             , isOk_arr = [
                 [0, 1]
@@ -211,7 +211,7 @@ var global, exports;
 
             // We forgot the name here. An Error should be thrown.
             ,   factsub   = mfun( namespacekey, (n, acc) =>
-                                  n > 1  ?  mret( self, n-1, acc*n )
+                                  n > 1  ?  mret( mself, n-1, acc*n )
                                   : acc)
             , isOk_arr = [
                 [0, 1]
@@ -248,7 +248,7 @@ var global, exports;
                                   mret( factsub, n, 1 )
                                 )
             ,   factsub   = mfun( namespacekey, 'factsub', (n, acc) =>
-                                  n > 1  ?  mret( self, n-1, acc*n )
+                                  n > 1  ?  mret( mself, n-1, acc*n )
                                   : acc)
             , isOk_arr = [
                 [0, 1]
@@ -278,7 +278,7 @@ var global, exports;
             // `var factorial` in this case.
             var factorial = mfun( (n) => mret( factsub, n, 1 ) )
             ,   factsub   = mfun( factorial, 'factsub', ( n, acc ) =>
-                                  n > 1  ?  mret( self, n-1, acc*n )
+                                  n > 1  ?  mret( mself, n-1, acc*n )
                                   : acc
                                 )
             , isOk_arr = [
@@ -303,12 +303,12 @@ var global, exports;
 
         , function arrow_isOdd_isEven_call_stack()
         {
-            var isOdd = mfun( 'isOdd', n => n < 0  ?  mret( self, -n )
+            var isOdd = mfun( 'isOdd', n => n < 0  ?  mret( mself, -n )
                               :  n === 0  ?  false
                               :  mret( isEven, n-1 )
                             )
             ,  isEven = mfun( isOdd, 'isEven', n => 
-                              n < 0  ?  mret( self, -n )
+                              n < 0  ?  mret( mself, -n )
                               :  n === 0  ?  true
                               :  mret( isOdd, n-1 )
                             )
@@ -329,12 +329,12 @@ var global, exports;
             var namespacekey = {}  // whatever object
 
             ,   isOdd = mfun( namespacekey, 'isOdd', (n) =>
-                              n < 0  ?  mret( self, -n )
+                              n < 0  ?  mret( mself, -n )
                               :  n === 0  ?  false
                               :  mret( isEven, n-1 )
                             )
             ,  isEven = mfun( namespacekey, 'isEven', function isEven( n ) {
-                return n < 0  ?  mret( self, -n )
+                return n < 0  ?  mret( mself, -n )
                     :  n === 0  ?  true
                     :  mret( isOdd, n-1 );
             })
@@ -350,7 +350,7 @@ var global, exports;
             // The default `namespacekey` is the returned function
             // `var isOdd` in this case.
             var isOdd = mfun( 'isOdd', n =>  
-                              n < 0  ?  mret( self, -n )
+                              n < 0  ?  mret( mself, -n )
                               :  n === 0  ?  false
                               :  mret( isEven, n-1 )
                             )
@@ -430,7 +430,7 @@ var global, exports;
                             (that._acc = (n  ||  1) * (that._acc || 1)
                              , 
                              n > 1
-                             ? mret( that.self, n-1 )
+                             ? mret( that.mself, n-1 )
                              : (that._tmp = that._acc
                                 , that._acc = 0
                                 , that._tmp
@@ -470,8 +470,8 @@ var global, exports;
             var o = {
                 factorial : meth( 'factorial'
                                   , (that, n, acc) =>
-                                  acc == null  ?  mret( that.self, n, 1 )
-                                  : n > 1  ?  mret( that.self, n-1, acc*n )
+                                  acc == null  ?  mret( that.mself, n, 1 )
+                                  : n > 1  ?  mret( that.mself, n-1, acc*n )
                                   : acc)
             }
             , isOk_arr = [
@@ -499,8 +499,8 @@ var global, exports;
 
             A.prototype.factorial = meth( 'factorial'
                                           , (that, n, acc ) =>
-                                          acc == null  ?  mret( that.self, n, 1 )
-                                          : n > 1  ?  mret( that.self, n-1, acc*n )
+                                          acc == null  ?  mret( that.mself, n, 1 )
+                                          : n > 1  ?  mret( that.mself, n-1, acc*n )
                                           : acc
                                         );
 
@@ -535,8 +535,8 @@ var global, exports;
             var o = {
                 factorial : meth( 'factorial'
                                   , `(that, n, acc ) =>
-                                  acc == null  ?  mret( that.self, n, 1 )
-                                  : n > 1  ?  mret( that.self, n-1, acc*n )
+                                  acc == null  ?  mret( that.mself, n, 1 )
+                                  : n > 1  ?  mret( that.mself, n-1, acc*n )
                                   : acc
                                   `)
             }
@@ -566,8 +566,8 @@ var global, exports;
 
             A.prototype.factorial = meth( 'factorial'
                                           , `( that, n, acc ) =>
-                                          acc == null  ?  mret( that.self, n, 1 )
-                                          : n > 1  ?  mret( that.self, n-1, acc*n )
+                                          acc == null  ?  mret( that.mself, n, 1 )
+                                          : n > 1  ?  mret( that.mself, n-1, acc*n )
                                           : acc`
                                         );
 
@@ -604,7 +604,7 @@ var global, exports;
                 factorial : meth( 'factorial', (that, n) => mret( that.factsub, n, 1 ) )
                 , factsub : meth( 'factsub'
                                   , (that, n, acc) =>
-                                  n > 1  ?  mret( that.self, n-1, acc*n )
+                                  n > 1  ?  mret( that.mself, n-1, acc*n )
                                   : acc
                                 )
             }
@@ -641,12 +641,12 @@ var global, exports;
         {
             var o = {
                 isOdd : meth( 'isOdd', (that, n) =>
-                              n < 0  ?  mret( that.self, -n )
+                              n < 0  ?  mret( that.mself, -n )
                               :  n === 0  ?  false
                               :  mret( that.isEven, n-1 )
                             )
                 , isEven : meth( 'isEven', (that, n) =>
-                                 n < 0  ?  mret( that.self, -n )
+                                 n < 0  ?  mret( that.mself, -n )
                                  :  n === 0  ?  true
                                  :  mret( that.isOdd, n-1 )
                                )
@@ -661,13 +661,13 @@ var global, exports;
             function A() {}
             A.prototype.isOdd =
                 meth( 'isOdd' , (that, n) =>
-                      n < 0  ?  mret( that.self, -n )
+                      n < 0  ?  mret( that.mself, -n )
                       :  n === 0  ?  false
                       :  mret( that.isEven, n-1 )
                     );
             A.prototype.isEven =
                 meth( 'isEven', (that, n) =>
-                      n < 0  ?  mret( that.self, -n )
+                      n < 0  ?  mret( that.mself, -n )
                       :  n === 0  ?  true
                       :  mret( that.isOdd, n-1 )
                     );
