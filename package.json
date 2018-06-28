@@ -20,11 +20,13 @@
     "calls"
   ],
   "author": "Guillaume Lathoud <glat@glat.info> (http://glat.info)",
-  "license": "ISC",
+  "license": "Boost",
   "bugs": {
     "url": "https://github.com/glathoud/fext/issues"
   },
   "homepage": "https://github.com/glathoud/fext#readme",
   "devDependencies": {
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0"
   }
 }
