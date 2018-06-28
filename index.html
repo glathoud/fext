@@ -200,18 +200,8 @@ console.log( isOdd( 8951531 ) ); // true ; no call stack issue
     </section>
     
     
-    <section id="section_annex_more_code">
-      <h3>Annex A: More code</h3>
-
-      <p>On <a href="https://github.com/glathoud/fext/">GitHub</a> and here below:</p>
-      <div id="toccont">
-        <ul id="toc"></ul>
-      </div>
-      
-    </section>
-   
     <section id="section_setup_details_speed_test">
-      <h3>Annex B: Setup details of the speed test</h3>
+      <h3>Annex: Setup details of the speed test</h3>
       
       <p>The <code>isOdd/isEven</code> mutual recursion use case
         measures well the overhead due to each approach, since both
@@ -325,18 +315,6 @@ function TailCall(arr)
 </div>
 
     
-    <div id="source_code_0" class="code_cont"></div>
-    <div id="source_code_1" class="code_cont"></div>
-    
-    <script type="text/html" id="source_code_tmpl">
-    <p class="code_cont_header" id="$domid">$filename:</p>
-    <pre><code class="prettyprint lang-js">$sourcecode</code></pre>
-    </script>
-    
-    <script type="text/html" id="toctmpl">
-    <li><a href="#$domid">$filename</a></li>
-    </script>
-    
     <script type="text/javascript" src="fext.js"></script>
     <script type="text/javascript" src="lib/sorted_search.js"></script>
 
@@ -349,22 +327,31 @@ function TailCall(arr)
 //'
     (function () {
         
-        var cstmpl = source_code_tmpl;
-        cstmpl.parentNode.removeChild( cstmpl );
-
-        toccont.style.display = 'none';
+        var cstmpl = window.source_code_tmpl;
+        if (cstmpl)
+        {
+          cstmpl.parentNode.removeChild( cstmpl );
+          toccont.style.display = 'none';
+        }
         
         var to_write = [];
 
-        if ('function' === typeof get_test_arr_es6) // e.g. not on IE11
-          write_source_code( source_code_0, get_test_arr_es6, "ES6 unit tests");
-        
-        write_source_code( source_code_0, get_test_arr_es5, "ES5 unit tests" );
-        write_source_code( source_code_1, "fext.js" )
-        write_source_code( source_code_1, "lib/sorted_search.js" )
-        write_source_code( source_code_1, get_test_arr_sorted_search, "lib/sorted_search.js: unit tests" );
-
         setup_section_anchors();
+
+        if (cstmpl  &&  window.source_code_0  &&  window.source_code_1)
+        {
+          if ('function' === typeof get_test_arr_es6) // e.g. not on IE11
+            write_source_code( source_code_0, get_test_arr_es6, "ES6 unit tests");
+
+          write_source_code( source_code_0, get_test_arr_es5, "ES5 unit tests" );
+          write_source_code( source_code_1, "fext.js" )
+          write_source_code( source_code_1, "lib/sorted_search.js" )
+          write_source_code( source_code_1, get_test_arr_sorted_search, "lib/sorted_search.js: unit tests" );
+        }
+        else
+        {
+          do_the_unittests();
+        }
         
         function write_source_code( contnode, x, opt )
         {
