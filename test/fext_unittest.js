@@ -1223,17 +1223,18 @@ return n < 0  ?  mret( isEven, -n )\
                         :  mret( isOdd, n-1 );
                 })
                 
-                , N=99999999
+                // https://stackoverflow.com/questions/21825157/internet-explorer-11-detection
+                , likeIE11 = !!(window.MSInputMethodContext  &&  document.documentMode);
+                , N=(99999999 / (likeIE11 ? 1000 : 1)) | 0
+
                 , begin=Date.now()
                 , isOk_1 = true === isOdd(N)
                 , end=Date.now()
                 , dur=(end-begin)/1000
                 , iter_per_sec=N/dur
 
-                // https://stackoverflow.com/questions/21825157/internet-explorer-11-detection
-                , likeIE11 = !!(window.MSInputMethodContext  &&  document.documentMode)
 
-                , expected_maxdur = likeIE11  ?  100  :  5
+                , expected_maxdur = 5
                 
                 , isOk_2 = dur < expected_maxdur
                 ;
