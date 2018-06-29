@@ -6,7 +6,7 @@ var global, exports;
 
     'use strict';
 
-    var mfun, mfunD, meth, methD, mret, fext, get_test_arr_es6;
+    var mfun, mfunD, meth, methD, mret, mself, fext, get_test_arr_es6;
 
     if (typeof require === 'function')
     {
@@ -19,6 +19,7 @@ var global, exports;
         mfun  = fext.mfun;
         mfunD = fext.mfunD;
         mret  = fext.mret;
+        mself = fext.mself;
     }
     else
     {
@@ -29,6 +30,7 @@ var global, exports;
         mfun  = global.mfun;
         mfunD = global.mfunD;
         mret  = global.mret;
+        mself = global.mself;
     }
     
     global.fext_unittest = fext_unittest;
@@ -90,7 +92,6 @@ var global, exports;
             var name = f.name
             ,   pre_s = '#' + test_ind + ' '
             ;
-
             if (passed)
                 log_to( 'log', pre_s + 'passed ' + name );
             else
@@ -1842,12 +1843,6 @@ acc == null  ?  mret( that.mself, n, 1 )\
             
             , function debugging_tool_self_rec()
             {
-                if ('function' === typeof require)
-                {
-                    debugging_tool_self_rec.extra_output = "ignored on Node";
-                    return true;
-                }
-
                 /* Test implementation: we need to check gcd.getImpl(),
                    hence the need for a separate function.
                    
@@ -1888,13 +1883,6 @@ acc == null  ?  mret( that.mself, n, 1 )\
 
             , function debugging_tool_self_rec_real_life_use_case()
             {
-                if ('function' === typeof require)
-                {
-                    debugging_tool_self_rec_real_life_use_case.extra_output = "ignored on Node";
-                    return true;
-                }
-
-
                 var gcd = mfunD( function (a, b) {
                     return a > b  ?  mret( mself, a-b, b )
                         :  a < b  ?  mret( mself, b-a, a )
@@ -1921,12 +1909,6 @@ acc == null  ?  mret( that.mself, n, 1 )\
 
             , function debugging_tool_mutual_recursion()
             {
-                if ('function' === typeof require)
-                {
-                    debugging_tool_mutual_recursion.extra_output = "ignored on Node";
-                    return true;
-                }
-
                 /* Test implementation: we need to check isOdd.getImpl()
                    and isEven.getImpl(), hence the need for separate
                    functions.

@@ -50,9 +50,10 @@ var global, exports
     
     // ---------- API
 
-    global.mret = mret;
-    global.mfun = mfun;
-    global.meth = meth;
+    global.mret  = mret;
+    global.mfun  = mfun;
+    global.meth  = meth;
+    global.mself = mself;
 
     // Debugging tools
 
@@ -67,6 +68,7 @@ var global, exports
         , meth  : meth
         , mfunD : mfunD
         , methD : methD
+        , mself : mself
     };
 
     Object.freeze  &&  Object.freeze( global.fext );
@@ -77,6 +79,10 @@ var global, exports
     
     // ---------- API implementation
 
+    function mself() { 
+      throw new Error( 'I am just a symbol, not supposed to be called.' );
+    }
+
     var _debugging = false;
 
     function mret()
@@ -86,15 +92,22 @@ var global, exports
             var this_ =
                 'object' === typeof _debugging  &&  _debugging
                 ||  null
+
+	    ,   arg0 = arguments[ 0 ]
+            ,      f = arg0 === mself  ||  !arg0
+                     ?  mself._current_dbg_f
+ 	             :  arg0
+
+            ,   arg_rest = [].slice.call( arguments, 1 )
             ;
-            return arguments[ 0 ]
+            return f
                 .apply( this_  // methD case
                         , ( this_
                             , this_
                             ?  [ this_ ]  // methD case
                             :  []         // mfunD case
                           )
-                        .concat( [].slice.call( arguments, 1 ) )
+                        .concat( arg_rest )
                       );
         }
         else
@@ -493,13 +506,12 @@ var global, exports
         {
             _debugging = debug;
 
-            var old_mself = global.mself;
-            global.mself = dbg_f;
-            
-            var ret = dbg_f.apply( this, arguments );
+	    var old_dbg_f = mself._current_dbg_f;
+            mself._current_dbg_f = dbg_f;
 
-            global.mself = old_mself;
-            
+            var ret = dbg_f.apply( this, arguments );
+	
+            mself._current_dbg_f = old_dbg_f;
             _debugging = false;
             return ret;
         }
@@ -939,8 +951,8 @@ var global, exports
                 
                 _debugging = this;
 
-                var old_mself = this.mself;
-                this.mself = dbg_f;
+                var old_dbg_f = mself._current_dbg_f;
+                mself._current_dbg_f = dbg_f;
             }
             
             var ret = dbg_f.apply(
@@ -954,7 +966,7 @@ var global, exports
             {
                 // Top call (end)
 
-                this.mself = old_mself;
+                mself._current_dbg_f = old_dbg_f;
                 _debugging = false;
             }
 
