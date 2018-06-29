@@ -93,7 +93,7 @@ console.log( isEven( 84327681 ) );  // false (no call stack issue)
 ## Namespace alternative
 
 In some situations the globals `mfun`, `meth`, `mfunD`, etc. may feel
-annoying. Solution: use the `fext.*` namespace. Below an example in
+annoying. Solution: use the `fext.*` namespace. Below, an example in
 the Node.js context:
 
 ```js
