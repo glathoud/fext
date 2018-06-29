@@ -1,6 +1,6 @@
 {
   "name": "fext",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Fast explicit tail calls in JavaScript",
   "main": "fext.js",
   "directories": {
