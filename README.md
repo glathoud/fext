@@ -46,29 +46,6 @@ Self-recursion example:
 </script>
 ```
 
-## Namespace alternative
-
-In some situations the globals `mfun`, `meth`, `mfunD`, etc. may feel
-annoying. Solution: use the `fext.*` namespace. Below an example in
-the Node.js context:
-
-```js
-var fx = require( '../fext' ).fext;
-            
-var isOdd = fx.mfun( function isOdd( n ) {
-    return n > 0  ?  fx.mret( isEven, n-1 )
-        :  n < 0  ?  fx.mret( fx.mself, -n )
-        :  false
-    ;
-})
-,  isEven = fx.mfun( isOdd, function isEven( n ) {
-    return n > 0  ?  fx.mret( isOdd, n-1 )
-        :  n < 0  ?  fx.mret( fx.mself, -n )
-        :  true
-    ;
-})
-console.log( isOdd( 8951531 ) ); // true ; no call stack issue
-```
 
 ## Mutual recursion
  
@@ -111,6 +88,30 @@ var isOdd = mfun( n => n < 0    ?  mret( mself, -n )
 ;
 console.log( isOdd( 84327681 ) );   // true (no call stack issue)
 console.log( isEven( 84327681 ) );  // false (no call stack issue)
+```
+
+## Namespace alternative
+
+In some situations the globals `mfun`, `meth`, `mfunD`, etc. may feel
+annoying. Solution: use the `fext.*` namespace. Below an example in
+the Node.js context:
+
+```js
+var fx = require( '../fext' ).fext;
+            
+var isOdd = fx.mfun( function isOdd( n ) {
+    return n > 0  ?  fx.mret( isEven, n-1 )
+        :  n < 0  ?  fx.mret( fx.mself, -n )
+        :  false
+    ;
+})
+,  isEven = fx.mfun( isOdd, function isEven( n ) {
+    return n > 0  ?  fx.mret( isOdd, n-1 )
+        :  n < 0  ?  fx.mret( fx.mself, -n )
+        :  true
+    ;
+})
+console.log( isOdd( 8951531 ) ); // true ; no call stack issue
 ```
 
 ## Methods
