@@ -1,5 +1,5 @@
 ## fext.js
-Fast explicit tail calls in JavaScript [live page](http://glat.info/fext) [Node.js package](https://www.npmjs.com/package/fext)
+Fast explicit tail calls in JavaScript [[live page](http://glat.info/fext)] [[Node.js package](https://www.npmjs.com/package/fext)]
 
 Classically, tail calls are automatically optimized (LISP...) . In JavaScript, 
 programmers may well not know which "return" statements are optimized by the engine, and which not.
