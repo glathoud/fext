@@ -226,14 +226,14 @@ acc == null  ?  mret( factorial, n, 1 )\
             }
             
             , function
-            arrow_helper_function_explicit_namespacekey_forgot_name_string()
+            arrow_helper_function_explicit_groupkey_forgot_name_string()
             {
-                var namespacekey = {}  // whatever object
+                var groupkey = {}  // whatever object
 
-                ,   factorial = mfun( namespacekey, 'n => mret( factsub, n, 1 )')
+                ,   factorial = mfun( groupkey, 'n => mret( factsub, n, 1 )')
 
                 // We forgot the name here. An Error should be thrown.
-                ,   factsub   = mfun( namespacekey, '(n, acc) =>\
+                ,   factsub   = mfun( groupkey, '(n, acc) =>\
 n > 1  ?  mret( mself, n-1, acc*n )\
 : acc')
                 , isOk_arr = [
@@ -263,14 +263,14 @@ n > 1  ?  mret( mself, n-1, acc*n )\
             }
             
             , function
-            arrow_helper_function_explicit_namespacekey_string()
+            arrow_helper_function_explicit_groupkey_string()
             {
-                var namespacekey = {}  // whatever object
+                var groupkey = {}  // whatever object
 
-                ,   factorial = mfun( namespacekey, 'n =>\
+                ,   factorial = mfun( groupkey, 'n =>\
 mret( factsub, n, 1 )'
                                     )
-                ,   factsub   = mfun( namespacekey, 'factsub', '(n, acc) =>\
+                ,   factsub   = mfun( groupkey, 'factsub', '(n, acc) =>\
 n > 1  ?  mret( mself, n-1, acc*n )\
 : acc')
                 , isOk_arr = [
@@ -294,9 +294,9 @@ n > 1  ?  mret( mself, n-1, acc*n )\
             }
 
             , function
-            arrow_helper_function_default_namespacekey_string()
+            arrow_helper_function_default_groupkey_string()
             {
-                // The default `namespacekey` is the returned function
+                // The default `groupkey` is the returned function
                 // `var factorial` in this case.
                 var factorial = mfun( '(n) => mret( factsub, n, 1 )' )
                 ,   factsub   = mfun( factorial, 'factsub', '( n, acc ) =>\
@@ -441,14 +441,14 @@ return acc == null  ?  mret( factorial, n, 1 )\
             }
 
             , function
-            helper_function_explicit_namespacekey()
+            helper_function_explicit_groupkey()
             {
-                var namespacekey = {}  // whatever object
+                var groupkey = {}  // whatever object
 
-                ,   factorial = mfun( namespacekey, function ( n ) {
+                ,   factorial = mfun( groupkey, function ( n ) {
                     return mret( factsub, n, 1 );
                 })
-                ,   factsub   = mfun( namespacekey, function factsub( n, acc ) {
+                ,   factsub   = mfun( groupkey, function factsub( n, acc ) {
                     return n > 1  ?  mret( mself, n-1, acc*n )
                         : acc;
                 })
@@ -472,9 +472,9 @@ return acc == null  ?  mret( factorial, n, 1 )\
             }
 
             , function
-            helper_function_default_namespacekey()
+            helper_function_default_groupkey()
             {
-                // The default `namespacekey` is the returned function
+                // The default `groupkey` is the returned function
                 // `var factorial` in this case.
                 var factorial = mfun( function ( n ) {
                     return mret( factsub, n, 1 );
@@ -503,16 +503,16 @@ return acc == null  ?  mret( factorial, n, 1 )\
             }
 
             , function
-            helper_function_explicit_namespacekey_explicit_name()
+            helper_function_explicit_groupkey_explicit_name()
             {
-                var namespacekey = {}  // whatever object
+                var groupkey = {}  // whatever object
 
-                ,   factorial = mfun( namespacekey, function ( n ) {
+                ,   factorial = mfun( groupkey, function ( n ) {
                     return mret( factsub, n, 1 );
                 })
 
                 // Here the explicit name 'factsub'
-                ,   factsub   = mfun( namespacekey, 'factsub', function( n, acc ) {
+                ,   factsub   = mfun( groupkey, 'factsub', function( n, acc ) {
                     return n > 1  ?  mret( mself, n-1, acc*n )
                         : acc;
                 })
@@ -536,9 +536,9 @@ return acc == null  ?  mret( factorial, n, 1 )\
             }
 
             , function
-            helper_function_default_namespacekey_explicit_name()
+            helper_function_default_groupkey_explicit_name()
             {
-                // The default `namespacekey` is the returned function
+                // The default `groupkey` is the returned function
                 // `var factorial` in this case.
                 var factorial = mfun( function ( n ) {
                     return mret( factsub, n, 1 );
@@ -570,16 +570,16 @@ return acc == null  ?  mret( factorial, n, 1 )\
 
             
             , function
-            isOdd_isEven_functionality_explicit_namespacekey()
+            isOdd_isEven_functionality_explicit_groupkey()
             {
-                var namespacekey = {}  // whatever object
+                var groupkey = {}  // whatever object
 
-                ,   isOdd = mfun( namespacekey, function isOdd( n ) {
+                ,   isOdd = mfun( groupkey, function isOdd( n ) {
                     return n < 0  ?  mret( isOdd, -n )
                         :  n === 0  ?  false
                         :  mret( isEven, n-1 );
                 })
-                ,  isEven = mfun( namespacekey, function isEven( n ) {
+                ,  isEven = mfun( groupkey, function isEven( n ) {
                     return n < 0  ?  mret( isEven, -n )
                         :  n === 0  ?  true
                         :  mret( isOdd, n-1 );
@@ -591,9 +591,9 @@ return acc == null  ?  mret( factorial, n, 1 )\
             }
 
             , function
-            isOdd_isEven_functionality_default_namespacekey()
+            isOdd_isEven_functionality_default_groupkey()
             {
-                // The default `namespacekey` is the returned function
+                // The default `groupkey` is the returned function
                 // `var isOdd` in this case.
                 var isOdd = mfun( function isOdd( n ) {
                     return n < 0  ?  mret( isOdd, -n )
@@ -1767,9 +1767,9 @@ acc == null  ?  mret( that.mself, n, 1 )\
 
 
             , function
-            isOdd_isEven_functionality_default_namespacekey_inline_body_false()
+            isOdd_isEven_functionality_default_groupkey_inline_body_false()
             {
-                // The default `namespacekey` is the returned function
+                // The default `groupkey` is the returned function
                 // `var isOdd` in this case.
                 var isOdd = mfun.call(
                     { inline_body : false }
@@ -1802,9 +1802,9 @@ acc == null  ?  mret( that.mself, n, 1 )\
             }
             
             , function
-            isOdd_isEven_functionality_default_namespacekey_inline_body_true()
+            isOdd_isEven_functionality_default_groupkey_inline_body_true()
             {
-                // The default `namespacekey` is the returned function
+                // The default `groupkey` is the returned function
                 // `var isOdd` in this case.
                 var isOdd = mfun.call(
                     { inline_body : true }
@@ -1932,7 +1932,7 @@ acc == null  ?  mret( that.mself, n, 1 )\
                         :  mret( isOdd, n-1 );
                 }
 
-                // The default `namespacekey` is the returned function
+                // The default `groupkey` is the returned function
                 // `var isOdd` in this case.
                 var isOdd = mfunD( 'isOdd', isOdd_input_fun )
                 ,  isEven = mfunD( isOdd, 'isEven', isEven_input_fun )
@@ -1948,7 +1948,7 @@ acc == null  ?  mret( that.mself, n, 1 )\
             
             , function debugging_tool_mutual_recursion_real_life_use_case()
             {
-                // The default `namespacekey` is the returned function
+                // The default `groupkey` is the returned function
                 // `var isOdd` in this case.
                 var isOdd = mfunD( 'isOdd', function isOdd( n ) {
                     return n < 0  ?  mret( isOdd, -n )
@@ -2031,7 +2031,7 @@ acc == null  ?  mret( that.mself, n, 1 )\
                         :  mret( that.isOdd, n-1 );
                 }
 
-                // The default `namespacekey` is the returned function
+                // The default `groupkey` is the returned function
                 // `var isOdd` in this case.
                 var o = {
                     isOdd    : methD( 'isOdd',  isOdd_input_fun )
@@ -2143,6 +2143,33 @@ acc == null  ?  mret( that.mself, n, 1 )\
                 var gcd = fext.mfun( function (a, b) {
                     return a > b  ?  fext.mret( mself, a-b, b )
                         :  a < b  ?  fext.mret( mself, b-a, a )
+                        :  a;
+                })
+                , isOk_arr = [
+                    [1, 1, 1]
+                    , [2, 2, 2]
+                    , [2, 3, 1]
+                    , [2*3, 2, 2]
+                    , [2*3, 3, 3]
+                    , [2*5*17, 3*5*19, 5]
+                    , [2*3*5*17, 3*5*19, 3*5]
+                ]
+                    .map( function( abc ) {
+                        return gcd( abc[ 0 ], abc[ 1 ] ) === abc[ 2 ];
+                    })
+                , isOk = isOk_arr
+                    .every( function ( x ) { return x; } )
+                ;
+                return isOk;            
+            }
+
+            , function fx_namespace()
+            {
+                var fx = fext;
+                
+                var gcd = fx.mfun( function (a, b) {
+                    return a > b  ?  fx.mret( fx.mself, a-b, b )
+                        :  a < b  ?  fx.mret( fx.mself, b-a, a )
                         :  a;
                 })
                 , isOk_arr = [

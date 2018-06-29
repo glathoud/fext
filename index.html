@@ -126,6 +126,34 @@ console.log( isOdd( 8951531 ) ); // true ; no call stack issue
 &lt;/script&gt;
 </code></pre>
                        </section>
+
+      <section id="section_namespace">
+
+        <h3>Namespace alternative</h3>
+
+        <p>In some situations the
+        globals <code>mfun</code>, <code>meth</code>, <code>mfunD</code>,
+          etc. may feel annoying. Solution: use the <code>fext.*</code> namespace. Below an example in the Node.js context:</p>
+
+        <pre class="prettyprint lang-js"><code>var fx = require( '../fext' ).fext;
+            
+var isOdd = fx.mfun( function isOdd( n ) {
+    return n > 0  ?  fx.mret( isEven, n-1 )
+        :  n < 0  ?  fx.mret( fx.mself, -n )
+        :  false
+    ;
+})
+,  isEven = fx.mfun( isOdd, function isEven( n ) {
+    return n > 0  ?  fx.mret( isOdd, n-1 )
+        :  n < 0  ?  fx.mret( fx.mself, -n )
+        :  true
+    ;
+})
+console.log( isOdd( 8951531 ) ); // true ; no call stack issue
+</code></pre>
+            
+
+      </section>
       
                        <section id="section_api_doc">
       <h3>API Documentation incl. debugging tools</h3>

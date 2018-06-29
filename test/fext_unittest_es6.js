@@ -111,13 +111,13 @@ var global, exports;
         }
 
         , function
-        arrow_helper_function_explicit_namespacekey_backtick()
+        arrow_helper_function_explicit_groupkey_backtick()
         {
-            var namespacekey = {}  // whatever object
+            var groupkey = {}  // whatever object
 
-            ,   factorial = mfun( namespacekey
+            ,   factorial = mfun( groupkey
                                   , (n) => mret( factsub, n, 1 ) )
-            ,   factsub   = mfun( namespacekey
+            ,   factsub   = mfun( groupkey
                                   , 'factsub'
                                   , `( n, acc ) =>
                                   n > 1  ?  mret( mself, n-1, acc*n )
@@ -143,9 +143,9 @@ var global, exports;
         }
 
         , function
-        arrow_helper_function_default_namespacekey_backtick()
+        arrow_helper_function_default_groupkey_backtick()
         {
-            // The default `namespacekey` is the returned function
+            // The default `groupkey` is the returned function
             // `var factorial` in this case.
             var factorial = mfun( (n) => mret( factsub, n, 1 ) )
             ,   factsub   = mfun( factorial
@@ -226,14 +226,14 @@ var global, exports;
 
 
         , function
-        arrow_helper_function_explicit_namespacekey_forgot_name()
+        arrow_helper_function_explicit_groupkey_forgot_name()
         {
-            var namespacekey = {}  // whatever object
+            var groupkey = {}  // whatever object
 
-            ,   factorial = mfun( namespacekey, n => mret( factsub, n, 1 ))
+            ,   factorial = mfun( groupkey, n => mret( factsub, n, 1 ))
 
             // We forgot the name here. An Error should be thrown.
-            ,   factsub   = mfun( namespacekey, (n, acc) =>
+            ,   factsub   = mfun( groupkey, (n, acc) =>
                                   n > 1  ?  mret( mself, n-1, acc*n )
                                   : acc)
             , isOk_arr = [
@@ -263,14 +263,14 @@ var global, exports;
         }
 
         , function
-        arrow_helper_function_explicit_namespacekey()
+        arrow_helper_function_explicit_groupkey()
         {
-            var namespacekey = {}  // whatever object
+            var groupkey = {}  // whatever object
 
-            ,   factorial = mfun( namespacekey, n =>
+            ,   factorial = mfun( groupkey, n =>
                                   mret( factsub, n, 1 )
                                 )
-            ,   factsub   = mfun( namespacekey, 'factsub', (n, acc) =>
+            ,   factsub   = mfun( groupkey, 'factsub', (n, acc) =>
                                   n > 1  ?  mret( mself, n-1, acc*n )
                                   : acc)
             , isOk_arr = [
@@ -295,9 +295,9 @@ var global, exports;
 
         
         , function
-        arrow_helper_function_default_namespacekey()
+        arrow_helper_function_default_groupkey()
         {
-            // The default `namespacekey` is the returned function
+            // The default `groupkey` is the returned function
             // `var factorial` in this case.
             var factorial = mfun( (n) => mret( factsub, n, 1 ) )
             ,   factsub   = mfun( factorial, 'factsub', ( n, acc ) =>
@@ -347,16 +347,16 @@ var global, exports;
 
 
         , function
-        arrow_isOdd_isEven_functionality_explicit_namespacekey_self()
+        arrow_isOdd_isEven_functionality_explicit_groupkey_self()
         {
-            var namespacekey = {}  // whatever object
+            var groupkey = {}  // whatever object
 
-            ,   isOdd = mfun( namespacekey, 'isOdd', (n) =>
+            ,   isOdd = mfun( groupkey, 'isOdd', (n) =>
                               n < 0  ?  mret( mself, -n )
                               :  n === 0  ?  false
                               :  mret( isEven, n-1 )
                             )
-            ,  isEven = mfun( namespacekey, 'isEven', function isEven( n ) {
+            ,  isEven = mfun( groupkey, 'isEven', function isEven( n ) {
                 return n < 0  ?  mret( mself, -n )
                     :  n === 0  ?  true
                     :  mret( isOdd, n-1 );
@@ -368,9 +368,9 @@ var global, exports;
         }
 
         , function
-        arrow_isOdd_isEven_functionality_default_namespacekey()
+        arrow_isOdd_isEven_functionality_default_groupkey()
         {
-            // The default `namespacekey` is the returned function
+            // The default `groupkey` is the returned function
             // `var isOdd` in this case.
             var isOdd = mfun( 'isOdd', n =>  
                               n < 0  ?  mret( mself, -n )

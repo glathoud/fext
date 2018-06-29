@@ -144,18 +144,18 @@ var global, exports
       
       API: missing args allowed, but order fixed:
 
-      var f = mfun( [namespacekey,] [name,] f_or_s );
+      var f = mfun( [groupkey,] [name,] f_or_s );
       
       `f_or_s` is mandatory, the other two optional.
 
       `f_or_s`: string|function
       `name`:   string
 
-      `namespacekey` is any common object that will be used as a key
+      `groupkey` is any common object that will be used as a key
       to group mutually recursive functions.
 
-      `namespacekey` will NOT be modified, only used as a key to
-      determine which functions know each other (a.k.a. namespace).
+      `groupkey` will NOT be modified, only used as a key to
+      determine which functions know each other (a.k.a. group).
 
       --- Variants --
 
@@ -167,15 +167,15 @@ var global, exports
       
       (2) Mutual recursion with named functions
 
-      Custom `namespacekey`:
+      Custom `groupkey`:
 
-      var namespacekey = {}  // whatever object
-      ,   first_fun = mfun( namespacekey, named_func_or_str )  
-      ,  second_fun = mfun( namespacekey, named_func_or_str )  
-      ,   third_fun = mfun( namespacekey, named_func_or_str )  
+      var groupkey = {}  // whatever object
+      ,   first_fun = mfun( groupkey, named_func_or_str )  
+      ,  second_fun = mfun( groupkey, named_func_or_str )  
+      ,   third_fun = mfun( groupkey, named_func_or_str )  
       ;
 
-      Default `namespacekey` (=== `first_fun`):
+      Default `groupkey` (=== `first_fun`):
 
       var first_fun = mfun( named_func_or_str )  
       ,  second_fun = mfun( first_fun, named_func_or_str )  
@@ -185,15 +185,15 @@ var global, exports
       (3) Mutual recursion with anonymous function (e.g. arrow
       functions)
 
-      Custom `namespacekey`:
+      Custom `groupkey`:
 
-      var namespacekey = {}  // whatever object
-      ,   first_fun = mfun( namespacekey, name, anonymous_f_or_s )  
-      ,  second_fun = mfun( namespacekey, name, anonymous_f_or_s )  
-      ,   third_fun = mfun( namespacekey, name, anonymous_f_or_s )  
+      var groupkey = {}  // whatever object
+      ,   first_fun = mfun( groupkey, name, anonymous_f_or_s )  
+      ,  second_fun = mfun( groupkey, name, anonymous_f_or_s )  
+      ,   third_fun = mfun( groupkey, name, anonymous_f_or_s )  
       ;
 
-      Default `namespacekey` (=== `first_fun`):
+      Default `groupkey` (=== `first_fun`):
 
       var first_fun = mfun( name, anonymous_func_or_str )  
       ,  second_fun = mfun( first_fun, name, anonymous_func_or_str )
@@ -204,14 +204,14 @@ var global, exports
         /*
           Read the arguments, missing args allowed, but order fixed:
 
-          [namespacekey], [name], f_or_s
+          [groupkey], [name], f_or_s
 
           `f_or_s` is mandatory, the other two optional.
 
         */    
         var arr =
             [          a,    b,      c ]
-        ,   namespacekey, name, f_or_s
+        ,   groupkey, name, f_or_s
         ;
         for (var i = arr.length; i--;) // read right-to-left
         {
@@ -238,7 +238,7 @@ var global, exports
                 }
                 else
                 {
-                    namespacekey = x;
+                    groupkey = x;
                     break;
                 }
             }
@@ -283,7 +283,7 @@ var global, exports
         
         // --- Defaults parameters
 
-        namespacekey  ||  (namespacekey = ret);
+        groupkey  ||  (groupkey = ret);
 
         if (!name)
         {
@@ -307,7 +307,7 @@ var global, exports
 
         // --- Check
         
-        (f_or_s  &&  name  &&  namespacekey)  ||  null.missing_arg;
+        (f_or_s  &&  name  &&  groupkey)  ||  null.missing_arg;
         
         (f_or_s.bind  ||  f_or_s.substring).call.a;
         name.substring.call.a;
@@ -415,11 +415,11 @@ var global, exports
         
         ,   space  =
             (
-                topmap.has( namespacekey )
+                topmap.has( groupkey )
                     ?  topmap
-                    :  (topmap.set( namespacekey, {} ), topmap)
+                    :  (topmap.set( groupkey, {} ), topmap)
             )
-            .get( namespacekey )
+            .get( groupkey )
         ;
         space[ name ]  &&  null.already_defined;
 
@@ -616,8 +616,8 @@ var global, exports
             {
                 /*
                   We assume that all necessary mfun's have been
-                  registered to the "namespace" identified by
-                  namespacekey. 
+                  registered to the "group" identified by
+                  groupkey. 
 
                   We can now complete the graph of dependencies.
 
@@ -1006,7 +1006,7 @@ var global, exports
         var meth_mfun;
         function meth_setup_mfun( o )
         {
-            var namespacekey = get_owner( o, name );
+            var groupkey = get_owner( o, name );
 
             meth_mfun = mfun.call(
                 {
@@ -1015,7 +1015,7 @@ var global, exports
                     
                     , mret_that_dot : true
                 }
-                , namespacekey, a, b );
+                , groupkey, a, b );
 
             o[ name ] = meth_wrapper1;
             o[ name ].getImpl = meth_mfun.getImpl;
@@ -1319,10 +1319,14 @@ var global, exports
                 }
                 a_name_1 = a_name_0;
             }
+
+            // Support alternative namespaces, as in "fx.mself" or
+            // "fx.someOtherName"
+
+            var a_name_2 = a_name_1.split( '.' ).slice( -1 )[ 0 ];
             
             // Support anonymous self-recursion
-            var a_name   =
-                a_name_1 === 'mself'  ?  name  :  a_name_1
+            var a_name   = a_name_2 === 'mself'  ?  name  :  a_name_2
             
             ,   rest_args = mret_args
                 .slice( 1 )

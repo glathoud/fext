@@ -45,19 +45,43 @@ Self-recursion example:
   console.log( gcd( 2*3*5*17, 3*5*19 ) );  // 15 (3*5)
 </script>
 ```
-  
+
+## Namespace alternative
+
+In some situations the globals `mfun`, `meth`, `mfunD`, etc. may feel
+annoying. Solution: use the `fext.*` namespace. Below an example in
+the Node.js context:
+
+```js
+var fx = require( '../fext' ).fext;
+            
+var isOdd = fx.mfun( function isOdd( n ) {
+    return n > 0  ?  fx.mret( isEven, n-1 )
+        :  n < 0  ?  fx.mret( fx.mself, -n )
+        :  false
+    ;
+})
+,  isEven = fx.mfun( isOdd, function isEven( n ) {
+    return n > 0  ?  fx.mret( isOdd, n-1 )
+        :  n < 0  ?  fx.mret( fx.mself, -n )
+        :  true
+    ;
+})
+console.log( isOdd( 8951531 ) ); // true ; no call stack issue
+```
+
 ## Mutual recursion
  
  ```js
- var namespacekey = {}  // whatever object (won't be modified)
+ var groupkey = {}  // whatever object (won't be modified)
 
-,   isOdd = mfun( namespacekey
+,   isOdd = mfun( groupkey
                   , "isOdd"
                   , n => n < 0    ?  mret( mself, -n )
                   :      n === 0  ?  false
                   :      mret( isEven, n-1 )
                 )
-,  isEven = mfun( namespacekey
+,  isEven = mfun( groupkey
                   , "isEven"
                   , n => n < 0    ?  mret( mself, -n )
                   :      n === 0  ?  true
@@ -68,17 +92,17 @@ console.log( isOdd( 84327681 ) );   // true (no call stack issue)
 console.log( isEven( 84327681 ) );  // false (no call stack issue)
 ```
  
-`namespacekey` is only used as a key to determine "groups" of function that know each other.
+`groupkey` is only used as a key to determine "groups" of function that know each other.
 
-You can conveniently omit `namespacekey`:
+You can conveniently omit `groupkey`:
 ```js
-// The default `namespacekey` is the returned function
+// The default `groupkey` is the returned function
 // `var isOdd` in this case
 var isOdd = mfun( n => n < 0    ?  mret( mself, -n )
                   :    n === 0  ?  false
                   :    mret( isEven, n-1 )
                 )
-,  isEven = mfun( isOdd  // <<< `isOdd` is used here as `namespacekey`
+,  isEven = mfun( isOdd  // <<< `isOdd` is used here as `groupkey`
                   , "isEven"
                   , n => n < 0    ?  mret( mself, -n )
                   :      n === 0  ?  true
@@ -103,7 +127,7 @@ Self-recursion example:
 console.log( o.gcd( 2*3*5*17, 3*5*19 ) );  // 15 (3*5)
 ```
 
-No need for `namespacekey` here. Moreover, instead of:
+No need for `groupkey` here. Moreover, instead of:
 ```js
 mfun( (a,b,c) => ... )
 ```
