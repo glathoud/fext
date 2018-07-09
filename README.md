@@ -114,6 +114,21 @@ var isOdd = fx.mfun( function isOdd( n ) {
 console.log( isOdd( 8951531 ) ); // true ; no call stack issue
 ```
 
+### Shortcut
+
+Note that `fext === fext.mfun` as a shortcut for the simplest cases, especially in the Node.js context:
+
+```js
+var fx = require( '../fext' ).fext;
+
+var self_recursive_fun = fx( ... );
+```
+
+...and in the IE11 context, when relying one the `fext` namespace, this gives easy access to arrow functions:
+```js
+var sum_two = fext('(x,y) => x+y');
+```
+
 ## Methods
 
 Self-recursion example:
