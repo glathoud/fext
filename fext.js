@@ -1497,6 +1497,9 @@ var global, exports
 
     function split_args( s )
     {
+        if (!white_out_comments( s ).trim())
+            return [];
+        
         var arr = s.split( ',' );
         for (var i = arr.length; i--;)
         {
