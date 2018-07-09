@@ -62,25 +62,27 @@ var global, exports
 
     // Alternative: single namespace
 
-    global.fext = {
-        mret    : mret
-        , mfun  : mfun
-        , meth  : meth
-        , mfunD : mfunD
-        , methD : methD
-        , mself : mself
-    };
+    // `fext` itself is a shortcut for `mfun`
+    // https://github.com/glathoud/fext/issues/13
+    var fext = global.fext = mfun; 
 
-    Object.freeze  &&  Object.freeze( global.fext );
-
+    fext.mret  = mret;
+    fext.mfun  = mfun;
+    fext.meth  = meth;
+    fext.mfunD = mfunD;
+    fext.methD = methD;
+    fext.mself = mself;
+    
     // ---------- API: convenience tool
 
     mfun.log_to = log_to;
-    
+
     // ---------- API implementation
 
-    function mself() { 
-      throw new Error( 'I am just a symbol, not supposed to be called.' );
+    function mself()
+    { 
+        throw new Error
+        ( 'I am just a symbol, not supposed to be called.' );
     }
 
     var _debugging = false;

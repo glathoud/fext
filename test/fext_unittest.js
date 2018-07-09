@@ -2190,6 +2190,50 @@ acc == null  ?  mret( that.mself, n, 1 )\
                 return isOk;            
             }
 
+
+
+
+            , function fext_shortcut()
+            // https://github.com/glathoud/fext/issues/13
+            {
+                var fx = fext;
+
+                // Here: we use `fx` instead of `fx.mfun`
+                var gcd = fx( function (a, b) {
+                    return a > b  ?  fx.mret( fx.mself, a-b, b )
+                        :  a < b  ?  fx.mret( fx.mself, b-a, a )
+                        :  a;
+                })
+                , isOk_arr = [
+                    [1, 1, 1]
+                    , [2, 2, 2]
+                    , [2, 3, 1]
+                    , [2*3, 2, 2]
+                    , [2*3, 3, 3]
+                    , [2*5*17, 3*5*19, 5]
+                    , [2*3*5*17, 3*5*19, 3*5]
+                ]
+                    .map( function( abc ) {
+                        return gcd( abc[ 0 ], abc[ 1 ] ) === abc[ 2 ];
+                    })
+                , isOk = isOk_arr
+                    .every( function ( x ) { return x; } )
+                ;
+                return isOk;            
+                
+            }
+
+
+
+            , function fext_shortcut_simple_arrow()
+            // https://github.com/glathoud/fext/issues/13
+            {
+                var f = fext('(x,y) => x+y')
+                ,   isOk = 11 === f(10,1)
+                ;
+                return isOk;
+            }
+
         ]);
 
     } // end of function `get_test_arr()`
