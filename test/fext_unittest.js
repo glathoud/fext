@@ -53,7 +53,6 @@ var global, exports;
             :  []
 
         , result = es6_tests.concat( get_test_arr_es5() )
-            // xxx .filter( x => x.name.match( /sorted_search/ ) )
             .map( run_one_test )
         ;
         result.global = result_all;

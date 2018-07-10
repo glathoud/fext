@@ -8,3 +8,4 @@ DIRECTIONS.org
 *.pyc
 .*.sh
 node_modules
+package-lock.json

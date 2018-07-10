@@ -447,6 +447,11 @@ var global, exports
         // Convenience (esp. for `meth`)
         ret.getImpl = debug  ?  null  :  getImpl;
         
+        ret.getImplEval = debug
+            ?  function () { return ret; }
+        :   function () { return '(' + getImpl() + ')'; }
+        ;
+        
         return ret;
         
         // --- Details
@@ -919,10 +924,11 @@ var global, exports
                 ?  (new Function( 'return (' + f_or_s + ');' ))()
                 : f_or_s
             ;
-            meth_wrapper_dbg.getImpl = null; /*function () {
-                return dbg_f;
-            }*/
-
+            meth_wrapper_dbg.getImpl = null;
+            meth_wrapper_dbg.getImplEval = function () {
+                return meth_wrapper_dbg;
+            };
+            
             return meth_wrapper_dbg;
         }
 
@@ -1044,6 +1050,10 @@ var global, exports
             o[ name ] = meth_wrapper1;
             o[ name ].getImpl = debug
                 ?  null  :  meth_mfun.getImpl;
+
+            o[ name ].getImplEval = debug
+                ?  function () { return o[ name ].bind( o ); }
+            :  function () { return '(' + o[ name ].getImpl() + ')'; };
         }
 
         function meth_preprocess_argname_arr( argname_arr )
