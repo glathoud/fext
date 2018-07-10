@@ -437,15 +437,12 @@ var global, exports
             , new_body_gen : new_body_gen
         } );
 
-        if (debug)
-        {
-            // Leave the source code untouched for easier debugging.
-
-            var dbg_f = 'string' === typeof f_or_s
-                ?  (new Function( 'return (' + f_or_s + ');' ))()
-                : f_or_s
-            ;
-        }
+        // `debug` support: Leave the source code untouched for
+        // easier debugging.
+        var dbg_f = 'string' === typeof f_or_s
+            ?  (new Function( 'return (' + f_or_s + ');' ))()
+            : f_or_s
+        ;
         
         // Convenience (esp. for `meth`)
         ret.getImpl = debug  ?  getImpl_dbg  :  getImpl;
@@ -457,6 +454,9 @@ var global, exports
         var impl;
         function fext_wrapper( /*...arguments...*/ )
         {
+            if (_debugging)
+                return fext_wrapper_dbg.apply( this, arguments );
+            
             /*
               Create the implementation at the latest moment: 
               when all dependencies have been defined 
@@ -506,15 +506,17 @@ var global, exports
 
         function fext_wrapper_dbg()
         {
-            _debugging = debug;
-
+            var old_debugging = _debugging;
 	    var old_dbg_f = mself._current_dbg_f;
+            
+            _debugging  ||  (_debugging = debug);
             mself._current_dbg_f = dbg_f;
-
+            
             var ret = dbg_f.apply( this, arguments );
 	
             mself._current_dbg_f = old_dbg_f;
-            _debugging = false;
+            _debugging = old_debugging;
+
             return ret;
         }
         
