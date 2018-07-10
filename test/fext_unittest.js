@@ -53,7 +53,7 @@ var global, exports;
             :  []
 
         , result = es6_tests.concat( get_test_arr_es5() )
-            // xxx .filter( x => x.name.match(/sorted_search/))
+            // xxx .filter( x => x.name.match( /sorted_search/ ) )
             .map( run_one_test )
         ;
         result.global = result_all;
@@ -1844,15 +1844,11 @@ acc == null  ?  mret( that.mself, n, 1 )\
             
             , function debugging_tool_self_rec()
             {
-                /* Test implementation: we need to check gcd.getImpl(),
-                   hence the need for a separate function.
-                   
-                   In a real-life use case one would simply append a "D"
-                   as in "mfunD":
+                /* To debug, one simply appends a "D" as in "mfunD":
 
                    var gcd = mfunD( function gcd(a, b) { return ... } );
                 */
-
+                
                 function gcd_input_fun(a, b) {
                     return a > b  ?  mret( mself, a-b, b )
                         :  a < b  ?  mret( mself, b-a, a )
@@ -1875,10 +1871,10 @@ acc == null  ?  mret( that.mself, n, 1 )\
                 , isOk_result = isOk_arr
                     .every( function ( x ) { return x; } )
 
-                , isOk_impl = gcd.getImpl() === gcd_input_fun
+                , isOk_getImpl = gcd.getImpl == null
                 ;
                 
-                return isOk_result  &&  isOk_impl;
+                return isOk_result  &&  isOk_getImpl;
                 
             }
 
@@ -1940,11 +1936,8 @@ acc == null  ?  mret( that.mself, n, 1 )\
                 
                 ,   isOk_result = [-7, -1, 1, 3, 5, 37 ].every( isOdd )
                     && [-8, -2, 0, 2, 4, 6, 48 ].every( isEven )
-
-                , isOk_impl = isOdd.getImpl() === isOdd_input_fun
-                    &&  isEven.getImpl() === isEven_input_fun
                 ;
-                return isOk_result  &&  isOk_impl;
+                return isOk_result;
             }
             
             , function debugging_tool_mutual_recursion_real_life_use_case()
@@ -1964,21 +1957,53 @@ acc == null  ?  mret( that.mself, n, 1 )\
                 
                 ,   isOk_result = [-7, -1, 1, 3, 5, 37 ].every( isOdd )
                     && [-8, -2, 0, 2, 4, 6, 48 ].every( isEven )
+
+                ,   isOk_getImpl = isOdd.getImpl == null
+                    &&  isEven.getImpl == null
                 ;
-                return isOk_result;
+                return isOk_result  &&  isOk_getImpl;
             }
 
+            , function debugging_tool_stack_overflow()
+            {
+                function f_impl( n ) {
+                    return n < 0  ?  mret( mself, -n )
+                        :  n > 0  ?  mret( mself, n-1 )
+                        :  true;
+                }
+                
+                var f = mfun( f_impl )
+                ,   g = mfunD( f_impl)
 
+                ,   N = 1e6
+                , isOk_f = true === f( N )
+                , isOk_g = catch_error( function () { true === g( N ); } )
+                ;
+                return isOk_f  &&  isOk_g;
+                function catch_error( fun )
+                {
+                    try
+                    {
+                        fun();
+                        return false;
+                    }
+                    catch( e )
+                    {
+                        return true;
+                    }
+                    null.bug;
+                }
+            }
+
+            
+            
 
             
             
             , function meth_debugging_tool_self_rec()
             {
-                /* Test implementation: we need to check gcd.getImpl(),
-                   hence the need for a separate function.
-                   
-                   In a real-life use case one would simply append a "D"
-                   as in "methD".
+                /* 
+                   To debug, simply append a "D" as in "methD".
                 */
 
                 function gcd_input_fun(that, a, b) {
@@ -2004,21 +2029,16 @@ acc == null  ?  mret( that.mself, n, 1 )\
                 , isOk_result = isOk_arr
                     .every( function ( x ) { return x; } )
 
-                , isOk_impl = o.gcd.getImpl() === gcd_input_fun
+                , isOk_getImpl = o.gcd.getImpl == null
                 ;
-                return isOk_result  &&  isOk_impl;
+                return isOk_result  &&  isOk_getImpl;
                 
             }
-
+            
             , function meth_debugging_tool_mutual_recursion()
             {
-                /* Test implementation: we need to check isOdd.getImpl()
-                   and isEven.getImpl(), hence the need for separate
-                   functions.
-                   
-                   In a real-life use case one would simply append a "D"
-                   as in "methD".
-                   ;
+                /* 
+                   To debug, simply append a "D" as in "methD".
                 */
 
                 function isOdd_input_fun( that, n ) {
@@ -2042,8 +2062,8 @@ acc == null  ?  mret( that.mself, n, 1 )\
                 ,   isOk_result = [-7, -1, 1, 3, 5, 37 ].every( o.isOdd.bind( o ) )
                     && [-8, -2, 0, 2, 4, 6, 48 ].every( o.isEven.bind( o ) )
 
-                ,   isOk_impl = o.isOdd.getImpl() === isOdd_input_fun
-                    &&  o.isEven.getImpl() === isEven_input_fun
+                ,   isOk_impl = o.isOdd.getImpl == null
+                    &&  o.isEven.getImpl == null
                 ;
                 return isOk_result;
             }

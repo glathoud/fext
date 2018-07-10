@@ -443,9 +443,9 @@ var global, exports
             ?  (new Function( 'return (' + f_or_s + ');' ))()
             : f_or_s
         ;
-        
+
         // Convenience (esp. for `meth`)
-        ret.getImpl = debug  ?  getImpl_dbg  :  getImpl;
+        ret.getImpl = debug  ?  null  :  getImpl;
         
         return ret;
         
@@ -509,14 +509,27 @@ var global, exports
             var old_debugging = _debugging;
 	    var old_dbg_f = mself._current_dbg_f;
             
-            _debugging  ||  (_debugging = debug);
-            mself._current_dbg_f = dbg_f;
+            if (!debug)
+            {
+                throw new Error(
+                    'fext.js: to debug, please set mfunD/methD'
+                        + ' for "' + name + '" as well.'
+                );
+            }
             
-            var ret = dbg_f.apply( this, arguments );
-	
-            mself._current_dbg_f = old_dbg_f;
-            _debugging = old_debugging;
+            _debugging = debug;
+            mself._current_dbg_f = dbg_f;
 
+            try
+            {
+                var ret = dbg_f.apply( this, arguments );
+	    }
+            finally
+            {
+                mself._current_dbg_f = old_dbg_f;
+                _debugging = old_debugging;
+            }
+            
             return ret;
         }
         
@@ -906,9 +919,10 @@ var global, exports
                 ?  (new Function( 'return (' + f_or_s + ');' ))()
                 : f_or_s
             ;
-            meth_wrapper_dbg.getImpl = function () {
+            meth_wrapper_dbg.getImpl = null; /*function () {
                 return dbg_f;
-            };
+            }*/
+
             return meth_wrapper_dbg;
         }
 
@@ -952,26 +966,32 @@ var global, exports
             if (!already_debugging)
             {
                 // Top call (begin)
-                
+
+                var old_debugging = _debugging;
                 _debugging = this;
 
                 var old_dbg_f = mself._current_dbg_f;
                 mself._current_dbg_f = dbg_f;
             }
-            
-            var ret = dbg_f.apply(
-                this
-                , already_debugging
-                    ?  arguments
-                    :  [ this ].concat( [].slice.call( arguments ) )
-            );
-            
-            if (!already_debugging)
-            {
-                // Top call (end)
 
-                mself._current_dbg_f = old_dbg_f;
-                _debugging = false;
+            try
+            {
+                var ret = dbg_f.apply(
+                    this
+                    , already_debugging
+                        ?  arguments
+                        :  [ this ].concat( [].slice.call( arguments ) )
+                );
+            }
+            finally
+            {
+                if (!already_debugging)
+                {
+                    // Top call (end)
+                    
+                    mself._current_dbg_f = old_dbg_f;
+                    _debugging = old_debugging;
+                }
             }
 
             return ret;
@@ -1022,7 +1042,8 @@ var global, exports
                 , groupkey, a, b );
 
             o[ name ] = meth_wrapper1;
-            o[ name ].getImpl = meth_mfun.getImpl;
+            o[ name ].getImpl = debug
+                ?  null  :  meth_mfun.getImpl;
         }
 
         function meth_preprocess_argname_arr( argname_arr )
