@@ -307,7 +307,7 @@ For a complete example see:
 
 Code: [lib/sorted_search_closure.js](lib/sorted_search_closure.js)
 
-Tests: [lib/sorted_search_closure.js](lib/sorted_search_closure.js)
+Tests: [lib/sorted_search_closure_unittest.js](lib/sorted_search_closure_unittest.js)
 
 Excerpt:
 
