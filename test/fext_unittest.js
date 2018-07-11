@@ -120,9 +120,15 @@ var global, exports;
 
         var test_arr_sorted_search = global.get_test_arr_sorted_search
             ?  global.get_test_arr_sorted_search()
-            :  [];
+            :  []
 
-        return test_arr_sorted_search.concat( [
+        ,   test_arr_sorted_search_closure = global.get_test_arr_sorted_search_closure
+            ?  global.get_test_arr_sorted_search_closure()
+            :  []
+
+        ,   tmp = test_arr_sorted_search.concat( test_arr_sorted_search_closure )
+        ;
+        return tmp.concat( [
 
             function self_recursion_anonymous_gcd()
             {

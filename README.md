@@ -244,3 +244,378 @@ Either in the browser ([live instance](http://glat.info/fext/)) or in the comman
 Code: [lib/sorted_search.js](lib/sorted_search.js)
 
 Tests: [lib/sorted_search_unittest.js](lib/sorted_search_unittest.js)
+
+The code in that example shows an issue when having to pass too many
+parameters around: the code contains 5 times the same list of
+parameters, as in the code excerpt:
+
+```js
+
+var improveFirst = mfun( improveFirst )
+,   improveLast  = mfun( improveFirst, improveLast )
+;   
+
+function sortedSearch(sortedArray, x, /*?fun?*/less, /*?fun?*/equal)
+{
+   // ...
+   return improveFirst(
+       sortedArray, x, less, equal, isFirstFound, isLastFound
+       , first_found, last_found, i, j, imax, jmin
+   );     
+}
+
+function improveFirst(
+    sortedArray, x, less, equal, isFirstFound, isLastFound
+    , first_found, last_found, i, j, imax, jmin
+)
+{
+    // ...
+
+    return mret(
+        improveLast
+        , sortedArray, x, less, equal, isFirstFound, isLastFound
+        , first_found, last_found, i, j, imax, jmin
+    );
+}
+
+function improveLast(
+    sortedArray, x, less, equal, isFirstFound, isLastFound
+    , first_found, last_found, i, j, imax, jmin
+)
+{
+    // ...
+
+    return mret(
+        improveFirst
+        , sortedArray, x, less, equal, isFirstFound, isLastFound
+        , first_found, last_found, i, j, imax, jmin
+    );
+}
+
+```
+
+The straightforward answer to this issue would be to put all
+parameters in an object, but this leads to a performance degradation
+(see "Performance cost of passing parameters through an object"
+further below).
+
+An alternative is to declare the parameters only once, use closure
+and `eval` so that the generated code has access to the parameters
+through the closure.
+
+For a complete example see:
+
+Code: [lib/sorted_search_closure.js](lib/sorted_search_closure.js)
+
+Tests: [lib/sorted_search_closure.js](lib/sorted_search_closure.js)
+
+Excerpt:
+
+```js
+
+    // First "declare" all functions so that co-dependencies can be
+    // solved.
+    //
+    // Use `mfunD` to debug
+    var improveFirst = mfun( improveFirst )
+    ,   improveLast  = mfun( improveFirst, improveLast )
+    ;
+    
+    // Now we can implement them, using evil access to the local
+    // lexical scope so that we do not need to write parameters
+    // repeatedly 5 times (see above `function sortedSearch(...)`).
+    improveFirst = eval( improveFirst.getEvalImpl() );
+    improveLast  = eval( improveLast.getEvalImpl() );
+    
+    var first_found
+    ,    last_found
+    ,             i
+    ,             j
+    ,          imax
+    ,          jmin
+    ;
+    var sortedArray, x, less, equal;
+    
+    function sortedSearchLocal
+    (in_sortedArray, in_x, /*?fun?*/in_less, /*?fun?*/in_equal)
+    /*
+      In a sorted array, search for first & last occurences of `x`.
+      
+      If `x` found, return `[ first_index, last_index ]` (integers).
+      
+      If `x` not found, return `null`.
+    */
+    {
+        // ...
+        
+        return improveFirst();
+    }
+
+    function improveFirst()
+    {
+        // ...
+
+        return mret( improveLast );
+    }
+
+    function improveLast()
+    {
+        // ...
+        return mret( improveFirst );
+    }
+```
+
+## Performance cost of passing parameters through an object
+
+To measure the extra overhead of wrapping parameters inside an
+object, we use the isOdd/isEven case, since each function does very
+little in itself. First the results, then the detailed
+implementations.
+
+| Browser     | isOdd_mfun  | isOdd_mfun_obj | isOdd_mfun_obj_inplace |
+| :---        | ---:        | ---:           | ---:                   |
+| Firefox 60  | 89.0 (5.4)  | 24.8 (1.6)     | 19.3 (0.3)             |
+|             | [8.02e+8]   | [2.24e+8]      | [1.74e+8]              |
+| ----        | ----        | ----           | ----                   |
+| Chromium 66 | 100.0 (2.3) | 47.9 (0.7)     | 87.6 (0.8)             |
+|             | [8.35e+8]   | [4.00e+8]      | [7.31e+8]              |
+|             |             |                |                        |
+
+
+| Browser     | isOdd_meth | isOdd_meth_obj | isOdd_meth_obj_inplace |
+| :---        | ---:       | ---:           | ---:                   |
+| Firefox 60  | 94.0 (2.1) | 26.3 (0.5)     | 18.7 (0.5)             |
+|             | [8.47e+8]  | [2.37e+8]      | [1.69e+8]              |
+| ----        | ----       | ----           | ----                   |
+| Chromium 66 | 99.2 (1.7) | 45.6 (0.2)     | 87.9 (0.9)             |
+|             | [8.28e+8]  | [3.80e+8]      | [7.34e+8]              |
+|             |            |                |                        |
+
+To obtain the best performance, it is preferable to pass parameters
+separately: `isOdd_mfun` and `isOdd_meth`. If there are too many
+parameters, one can use closure, see `sortedSearchClosure` above.
+
+### `*_obj` implementations:
+
+```js
+function isOdd_mfun_obj( niter )
+{
+    // The default `namespacekey` is the returned
+    // function `var isOdd` in this case.
+    var isOdd = mfun( function isOdd( o ) {
+        let n = o.n;
+        if (n > 0)
+        {
+            o = { n : n-1 };
+            return mret( isEven, o );
+        }
+        else if (n < 0)
+        {
+            o = { n : -n };
+            return mret( mself, o );
+        }
+        else
+        {
+            return false;                
+        }
+    })
+
+    ,  isEven = mfun( isOdd, function isEven( o ) {
+        let n = o.n;
+        if (n > 0)
+        {
+            o = { n : n-1 };
+            return mret( isOdd, o );
+        }
+        else if (n < 0)
+        {
+            o = { n : -n };
+            return mret( mself, o );
+        }
+        else
+        {
+            return true;
+        }
+    })
+    ;
+    // Sanity check
+    isOdd_isEven_check( isOdd, isEven, function (n) { return {n:n}; } );
+    
+    var result = isOdd( { n : niter } ); // <<< speedtest
+
+    // Sanity check
+    result === (niter % 2 !== 0)  ||  null.bug;
+}
+
+
+function isOdd_meth_obj( niter )
+{
+    var q = {
+        // The default `namespacekey` is the returned
+        // function `var isOdd` in this case.
+        isOdd : meth( 'isOdd', function( that, o ) {
+            let n = o.n;
+            if (n > 0)
+            {
+                o = { n : n-1 };
+                return mret( that.isEven, o );
+            }
+            else if (n < 0)
+            {
+                o = { n : -n };
+                return mret( that.mself, o );
+            }
+            else
+            {
+                return false;                
+            }
+        })
+        
+        , isEven : meth( 'isEven', function( that, o ) {
+            let n = o.n;
+            if (n > 0)
+            {
+                o = { n : n-1 };
+                return mret( that.isOdd, o );
+            }
+            else if (n < 0)
+            {
+                o = { n : -n };
+                return mret( that.mself, o );
+            }
+            else
+            {
+                return true;
+            }
+            ;
+        })
+    };
+    
+    // Sanity check
+    isOdd_isEven_check( q.isOdd.bind( q )
+                        , q.isEven.bind( q )
+                        , function (n) { return {n:n}; }
+                      );
+
+    var result = q.isOdd( { n : niter } ); // <<< speedtest
+
+    // Sanity check
+    result === (niter % 2 !== 0)  ||  null.bug;
+}
+
+
+
+
+
+
+
+
+
+
+
+function isOdd_mfun_obj_inplace( niter )
+{
+    // The default `namespacekey` is the returned
+    // function `var isOdd` in this case.
+    var isOdd = mfun( function isOdd( o ) {
+        let n = o.n;
+        if (n > 0)
+        {
+            o.n--;
+            return mret( isEven, o );
+        }
+        else if (n < 0)
+        {
+            o.n = -n;
+            return mret( mself, o );
+        }
+        else
+        {
+            return false;                
+        }
+    })
+
+    ,  isEven = mfun( isOdd, function isEven( o ) {
+        let n = o.n;
+        if (n > 0)
+        {
+            o.n--;
+            return mret( isOdd, o );
+        }
+        else if (n < 0)
+        {
+            o.n = -n;
+            return mret( mself, o );
+        }
+        else
+        {
+            return true;
+        }
+    })
+    ;
+    // Sanity check
+    isOdd_isEven_check( isOdd, isEven, function (n) { return {n:n}; } );
+    
+    var result = isOdd( { n : niter } ); // <<< speedtest
+
+    // Sanity check
+    result === (niter % 2 !== 0)  ||  null.bug;
+}
+
+
+function isOdd_meth_obj_inplace( niter )
+{
+    var q = {
+        // The default `namespacekey` is the returned
+        // function `var isOdd` in this case.
+        isOdd : meth( 'isOdd', function( that, o ) {
+            let n = o.n;
+            if (n > 0)
+            {
+                o.n--;
+                return mret( that.isEven, o );
+            }
+            else if (n < 0)
+            {
+                o.n = -n;
+                return mret( that.mself, o );
+            }
+            else
+            {
+                return false;                
+            }
+        })
+        
+        , isEven : meth( 'isEven', function( that, o ) {
+            let n = o.n;
+            if (n > 0)
+            {
+                o.n--;
+                return mret( that.isOdd, o );
+            }
+            else if (n < 0)
+            {
+                o.n = -n;
+                return mret( that.mself, o );
+            }
+            else
+            {
+                return true;
+            }
+            ;
+        })
+    };
+    
+    // Sanity check
+    isOdd_isEven_check( q.isOdd.bind( q )
+                        , q.isEven.bind( q )
+                        , function (n) { return {n:n}; }
+                      );
+
+    var result = q.isOdd( { n : niter } ); // <<< speedtest
+
+    // Sanity check
+    result === (niter % 2 !== 0)  ||  null.bug;
+}
+
+```

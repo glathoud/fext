@@ -221,8 +221,12 @@ console.log( isOdd( 8951531 ) ); // true ; no call stack issue
         sorted array that has duplicates:</p>
 
       <ul>
-        <li>Code: <a href="#lib_sorted_search_js">lib/sorted_search.js</a></li>
-        <li>Unittest: <a href="#lib_sorted_search_js__unit_tests">lib/sorted_search.js: unit tests</a></li>
+        <li>Code: <a href="#lib_sorted_search_js">lib/sorted_search.js</a>
+          <ul><li>Unittest: <a href="#lib_sorted_search_js__unit_tests">lib/sorted_search.js: unit tests</a></li></ul>
+        </li>
+        <li>Code: <a href="#lib_sorted_search_closure_js">lib/sorted_search_closure.js</a>
+          <ul><li>Unittest: <a href="#lib_sorted_search_closure_js__unit_tests">lib/sorted_search_closure.js: unit tests</a></li></ul>
+        </li>
       </ul>
       
     </section>
@@ -341,6 +345,10 @@ function TailCall(arr)
       <h3>Annex B: More code</h3>
 
       <p>On <a href="https://github.com/glathoud/fext/">GitHub</a> and here below.</p>
+
+      <p id="toccont">
+        <ul id="toc"></ul>
+      </p>
       
     </section>
 
@@ -363,8 +371,10 @@ function TailCall(arr)
     
     <script type="text/javascript" src="fext.js"></script>
     <script type="text/javascript" src="lib/sorted_search.js"></script>
+    <script type="text/javascript" src="lib/sorted_search_closure.js"></script>
 
     <script type="text/javascript" src="lib/sorted_search_unittest.js"></script>
+    <script type="text/javascript" src="lib/sorted_search_closure_unittest.js"></script>
     <script type="text/javascript" src="test/fext_unittest.js"></script>
     <script type="text/javascript" src="test/fext_unittest_es6.js"></script>
 
@@ -387,7 +397,9 @@ function TailCall(arr)
         if (cstmpl  &&  window.source_code_0  &&  window.source_code_1)
         {
           write_source_code( source_code_0, "lib/sorted_search.js" )
+          write_source_code( source_code_0, "lib/sorted_search_closure.js" )
           write_source_code( source_code_1, get_test_arr_sorted_search, "lib/sorted_search.js: unit tests" );
+          write_source_code( source_code_1, get_test_arr_sorted_search_closure, "lib/sorted_search_closure.js: unit tests" );
         }
         else
         {
