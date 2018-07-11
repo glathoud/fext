@@ -336,7 +336,7 @@ Excerpt:
     ;
     var sortedArray, x, less, equal;
     
-    function sortedSearchLocal
+    function sortedSearchClosure
     (in_sortedArray, in_x, /*?fun?*/in_less, /*?fun?*/in_equal)
     /*
       In a sorted array, search for first & last occurences of `x`.
@@ -393,7 +393,8 @@ implementations.
 
 To obtain the best performance, it is preferable to pass parameters
 separately: `isOdd_mfun` and `isOdd_meth`. If there are too many
-parameters, one can use closure, see `sortedSearchClosure` above.
+parameters, one can use closure, see `sortedSearchClosure` just
+above.
 
 ### `*_obj` implementations:
 
