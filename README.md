@@ -399,7 +399,7 @@ above.
 ### `*_obj` implementations:
 
 For the full details, see the `*_obj` functions in
-[./test/fext_unittest.js](./test/fext_unittest.js)
+[./test/fext_speedtest.js](./test/fext_speedtest.js)
 
 Excerpt:
 ```js
