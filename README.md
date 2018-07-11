@@ -398,6 +398,10 @@ above.
 
 ### `*_obj` implementations:
 
+For the full details, see the `*_obj` functions in
+[./test/fext_unittest.js](./test/fext_unittest.js)
+
+Excerpt:
 ```js
 function isOdd_mfun_obj( niter )
 {
@@ -448,72 +452,6 @@ function isOdd_mfun_obj( niter )
     result === (niter % 2 !== 0)  ||  null.bug;
 }
 
-
-function isOdd_meth_obj( niter )
-{
-    var q = {
-        // The default `namespacekey` is the returned
-        // function `var isOdd` in this case.
-        isOdd : meth( 'isOdd', function( that, o ) {
-            let n = o.n;
-            if (n > 0)
-            {
-                o = { n : n-1 };
-                return mret( that.isEven, o );
-            }
-            else if (n < 0)
-            {
-                o = { n : -n };
-                return mret( that.mself, o );
-            }
-            else
-            {
-                return false;                
-            }
-        })
-        
-        , isEven : meth( 'isEven', function( that, o ) {
-            let n = o.n;
-            if (n > 0)
-            {
-                o = { n : n-1 };
-                return mret( that.isOdd, o );
-            }
-            else if (n < 0)
-            {
-                o = { n : -n };
-                return mret( that.mself, o );
-            }
-            else
-            {
-                return true;
-            }
-            ;
-        })
-    };
-    
-    // Sanity check
-    isOdd_isEven_check( q.isOdd.bind( q )
-                        , q.isEven.bind( q )
-                        , function (n) { return {n:n}; }
-                      );
-
-    var result = q.isOdd( { n : niter } ); // <<< speedtest
-
-    // Sanity check
-    result === (niter % 2 !== 0)  ||  null.bug;
-}
-
-
-
-
-
-
-
-
-
-
-
 function isOdd_mfun_obj_inplace( niter )
 {
     // The default `namespacekey` is the returned
@@ -562,61 +500,4 @@ function isOdd_mfun_obj_inplace( niter )
     // Sanity check
     result === (niter % 2 !== 0)  ||  null.bug;
 }
-
-
-function isOdd_meth_obj_inplace( niter )
-{
-    var q = {
-        // The default `namespacekey` is the returned
-        // function `var isOdd` in this case.
-        isOdd : meth( 'isOdd', function( that, o ) {
-            let n = o.n;
-            if (n > 0)
-            {
-                o.n--;
-                return mret( that.isEven, o );
-            }
-            else if (n < 0)
-            {
-                o.n = -n;
-                return mret( that.mself, o );
-            }
-            else
-            {
-                return false;                
-            }
-        })
-        
-        , isEven : meth( 'isEven', function( that, o ) {
-            let n = o.n;
-            if (n > 0)
-            {
-                o.n--;
-                return mret( that.isOdd, o );
-            }
-            else if (n < 0)
-            {
-                o.n = -n;
-                return mret( that.mself, o );
-            }
-            else
-            {
-                return true;
-            }
-            ;
-        })
-    };
-    
-    // Sanity check
-    isOdd_isEven_check( q.isOdd.bind( q )
-                        , q.isEven.bind( q )
-                        , function (n) { return {n:n}; }
-                      );
-
-    var result = q.isOdd( { n : niter } ); // <<< speedtest
-
-    // Sanity check
-    result === (niter % 2 !== 0)  ||  null.bug;
-}
-
 ```
