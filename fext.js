@@ -116,7 +116,9 @@ var global, exports
         {
             throw new Error
             (
-                'fext: wrap your function with `mfun`. '
+                'fext: (1) wrap your function with `mfun`. '
+                    + ' Do not forget `return` in your tail calls, '
+                    + ' as in `return mret(...)`'
                     + ' See https://github.com/glathoud/fext and '
                     + 'http://glat.info/fext for examples.'
             );

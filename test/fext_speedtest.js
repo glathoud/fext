@@ -157,7 +157,7 @@ var global, exports;
     function get_speedtest_arr()
     {
         return [
-
+/*xxx
             {
                 niter_init : 1e5
                 , runner   : isOdd_mfun
@@ -176,10 +176,24 @@ var global, exports;
             , {
                 niter_init : 1e3
                 , runner   : isOdd_tailtramp
-            }
+            }*/
         ].concat( !ALL ? [] : [
 
+            // Major difference: pass parameters as an object
+
             {
+                niter_init : 1e4
+                , runner   : isOdd_mfun_obj
+            }
+            
+            , {
+                niter_init : 1e4
+                , runner   : isOdd_meth_obj
+            }
+            
+            // Variants
+            
+            , {
                 niter_init : 1e5
                 , runner   : isOdd_meth_proto
             }
@@ -256,7 +270,7 @@ var global, exports;
                 case 0:
 
                     // --- metafun isOdd
-                    // --- ( self,n)
+                    // --- ( mself,n)
 
                     {
                         if (n > 0)
@@ -279,7 +293,7 @@ var global, exports;
                 case 1:
 
                     // --- metafun isEven
-                    // --- ( self,n)
+                    // --- ( mself,n)
 
                     {
                         if (n > 0)
@@ -318,7 +332,7 @@ var global, exports;
                 return mret( isEven, n-1 );
 
             if (n < 0)
-                return mret( self, -n );
+                return mret( mself, -n );
 
             return false;
         })
@@ -327,7 +341,7 @@ var global, exports;
                 return mret( isOdd, n-1 );
 
             if (n < 0)
-                return mret( self, -n );
+                return mret( mself, -n );
 
             return true;
         })
@@ -351,13 +365,13 @@ var global, exports;
 
         ,   isOdd = mfun.call( opt, function isOdd( n ) {
             return n > 0  ?  mret( isEven, n-1 )
-                :  n < 0  ?  mret( self, -n )
+                :  n < 0  ?  mret( mself, -n )
                 :  false
             ;
         })
         ,  isEven = mfun.call( opt, isOdd, function isEven( n ) {
             return n > 0  ?  mret( isOdd, n-1 )
-                :  n < 0  ?  mret( self, -n )
+                :  n < 0  ?  mret( mself, -n )
                 :  true
             ;
         })
@@ -381,13 +395,13 @@ var global, exports;
 
         ,   isOdd = mfun.call( opt, function isOdd( n ) {
             return n > 0  ?  mret( isEven, n-1 )
-                :  n < 0  ?  mret( self, -n )
+                :  n < 0  ?  mret( mself, -n )
                 :  false
             ;
         })
         ,  isEven = mfun.call( opt, isOdd, function isEven( n ) {
             return n > 0  ?  mret( isOdd, n-1 )
-                :  n < 0  ?  mret( self, -n )
+                :  n < 0  ?  mret( mself, -n )
                 :  true
             ;
         })
@@ -412,13 +426,13 @@ var global, exports;
 
         ,   isOdd = mfun.call( opt, function isOdd( n ) {
             return n > 0  ?  mret( isEven, n-1 )
-                :  n < 0  ?  mret( self, -n )
+                :  n < 0  ?  mret( mself, -n )
                 :  false
             ;
         })
         ,  isEven = mfun.call( opt, isOdd, function isEven( n ) {
             return n > 0  ?  mret( isOdd, n-1 )
-                :  n < 0  ?  mret( self, -n )
+                :  n < 0  ?  mret( mself, -n )
                 :  true
             ;
         })
@@ -442,13 +456,13 @@ var global, exports;
 
         ,   isOdd = mfun.call( opt, function isOdd( n ) {
             return n > 0  ?  mret( isEven, n-1 )
-                :  n < 0  ?  mret( self, -n )
+                :  n < 0  ?  mret( mself, -n )
                 :  false
             ;
         })
         ,  isEven = mfun.call( opt, isOdd, function isEven( n ) {
             return n > 0  ?  mret( isOdd, n-1 )
-                :  n < 0  ?  mret( self, -n )
+                :  n < 0  ?  mret( mself, -n )
                 :  true
             ;
         })
@@ -473,13 +487,13 @@ var global, exports;
 
         ,   isOdd = mfun.call( opt, function isOdd( n ) {
             return n > 0  ?  mret( isEven, n-1 )
-                :  n < 0  ?  mret( self, -n )
+                :  n < 0  ?  mret( mself, -n )
                 :  false
             ;
         })
         ,  isEven = mfun.call( opt, isOdd, function isEven( n ) {
             return n > 0  ?  mret( isOdd, n-1 )
-                :  n < 0  ?  mret( self, -n )
+                :  n < 0  ?  mret( mself, -n )
                 :  true
             ;
         })
@@ -502,13 +516,13 @@ var global, exports;
 
         ,   isOdd = mfun.call( opt, function isOdd( n ) {
             return n > 0  ?  mret( isEven, n-1 )
-                :  n < 0  ?  mret( self, -n )
+                :  n < 0  ?  mret( mself, -n )
                 :  false
             ;
         })
         ,  isEven = mfun.call( opt, isOdd, function isEven( n ) {
             return n > 0  ?  mret( isOdd, n-1 )
-                :  n < 0  ?  mret( self, -n )
+                :  n < 0  ?  mret( mself, -n )
                 :  true
             ;
         })
@@ -533,13 +547,13 @@ var global, exports;
         // function `var isOdd` in this case.
         var isOdd = mfun( function isOdd( n ) {
             return n > 0  ?  mret( isEven, n-1 )
-                :  n < 0  ?  mret( self, -n )
+                :  n < 0  ?  mret( mself, -n )
                 :  false
             ;
         })
         ,  isEven = mfun( isOdd, function isEven( n ) {
             return n > 0  ?  mret( isOdd, n-1 )
-                :  n < 0  ?  mret( self, -n )
+                :  n < 0  ?  mret( mself, -n )
                 :  true
             ;
         })
@@ -561,14 +575,14 @@ var global, exports;
             // function `var isOdd` in this case.
             isOdd : meth( 'isOdd', function( that, n ) {
                 return n > 0  ?  mret( that.isEven, n-1 )
-                    :  n < 0  ?  mret( that.self, -n )
+                    :  n < 0  ?  mret( that.mself, -n )
                     :  false
                 ;
             })
             
             , isEven : meth( 'isEven', function( that, n ) {
                 return n > 0  ?  mret( that.isOdd, n-1 )
-                    :  n < 0  ?  mret( that.self, -n )
+                    :  n < 0  ?  mret( that.mself, -n )
                     :  true
                 ;
             })
@@ -585,20 +599,20 @@ var global, exports;
         result === (niter % 2 !== 0)  ||  null.bug;
     }
 
-
+    
 
     function isOdd_meth_proto( niter )
     {
         function C() {}
         C.prototype.isOdd = meth( 'isOdd', function( that, n ) {
             return n > 0  ?  mret( that.isEven, n-1 )
-                :  n < 0  ?  mret( that.self, -n )
+                :  n < 0  ?  mret( that.mself, -n )
                 :  false
             ;
         });
         C.prototype.isEven = meth( 'isEven', function( that, n ) {
             return n > 0  ?  mret( that.isOdd, n-1 )
-                :  n < 0  ?  mret( that.self, -n )
+                :  n < 0  ?  mret( that.mself, -n )
                 :  true
             ;
         });
@@ -616,6 +630,133 @@ var global, exports;
         result === (niter % 2 !== 0)  ||  null.bug;
     }
 
+
+
+
+
+
+    function isOdd_mfun_obj( niter )
+    {
+        // The default `namespacekey` is the returned
+        // function `var isOdd` in this case.
+        var isOdd = mfun( function isOdd( o ) {
+            let n = o.n;
+            if (n > 0)
+            {
+                o = { n : n-1 };
+                return mret( isEven, o );
+            }
+            else if (n < 0)
+            {
+                o = { n : -n };
+                return mret( mself, o );
+            }
+            else
+            {
+                return false;                
+            }
+        })
+
+        ,  isEven = mfun( isOdd, function isEven( o ) {
+            let n = o.n;
+            if (n > 0)
+            {
+                o = { n : n-1 };
+                return mret( isOdd, o );
+            }
+            else if (n < 0)
+            {
+                o = { n : -n };
+                return mret( mself, o );
+            }
+            else
+            {
+                return true;
+            }
+        })
+        ;
+        // Sanity check
+        isOdd_isEven_check( isOdd, isEven, function (n) { return {n:n}; } );
+        
+        var result = isOdd( { n : niter } ); // <<< speedtest
+
+        // Sanity check
+        result === (niter % 2 !== 0)  ||  null.bug;
+    }
+
+
+    function isOdd_meth_obj( niter )
+    {
+        var q = {
+            // The default `namespacekey` is the returned
+            // function `var isOdd` in this case.
+            isOdd : meth( 'isOdd', function( that, o ) {
+                let n = o.n;
+                if (n > 0)
+                {
+                    o = { n : n-1 };
+                    mret( that.isEven, o );
+                }
+                else if (n < 0)
+                {
+                    o = { n : -n };
+                    mret( that.mself, o );
+                }
+                else
+                {
+                    return false;                
+                }
+            })
+            
+            , isEven : meth( 'isEven', function( that, o ) {
+                let n = o.n;
+                if (n > 0)
+                {
+                    o = { n : n-1 };
+                    mret( that.isOdd, o );
+                }
+                else if (n < 0)
+                {
+                    o = { n : -n };
+                    mret( that.mself, o );
+                }
+                else
+                {
+                    return true;
+                }
+                ;
+            })
+        };
+        
+        // Sanity check
+        isOdd_isEven_check( q.isOdd.bind( q )
+                            , q.isEven.bind( q )
+                            , function (n) { return {n:n}; }
+                          );
+
+        var result = q.isOdd( { n : niter } ); // <<< speedtest
+
+        // Sanity check
+        result === (niter % 2 !== 0)  ||  null.bug;
+    }
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
 
 
 
@@ -769,10 +910,11 @@ var global, exports;
     
     // ---------- Private details ----------
 
-    function isOdd_isEven_check( isOdd, isEven )
+    function isOdd_isEven_check( isOdd, isEven, preprocess )
     {
-        [-7, -1, 1, 3, 5, 37 ].every( isOdd )
-            && [-8, -2, 0, 2, 4, 6, 48 ].every( isEven )
+        preprocess  ||  (preprocess = function ( x ) { return x; });
+        [-7, -1, 1, 3, 5, 37 ].map( preprocess ).every( isOdd )
+            && [-8, -2, 0, 2, 4, 6, 48 ].map( preprocess ).every( isEven )
             ||
             null.bug;
     }
