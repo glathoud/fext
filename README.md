@@ -379,7 +379,6 @@ implementations.
 | ----        | ----        | ----           | ----                   |
 | Chromium 66 | 100.0 (2.3) | 47.9 (0.7)     | 87.6 (0.8)             |
 |             | [8.35e+8]   | [4.00e+8]      | [7.31e+8]              |
-|             |             |                |                        |
 
 
 | Browser     | isOdd_meth | isOdd_meth_obj | isOdd_meth_obj_inplace |
@@ -389,7 +388,6 @@ implementations.
 | ----        | ----       | ----           | ----                   |
 | Chromium 66 | 99.2 (1.7) | 45.6 (0.2)     | 87.9 (0.9)             |
 |             | [8.28e+8]  | [3.80e+8]      | [7.34e+8]              |
-|             |            |                |                        |
 
 To obtain the best performance, it is preferable to pass parameters
 separately: `isOdd_mfun` and `isOdd_meth`. If there are too many
