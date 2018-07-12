@@ -41,6 +41,7 @@ var global, exports;
         var result_all = true
         ,   n_passed   = 0
         ,   log_to = mfun.log_to
+        ,   use_try_catch = false  // set to `false` for easier debugging
         ;
 
         get_test_arr_es6 ||  (get_test_arr_es6 = global.get_test_arr_es6);
@@ -53,6 +54,7 @@ var global, exports;
             :  []
 
         , result = es6_tests.concat( get_test_arr_es5() )
+            // .filter( function ( x ) { return x.name.match( /^graph_recursion_test$/ ); } )
             .map( run_one_test )
         ;
         result.global = result_all;
@@ -76,10 +78,17 @@ var global, exports;
                 return '';
             
             var isOk;
-            try {
-                isOk = f();
-            } catch (e) {
-                isOk = '' + e;
+            if (use_try_catch)
+            {            
+                try {
+                    isOk = f();
+                } catch (e) {
+                    isOk = '' + e;
+                }
+            }
+            else
+            {
+                isOk = f();                
             }
 
             var passed = true === isOk;
@@ -722,8 +731,7 @@ return n < 0  ?  mret( isEven, -n )\
                         :  x < 0  ?  mret( is1mod3, x+3 )
                         :  null.invalid_x;
                 })
-
-                ,  arr = [
+                ,   arr = [
                     true === is0mod3( 0 )
                     , true === is1mod3( 1 )
                     , true === is2mod3( 2 )

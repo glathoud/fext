@@ -85,7 +85,18 @@ var global, exports
         ( 'I am just a symbol, not supposed to be called.' );
     }
 
-    var _debugging = false;
+    var _debugging = false
+
+    // Detect Nashorn. Reason: limit expansion for better Nashorn
+    // support:
+    // 
+    // https://github.com/glathoud/fext/issues/14 (regression)
+    // https://github.com/glathoud/fext/issues/8
+    // https://bugs.java.com/bugdatabase/view_bug.do?bug_id=JDK-8205600
+    ,   _usingNashorn = typeof document === 'undefined'  &&  typeof window === 'undefined'
+    // https://stackoverflow.com/questions/37718661/how-can-i-determine-which-javascript-engine-rhino-or-nashorn-is-running-my-code
+        &&  typeof Java !== "undefined" && Java && typeof Java.type === "function"
+    ;
 
     function mret()
     {
@@ -269,7 +280,7 @@ var global, exports
         
         // ?integer>0?: number of expansion levels
         var expansion_me = dflt( this  &&  this.expansion
-                                 , 4
+                                 , _usingNashorn  ?  2  :  4
                                );
 
         // ?function?: Mostly for internal use (e.g. `meth()`)
@@ -447,7 +458,7 @@ var global, exports
         // engines (e.g. nashorn as of 2018-07) and thus better
         // integration into a variety of new and old JS build
         // systems.   https://github.com/glathoud/fext/issues/14
-        // 
+        //
         var dbg_f = 'string' === typeof f_or_s
             ?  (new Function( 'return (function '+name+'( '+argname_csv+') {'+s_body+'});' ))()
             : f_or_s
@@ -1101,9 +1112,7 @@ var global, exports
 
     function log_to( what /*, ... args... */ )
     {
-        if ('undefined' !== typeof console
-            &&  'function' === typeof console[ what ]
-           )
+        if ('undefined' !== typeof console)
         {
             // Browsers
             console[ what ].apply( console
