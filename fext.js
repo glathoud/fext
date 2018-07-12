@@ -441,8 +441,15 @@ var global, exports
 
         // `debug` support: Leave the source code untouched for
         // easier debugging.
+        //
+        // Note that here as well we convert arrow functions back to
+        // the `function` notation, for better support of older JS
+        // engines (e.g. nashorn as of 2018-07) and thus better
+        // integration into a variety of new and old JS build
+        // systems.   https://github.com/glathoud/fext/issues/14
+        // 
         var dbg_f = 'string' === typeof f_or_s
-            ?  (new Function( 'return (' + f_or_s + ');' ))()
+            ?  (new Function( 'return (function '+name+'( '+argname_csv+') {'+s_body+'});' ))()
             : f_or_s
         ;
 
