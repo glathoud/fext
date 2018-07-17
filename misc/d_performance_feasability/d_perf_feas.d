@@ -1,4 +1,5 @@
 #!/usr/bin/env rdmd
+// -*- coding: utf-8 -*-
 
 import std.datetime.stopwatch : benchmark, StopWatch;
 import std.stdio;
@@ -7,44 +8,50 @@ enum N = 599999999;
 enum BN = 10;  // 1 for a quick test
 
 /*
-2018-06-22 
+ldc2 --version
+LDC - the LLVM D compiler (1.10.0):
+  based on DMD v2.080.1 and LLVM 6.0.0
 
-$ rm *.o *.bin 2>/dev/null ; dmd -inline d_perf_feas.d  -ofd_perf_feas.bin ; d_perf_feas.bin
+rm *.o *.bin 2>/dev/null ; ldc2 -O d_perf_feas.d  -ofd_perf_feas.bin ; d_perf_feas.bin
 N:  599999999
 BN: 10
 
-13 secs, 49 ms, 879 μs, and 8 hnsecs
-14 secs, 18 ms, 433 μs, and 8 hnsecs
-13 secs, 805 ms, 68 μs, and 1 hnsec
-14 secs, 637 ms, 992 μs, and 4 hnsecs
+2 secs, 326 ms, 428 μs, and 9 hnsecs
+384 ms, 113 μs, and 8 hnsecs
+1 sec, 172 ms, 698 μs, and 8 hnsecs
+785 ms, 708 μs, and 5 hnsecs
 
-21 secs, 999 ms, and 231 μs
-13 secs, 438 ms, 473 μs, and 4 hnsecs
-13 secs, 347 ms, 329 μs, and 4 hnsecs
-13 secs, 464 ms, 620 μs, and 9 hnsecs
-13 secs, 625 ms, 338 μs, and 7 hnsecs
-17 secs, 264 ms, 555 μs, and 3 hnsecs
-18 secs, 267 ms, 21 μs, and 3 hnsecs
-22 secs, 15 ms, 540 μs, and 3 hnsecs
+7 secs, 751 ms, 360 μs, and 4 hnsecs
+2 secs, 492 ms, 150 μs, and 3 hnsecs
+2 secs, 627 ms, 762 μs, and 8 hnsecs
+4 secs, 231 ms, 4 μs, and 9 hnsecs
+7 secs, 541 ms, 930 μs, and 1 hnsec
+2 secs, 481 ms, 479 μs, and 9 hnsecs
+2 secs, 630 ms, 64 μs, and 5 hnsecs
+3 secs, 823 ms, 198 μs, and 3 hnsecs
 
+---
+dmd --version
+DMD64 D Compiler v2.080.1
 
-$ rm *.o *.bin 2>/dev/null ; dmd -inline d_perf_feas.d  -ofd_perf_feas.bin ; d_perf_feas.bin
+rm *.o *.bin 2>/dev/null ; dmd -O -inline d_perf_feas.d  -ofd_perf_feas.bin ; d_perf_feas.bin
+
 N:  599999999
-BN: 1
+BN: 10
 
-1 sec, 331 ms, 661 μs, and 5 hnsecs
-1 sec, 398 ms, 611 μs, and 1 hnsec
-1 sec, 379 ms, 22 μs, and 9 hnsecs
-1 sec, 458 ms, and 660 μs
+6 secs, 870 ms, 129 μs, and 5 hnsecs
+1 sec, 614 ms, 118 μs, and 2 hnsecs
+1 sec, 816 ms, 643 μs, and 2 hnsecs
+1 sec, 529 ms, and 900 μs
 
-2 secs, 208 ms, 215 μs, and 6 hnsecs
-1 sec, 345 ms, 151 μs, and 7 hnsecs
-1 sec, 338 ms, 705 μs, and 9 hnsecs
-1 sec, 349 ms, 797 μs, and 2 hnsecs
-1 sec, 349 ms, 77 μs, and 9 hnsecs
-1 sec, 729 ms, 860 μs, and 2 hnsecs
-1 sec, 836 ms, 602 μs, and 3 hnsecs
-2 secs, 199 ms, 169 μs, and 6 hnsecs
+14 secs, 690 ms, 307 μs, and 6 hnsecs
+9 secs, 705 ms, 352 μs, and 9 hnsecs
+9 secs, 491 ms, 455 μs, and 3 hnsecs
+9 secs, 573 ms, 716 μs, and 2 hnsecs
+9 secs, 501 ms, 403 μs, and 9 hnsecs
+10 secs, 772 ms, 211 μs, and 6 hnsecs
+11 secs, 18 ms, 172 μs, and 7 hnsecs
+11 secs, 468 ms, and 666 μs
 
 */
 
