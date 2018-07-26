@@ -2268,6 +2268,301 @@ acc == null  ?  mret( that.mself, n, 1 )\
                 return isOk;
             }
 
+
+            , function fext_support_transfun_inlineable_interface_0()
+            // https://github.com/glathoud/fext/issues/16
+            // https://github.com/glathoud/transfun/issues/7
+            {
+                var f = function_of_tf_inlineable_interface(
+                    fext('(x,y) => x+y')
+                )
+                ,   isOk = 11 === f(10,1)
+                ;
+                return isOk;
+            }
+
+            , function fext_support_transfun_inlineable_interface_1()
+            // https://github.com/glathoud/fext/issues/16
+            // https://github.com/glathoud/transfun/issues/7
+            {
+                var f = function_of_tf_inlineable_interface(
+                    fext('(x,y) => x+y').getImpl()
+                )
+                ,   isOk = 11 === f(10,1)
+                ;
+                return isOk;
+            }
+
+            , function fext_support_transfun_inlineable_interface_2()
+            // https://github.com/glathoud/fext/issues/16
+            // https://github.com/glathoud/transfun/issues/7
+            {
+                var fx = fext;
+
+                // Here: we use `fx` instead of `fx.mfun`
+                var gcd = function_of_tf_inlineable_interface(
+                    fx( function (a, b) {
+                        return a > b  ?  fx.mret( fx.mself, a-b, b )
+                            :  a < b  ?  fx.mret( fx.mself, b-a, a )
+                            :  a;
+                    })
+                )
+                , isOk_arr = [
+                    [1, 1, 1]
+                    , [2, 2, 2]
+                    , [2, 3, 1]
+                    , [2*3, 2, 2]
+                    , [2*3, 3, 3]
+                    , [2*5*17, 3*5*19, 5]
+                    , [2*3*5*17, 3*5*19, 3*5]
+                ]
+                    .map( function( abc ) {
+                        return gcd( abc[ 0 ], abc[ 1 ] ) === abc[ 2 ];
+                    })
+                , isOk = isOk_arr
+                    .every( function ( x ) { return x; } )
+                ;
+                return isOk;            
+            }
+
+            , function fext_support_transfun_inlineable_interface_3()
+            // https://github.com/glathoud/fext/issues/16
+            // https://github.com/glathoud/transfun/issues/7
+            {
+                var fx = fext;
+
+                // Here: we use `fx` instead of `fx.mfun`
+                var gcd = function_of_tf_inlineable_interface(
+                    fx( function (a, b) {
+                        return a > b  ?  fx.mret( fx.mself, a-b, b )
+                            :  a < b  ?  fx.mret( fx.mself, b-a, a )
+                            :  a;
+                    }).getImpl()
+                )
+                , isOk_arr = [
+                    [1, 1, 1]
+                    , [2, 2, 2]
+                    , [2, 3, 1]
+                    , [2*3, 2, 2]
+                    , [2*3, 3, 3]
+                    , [2*5*17, 3*5*19, 5]
+                    , [2*3*5*17, 3*5*19, 3*5]
+                ]
+                    .map( function( abc ) {
+                        return gcd( abc[ 0 ], abc[ 1 ] ) === abc[ 2 ];
+                    })
+                , isOk = isOk_arr
+                    .every( function ( x ) { return x; } )
+                ;
+                return isOk;            
+            }
+
+            , function fext_support_transfun_inlineable_interface_4()
+            // https://github.com/glathoud/fext/issues/16
+            // https://github.com/glathoud/transfun/issues/7
+            {
+                var isOdd = mfun( 'isOdd', '( n ) =>\
+n < 0  ?  mret( isOdd, -n )\
+:  n === 0  ?  false\
+:  mret( isEven, n-1 )')
+                ,  isEven = mfun( isOdd, 'isEven', 'n =>\
+n < 0  ?  mret( mself, -n )\
+:  n === 0  ?  true\
+:  mret( isOdd, n-1 )'
+                                )
+                ;
+                return [-7, -1, 1, 3, 5, 37, 9876543, -9876543 ].every(
+                    function_of_tf_inlineable_interface( isOdd )
+                )
+                    && [-8, -2, 0, 2, 4, 6, 48, 8765432, -8765432 ].every(
+                        function_of_tf_inlineable_interface( isEven )
+                    )
+                ;
+            }
+
+            , function fext_support_transfun_inlineable_interface_4a()
+            // https://github.com/glathoud/fext/issues/16
+            // https://github.com/glathoud/transfun/issues/7
+            {
+                var isOdd = mfun( 'isOdd', '( n ) =>\
+n < 0  ?  mret( isOdd, -n )\
+:  n === 0  ?  false\
+:  mret( isEven, n-1 )')
+                ,  isEven = mfun( isOdd, 'isEven', 'n =>\
+n < 0  ?  mret( mself, -n )\
+:  n === 0  ?  true\
+:  mret( isOdd, n-1 )'
+                                )
+                ;
+                return [-7, -1, 1, 3, 5, 37, 9876543, -9876543 ].every(
+                    function_of_tf_inlineable_interface( isOdd.getImpl() )
+                )
+                    && [-8, -2, 0, 2, 4, 6, 48, 8765432, -8765432 ].every(
+                        function_of_tf_inlineable_interface( isEven.getImpl() )
+                    )
+                ;
+            }
+
+
+
+            , function fext_support_transfun_inlineable_interface_5_not_in_debug_mode()
+            // https://github.com/glathoud/fext/issues/16
+            // https://github.com/glathoud/transfun/issues/7
+            {
+                try
+                {
+                    var f = function_of_tf_inlineable_interface(
+                        mfunD('(x,y) => x+y')
+                    );
+                }
+                catch( e )
+                {
+                    return true;
+                }
+                return false;
+            }
+
+            , function fext_support_transfun_inlineable_interface_6_not_in_debug_mode()
+            // https://github.com/glathoud/fext/issues/16
+            // https://github.com/glathoud/transfun/issues/7
+            {
+                try
+                {
+                    var f = function_of_tf_inlineable_interface(
+                        mfunD('(x,y) => x+y').getImpl()
+                    );
+                }
+                catch( e )
+                {
+                    return true;
+                }
+                return false;
+            }
+
+            , function fext_support_transfun_inlineable_interface_7_not_in_debug_mode()
+            // https://github.com/glathoud/fext/issues/16
+            // https://github.com/glathoud/transfun/issues/7
+            {
+                try
+                {
+                    var fx = fext;
+                    
+                    var gcd = function_of_tf_inlineable_interface(
+                        fx.mfunD( function (a, b) {
+                            return a > b  ?  fx.mret( fx.mself, a-b, b )
+                                :  a < b  ?  fx.mret( fx.mself, b-a, a )
+                                :  a;
+                        })
+                    );
+                }
+                catch( e )
+                {
+                    return true;
+                }
+                return false;
+            }
+
+            , function fext_support_transfun_inlineable_interface_8_not_in_debug_mode()
+            // https://github.com/glathoud/fext/issues/16
+            // https://github.com/glathoud/transfun/issues/7
+            {
+                try
+                {
+                    var fx = fext;
+                    
+                    // Here: we use `fx` instead of `fx.mfun`
+                    var gcd = function_of_tf_inlineable_interface(
+                        fx.mfunD( function (a, b) {
+                            return a > b  ?  fx.mret( fx.mself, a-b, b )
+                                :  a < b  ?  fx.mret( fx.mself, b-a, a )
+                                :  a;
+                        }).getImpl()
+                    );
+                }
+                catch( e )
+                {
+                    return true;
+                }
+                return false;
+            }
+            
+            , function fext_support_transfun_inlineable_interface_9_not_in_debug_mode()
+            // https://github.com/glathoud/fext/issues/16
+            // https://github.com/glathoud/transfun/issues/7
+            {
+                var isOdd = mfunD( 'isOdd', '( n ) =>\
+n < 0  ?  mret( isOdd, -n )\
+:  n === 0  ?  false\
+:  mret( isEven, n-1 )')
+                ,  isEven = mfunD( isOdd, 'isEven', 'n =>\
+n < 0  ?  mret( mself, -n )\
+:  n === 0  ?  true\
+:  mret( isOdd, n-1 )'
+                                 )
+                ;
+
+
+                var isOk_0 = false, isOk_1 = false;
+                try
+                {
+                    function_of_tf_inlineable_interface( isOdd );
+                }
+                catch( e )
+                {
+                    isOk_0 = true;
+                }
+
+                try
+                {
+                    function_of_tf_inlineable_interface( isEven );
+                }
+                catch( e )
+                {
+                    isOk_1 = true;
+                }
+
+                return isOk_0  &&  isOk_1;
+            }
+
+            , function fext_support_transfun_inlineable_interface_10_not_in_debug_mode()
+            // https://github.com/glathoud/fext/issues/16
+            // https://github.com/glathoud/transfun/issues/7
+            {
+                var isOdd = mfunD( 'isOdd', '( n ) =>\
+n < 0  ?  mret( isOdd, -n )\
+:  n === 0  ?  false\
+:  mret( isEven, n-1 )')
+                ,  isEven = mfunD( isOdd, 'isEven', 'n =>\
+n < 0  ?  mret( mself, -n )\
+:  n === 0  ?  true\
+:  mret( isOdd, n-1 )'
+                                 )
+                ;
+
+
+                var isOk_0 = false, isOk_1 = false;
+                try
+                {
+                    function_of_tf_inlineable_interface( isOdd.getImpl() );
+                }
+                catch( e )
+                {
+                    isOk_0 = true;
+                }
+
+                try
+                {
+                    function_of_tf_inlineable_interface( isEven.getImpl() );
+                }
+                catch( e )
+                {
+                    isOk_1 = true;
+                }
+
+                return isOk_0  &&  isOk_1;
+            }
+
+            
         ]);
 
     } // end of function `get_test_arr()`
@@ -2275,6 +2570,17 @@ acc == null  ?  mret( that.mself, n, 1 )\
 
     // ---------- Details
 
+    function function_of_tf_inlineable_interface( f_0 )
+    // https://github.com/glathoud/fext/issues/16
+    // https://github.com/glathoud/transfun/issues/7
+    {
+        var argname_arr = f_0._tf_get_argname_arr()
+        ,   bodycode    = f_0._tf_get_bodycode()
+        ;
+        return new Function( argname_arr.join( ',' ), bodycode );
+    }
+
+    
     function format_result_text( result_all, result )
     {
         return '\nfinal result:&nbsp;' + colorize( result_all )

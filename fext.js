@@ -471,10 +471,21 @@ var global, exports
             ?  function () { return ret; }
         :   function () { return '(' + getImpl() + ')'; }
         ;
+
+        if (!debug)
+        {
+            // Support transfun's inlineable interface
+            // https://github.com/glathoud/fext/issues/16
+            // https://github.com/glathoud/transfun/issues/7
+            ret._tf_get_argname_arr = _tf_get_argname_arr;
+            ret._tf_get_bodycode    = function () { return getImpl()._tf_get_bodycode(); };
+        }
         
         return ret;
         
         // --- Details
+        
+        function _tf_get_argname_arr() { return argname_arr.slice(); }
         
         var impl;
         function fext_wrapper( /*...arguments...*/ )
@@ -513,6 +524,15 @@ var global, exports
                         + '}\n'
                     ;
                     impl = new Function( tmp )();
+
+                    if (!debug)
+                    {
+                        // Support transfun's inlineable interface
+                        // https://github.com/glathoud/fext/issues/16
+                        // https://github.com/glathoud/transfun/issues/7
+                        impl._tf_get_argname_arr = _tf_get_argname_arr;
+                        impl._tf_get_bodycode    = function () { return body; };
+                    }
                 }
                 catch( e )
                 {
