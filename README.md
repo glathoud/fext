@@ -5,7 +5,7 @@ Classically, tail calls are automatically optimized (LISP...) . In JavaScript,
 programmers may well not know which "return" statements are optimized by the engine, and which not.
 This would lead to practical issues when debugging/optimizing ([2009](http://neopythonic.blogspot.de/2009/04/final-words-on-tail-calls.html)).
 
-As of 2018, progress is "slow" and the Chrome team has already *removed* the automatic self-recursion optimization from its JavaScript engine.
+As of 2018, progress is "slow" and the Chrome team has already *removed* the automatic self-recursion tail call optimization from its JavaScript engine.
 
 Another possibility is to **explicitly mark the tail calls that will be optimized**. Several JavaScript extensions were proposed that add new keywords to the language ([2013](http://glat.info/js.metaret/), [2016](https://github.com/tc39/proposal-ptc-syntax)).
 
