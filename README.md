@@ -124,7 +124,7 @@ var fx = require( '../fext' ).fext;
 var self_recursive_fun = fx( ... );
 ```
 
-...and in the IE11 context, when relying one the `fext` namespace, this gives easy access to arrow functions:
+...and in the IE11 context, when relying on the `fext` namespace, this gives easy access to arrow functions:
 ```js
 var sum_two = fext('(x,y) => x+y');
 ```
