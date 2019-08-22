@@ -352,9 +352,211 @@ function TailCall(arr)
       
     </section>
 
+    <section id="section_annex_speedup_recursive_expansion">
+      <h3>Annex B: Speedup through recursive expansion</h3>
+
+      <p>To reduce the number of CPU jumps, several levels
+        of recursion are automatically expanded and inlined.
+        For an example, have a look at the code generated
+        for <code>gcd</code>:
+      </p>
+
+      <pre class="prettyprint lang-js"><code>var gcd = mfun(
+    (a, b) => a > b  ?  mret( mself, a-b, b )
+        :     a < b  ?  mret( mself, b-a, a )
+        :     a
+);
+console.log(gcd._tf_get_bodycode());</code></pre>
+
+                  <p>Result:</p>
+
+                  <pre class="prettyprint lang-js" style="max-height: 20em; overflow: scroll;"><code>"use strict";
+var that = this, __fext_case_i__ = 0, __fext_ret__, __fext_arg_a__, __fext_arg_b__
+;
+__fext_main_loop__: for (;;)
+{
+  switch( __fext_case_i__)
+  {
+case 0: __fext_inline_loop_1__: for(;;) {
+/*return  a > b  ?  mret( mself, a-b, b )
+        :     a < b  ?  mret( mself, b-a, a )
+        :     a;*/
+{if (a > b)
+{
+{
+  (__fext_arg_a__ = a-b, __fext_arg_b__ = b, a = __fext_arg_a__, b = __fext_arg_b__)  ;
+}
+break __fext_inline_loop_1__;
+
+}
+if (a < b)
+{
+{
+  (__fext_arg_a__ = b-a, __fext_arg_b__ = a, a = __fext_arg_a__, b = __fext_arg_b__)  ;
+}
+break __fext_inline_loop_1__;
+
+}
+{
+{
+  return a  ;
+}
+break __fext_inline_loop_1__;
+
+}
+}
+}
+
+if (__fext_case_i__ === -1) return __fext_ret__;
+__fext_inline_loop_2__: for(;;) {
+/*return  a > b  ?  mret( mself, a-b, b )
+        :     a < b  ?  mret( mself, b-a, a )
+        :     a;*/
+{if (a > b)
+{
+{
+  (__fext_arg_a__ = a-b, __fext_arg_b__ = b, a = __fext_arg_a__, b = __fext_arg_b__)  ;
+}
+break __fext_inline_loop_2__;
+
+}
+if (a < b)
+{
+{
+  (__fext_arg_a__ = b-a, __fext_arg_b__ = a, a = __fext_arg_a__, b = __fext_arg_b__)  ;
+}
+break __fext_inline_loop_2__;
+
+}
+{
+{
+  return a  ;
+}
+break __fext_inline_loop_2__;
+
+}
+}
+}
+
+if (__fext_case_i__ === -1) return __fext_ret__;
+__fext_inline_loop_3__: for(;;) {
+/*return  a > b  ?  mret( mself, a-b, b )
+        :     a < b  ?  mret( mself, b-a, a )
+        :     a;*/
+{if (a > b)
+{
+{
+  (__fext_arg_a__ = a-b, __fext_arg_b__ = b, a = __fext_arg_a__, b = __fext_arg_b__)  ;
+}
+break __fext_inline_loop_3__;
+
+}
+if (a < b)
+{
+{
+  (__fext_arg_a__ = b-a, __fext_arg_b__ = a, a = __fext_arg_a__, b = __fext_arg_b__)  ;
+}
+break __fext_inline_loop_3__;
+
+}
+{
+{
+  return a  ;
+}
+break __fext_inline_loop_3__;
+
+}
+}
+}
+
+if (__fext_case_i__ === -1) return __fext_ret__;
+__fext_inline_loop_4__: for(;;) {
+/*return  a > b  ?  mret( mself, a-b, b )
+        :     a < b  ?  mret( mself, b-a, a )
+        :     a;*/
+{if (a > b)
+{
+{
+  (__fext_arg_a__ = a-b, __fext_arg_b__ = b, a = __fext_arg_a__, b = __fext_arg_b__)  ;
+}
+break __fext_inline_loop_4__;
+
+}
+if (a < b)
+{
+{
+  (__fext_arg_a__ = b-a, __fext_arg_b__ = a, a = __fext_arg_a__, b = __fext_arg_b__)  ;
+}
+break __fext_inline_loop_4__;
+
+}
+{
+{
+  return a  ;
+}
+break __fext_inline_loop_4__;
+
+}
+}
+}
+
+if (__fext_case_i__ === -1) return __fext_ret__;
+/*return  a > b  ?  mret( mself, a-b, b )
+        :     a < b  ?  mret( mself, b-a, a )
+        :     a;*/
+{if (a > b)
+{
+{
+  (__fext_arg_a__ = a-b, __fext_arg_b__ = b, a = __fext_arg_a__, b = __fext_arg_b__)  ;
+}
+continue __fext_main_loop__;
+
+}
+if (a < b)
+{
+{
+  (__fext_arg_a__ = b-a, __fext_arg_b__ = a, a = __fext_arg_a__, b = __fext_arg_b__)  ;
+}
+continue __fext_main_loop__;
+
+}
+{
+{
+  return a  ;
+}
+continue __fext_main_loop__;
+
+}
+} continue __fext_main_loop__;
+
+    default: return __fext_ret__;
+  }
+}</code></pre>
+                  
+      <p>Looks overcomplicated? In practice, debugging is not a problem
+        since one can anytime reverse to the non-optimized implementation
+        using <code>mfunD</code> and <code>methD</code>:
+      </p>
+
+      <pre class="prettyprint lang-js"><code>var gcd = mfunD(
+    (a, b) => a > b  ?  mret( mself, a-b, b )
+        :     a < b  ?  mret( mself, b-a, a )
+        :     a
+);
+console.log(gcd._tf_get_dbg_f_code());</code></pre>
+
+                  <p>Result:</p>
+
+                  <pre class="prettyprint lang-js"><code>(a, b) => a > b  ?  mret( mself, a-b, b )
+    :     a < b  ?  mret( mself, b-a, a )
+    :     a</code></pre>
+
+                  <p>...indeed, the unmodified source code, which will run as it is.</p>
+      
+    </section>
 
      <section id="section_annex_more_code">
-      <h3>Annex B: More code</h3>
+      <h3>Annex C: More code</h3>
 
       <p>On <a href="https://github.com/glathoud/fext/">GitHub</a> and here below.</p>
 
