@@ -144,11 +144,11 @@ var global, exports
         (isFinite(i)  &&  i).toPrecision.call.a;
         return '__fext_inline_loop_' + i + '__';
     }
-        
+
+    ,   UNDEFINED       = 'undefined'
     ,   V_CASE_I        = '__fext_case_i__'
     ,   V_CASE_I_RETURN = '-1'
     ,   V_RET           = '__fext_ret__'
-    ,   V_UNDEFINED     = '__fext_undefined__'
     ,   V_THAT          = 'that'
     ;
     
@@ -472,7 +472,13 @@ var global, exports
         :   function () { return '(' + getImpl() + ')'; }
         ;
 
-        if (!debug)
+        if (debug)
+        {
+            // To have access to the generated code (simply to
+            // understand what is going on).
+            ret._tf_get_dbg_f_code = function () { return '' + dbg_f; };
+        }
+        else
         {
             // Support transfun's inlineable interface
             // https://github.com/glathoud/fext/issues/16
@@ -614,7 +620,6 @@ var global, exports
                         [
                             V_THAT + ' = this'
                             , V_CASE_I + ' = 0'
-                            ,  V_UNDEFINED
                             ,  V_RET
                         ]
                             .concat( other_argname_arr )
@@ -838,7 +843,6 @@ var global, exports
             return [
                 p_head
                 , '{'
-                , '  var ' + V_UNDEFINED + ';'
                 
                 ,  new_body
 
@@ -848,7 +852,7 @@ var global, exports
                     cfg.inline_body
                         ?  [ 'return;' ]
                         : [ V_CASE_I + ' = ' + V_CASE_I_RETURN + ';'
-                            , V_RET  + ' = ' + V_UNDEFINED + ';'
+                            , V_RET  + ' = ' + UNDEFINED + ';'
                           ]
                 )
                 .concat( [ '}' ] )
@@ -1463,7 +1467,7 @@ var global, exports
             {
                 rest_args_2.length = n_required;
                 for (var z = n_sofar; z < n_required; ++z)
-                    rest_args_2[ z ] = V_UNDEFINED;
+                    rest_args_2[ z ] = UNDEFINED;
             }
 
             // We try to eliminate unneeded assignments (where
