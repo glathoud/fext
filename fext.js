@@ -292,6 +292,13 @@ var global, exports
                                   , false
                                 );
 
+        // ?boolean?: Destructure implementation (no intermediary variables)
+        // https://github.com/glathoud/fext/issues/18
+        var destructure = dflt( this  &&  this.destructure
+                                , false // xxx #18 supports_destructure()
+                              );
+        
+        
         // --- Debug support
         
         var ret = debug  ?  fext_wrapper_dbg  :  fext_wrapper;
@@ -372,7 +379,9 @@ var global, exports
         
         var tc_arr = find_tail_calls
             .call(
-                { mret_that_dot : mret_that_dot }
+                { mret_that_dot : mret_that_dot
+                  , destructure : destructure
+                }
                 , name, s_body
             )
         ,   tc_len = tc_arr.length
@@ -623,7 +632,8 @@ var global, exports
                             ,  V_RET
                         ]
                             .concat( other_argname_arr )
-                            .concat( all_argname_arr
+                            .concat( destructure  ?  []
+                                     :  all_argname_arr
                                      .map( _fext_argname )
                                    )
                     ).join( ', ' )
@@ -961,6 +971,8 @@ var global, exports
 
         var debug = __fext_debug_all  ||  this  &&  this.debug;
 
+        var destructure = this  &&  this.destructure;
+        
         if (debug)
         {
             var f_or_s = b  ||  a
@@ -1088,6 +1100,8 @@ var global, exports
                     meth_preprocess_argname_arr
                     
                     , mret_that_dot : true
+
+                    , destructure : destructure
                 }
                 , groupkey, a, b );
 
@@ -1335,8 +1349,8 @@ var global, exports
     {
         var opt = this
         ,   mret_that_dot = opt  &&  opt.mret_that_dot
+        ,   destructure   = opt  &&  opt.destructure
         ;
-        
         s = s.trim();
         if (/^(?:\w+\.)?mret\b/.test( s ))
         {
@@ -1490,14 +1504,18 @@ var global, exports
                     zero_needed
                         ?  []
 
-                        : (first_needed = false
-                           , rest_args_2.map( prepare_one_arg )
-                          )
-                        .concat(
-                            (first_needed = false
-                             , rest_args_2.map( set_one_arg )
+                        :  destructure
+                        ?  update_with_destructure( rest_args_2 )
+
+                        :  ((first_needed = false
+                             , rest_args_2.map( prepare_one_arg )
                             )
-                        )
+                            .concat(
+                                (first_needed = false
+                                 , rest_args_2.map( set_one_arg )
+                                )
+                            )
+                           )
                 )
                 .filter( function ( s ) { return s; } )
             ;
@@ -1514,6 +1532,25 @@ var global, exports
                     ?  n+1
                     :  n
                 ;
+            }
+
+            function update_with_destructure( arr )
+            {
+                var  left = []
+                ,   right = []
+                ;
+                for (var n = arr.length, i = 0; i < n; ++i)
+                {
+                    var  v = arr[ i ]
+                    , name = argname_arr[ i ]
+                    ;
+                    left.push( name );
+                    right.push( v );
+                }
+                
+                return [
+                    '['+left.join(',')+'] = ['+right.join(',')+']'
+                ];                
             }
             
             function prepare_one_arg( v, i )
@@ -1587,6 +1624,31 @@ var global, exports
         return arr;
     }
 
+    var _supports_destructure_v;
+    function supports_destructure()
+    {
+        if (_supports_destructure_v == null)
+        {
+            try
+            {
+                var f = new Function
+                ('a,b', '[a,b]=[a+b+1,a*b+2]; return {a:a,b:b};');
+
+                var a = 10, b = 200
+                ,   o = f( a, b )
+                ;
+                _supports_destructure_v =
+                    o  &&  o.a === 211  &&  o.b === 2002;
+            }
+            catch (e)
+            {
+                // Mostly IE11 as of 2019-09
+                _supports_destructure_v = false;
+            }
+        }
+        return _supports_destructure_v;
+    }
+    
     function tc_change_body( sf_tmpl_arr, begin, end
                              , body, piece_i_of_name, space, opt )
     {
