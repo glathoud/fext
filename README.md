@@ -499,3 +499,22 @@ function isOdd_mfun_obj_inplace( niter )
     result === (niter % 2 !== 0)  ||  null.bug;
 }
 ```
+
+## Destructuring (#18)
+
+Without (implementation with intermediary variables, until 2019-09):
+
+```
+| Chromium 76 | 98.9 (0.6) | 100.0 (0.4) |    57.3 (0.2) |      0.5 (<0.1) |
+|             |  [7.79e+8] |   [7.87e+8] |     [4.51e+8] |       [4.28e+6] |
+```
+
+With destructuring (#18), no need for intermediary variables anymore (2019-09 and afterwards):
+
+```
+| Chromium 76 | 100.0 (0.3) |  95.3 (9.3) |    77.2 (0.2) |      0.7 (<0.1) |
+|             |   [5.84e+8] |   [5.56e+8] |     [4.51e+8] |       [4.34e+6] |
+```
+
+As of 2019-09 using destructuring thus brings a marked slow-down
+(about 33% slower) so we'll leave that deactivated for now.

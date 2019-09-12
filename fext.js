@@ -295,7 +295,7 @@ var global, exports
         // ?boolean?: Destructure implementation (no intermediary variables)
         // https://github.com/glathoud/fext/issues/18
         var destructure = dflt( this  &&  this.destructure
-                                , false // xxx #18 supports_destructure()
+                                , false // deactivated for now because slow-down as of 2019-09, see #18.  To activate: replace `false` with `supports_destructure()`
                               );
         
         
