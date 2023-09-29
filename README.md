@@ -24,7 +24,7 @@ Two entry points:
 Just append a "D" character:
 
  * turn `mfun()` into `mfunD()`.
- * turn `mret()` into `mretD()`.
+ * turn `meth()` into `methD()`.
 
 ...to turn off the optimizations. You can then use logging and
 breakpoints.
